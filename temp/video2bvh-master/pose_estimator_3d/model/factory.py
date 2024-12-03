@@ -1,7 +1,7 @@
 import torch
 import yaml
 from easydict import EasyDict
-from pathlib import Path
+
 
 def create_model(cfg, checkpoint_file):
     if cfg.MODEL.NAME == 'linear_model':
@@ -33,14 +33,7 @@ def create_model(cfg, checkpoint_file):
         raise ValueError(f'Model name {cfg.MODEL.NAME} is invalid.')
 
     print(f'=> Load checkpoint {checkpoint_file}')
-# Ensure that the checkpoint_file is a WindowsPath
-    checkpoint_path = Path(checkpoint_file)
-    if not checkpoint_path.is_absolute():
-        checkpoint_path = checkpoint_path.resolve()  # Make it absolute, if necessary
-
-    # Load the model with the correct path
-    pretrained_dict = torch.load(str(checkpoint_file))['model_state']
-
+    pretrained_dict = torch.load(checkpoint_file,map_location=torch.device('cpu'))['model_state']
     model_dict = model.state_dict()
     pretrained_dict = {
         k: v for k, v in pretrained_dict.items()

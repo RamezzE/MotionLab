@@ -29,7 +29,7 @@ class Estimator3D(object):
             'cuda' if torch.cuda.is_available() else 'cpu'
         )
         print(f'=> Use device {self.device}.')
-        self.model = self.model.to(self.device)
+        self.model.to(self.device)
 
     def estimate(self, poses_2d, image_width, image_height):
         # Estimation logic remains the same
@@ -52,7 +52,7 @@ class Estimator3D(object):
         print('=> Begin to estimate 3D poses.')
         with torch.no_grad():
             for batch in loader:
-                input_pose = batch['input_pose'].float().cuda()
+                input_pose = batch['input_pose'].float().to(self.device)
 
                 output = self.model(input_pose)
                 if self.cfg.DATASET.TEST_FLIP:
