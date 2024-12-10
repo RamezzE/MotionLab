@@ -8,7 +8,7 @@ model = YOLO('yolo11n-pose.pt')
 
 # Sometimes it's better to use the not pose models to detect people
 # model = YOLO('yolo11n.pt')
-model = YOLO('yolov8n.pt')
+# model = YOLO('yolov8n.pt')
 
 # load video
 video_name = '5-people-walking-compressed.mp4'
