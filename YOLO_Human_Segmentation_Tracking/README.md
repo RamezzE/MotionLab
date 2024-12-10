@@ -1,5 +1,7 @@
 ## Installation
 
+Note that you might need to open this folder alone in Visual Studio Code for the virtual environment to be detected to correctly run the notebook provided.
+
 ## Step 1: Create a Virtual Environment
 
 ```bash
