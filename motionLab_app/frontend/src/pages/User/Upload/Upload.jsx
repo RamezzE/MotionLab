@@ -22,8 +22,12 @@ const UploadPage = () => {
       setProgress(progress);
     });
 
-    if (response && response.success)
+    if (response && response.success) {
       console.log("Upload Response Data:", response);
+      navigate(`/bvh-viewer`, {
+        state: { fileName: response.bvh_filename },
+      });
+    }
     else console.error("Upload Error:", response);
 
   };

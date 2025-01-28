@@ -1,20 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import BVHViewer from "../../../components/BVH/BVHViewer";
+import { useLocation } from "react-router-dom";
 
 const BVHScene = () => {
   const [isPlaying, setIsPlaying] = useState(false); // Track animation state
   const [duration, setDuration] = useState(0); // Animation duration
   const [currentTime, setCurrentTime] = useState(0); // Current animation time
   const [isScrolling, setIsScrolling] = useState(false); // Track slider interaction
+  const [bvhUrl, setBvhUrl] = useState(null); // BVH file URL
+  
+  const location = useLocation();
 
-  const bvhUrl =
-    "https://raw.githubusercontent.com/CreativeInquiry/BVH-Examples/master/example-threejs/bvh/Jackson.bvh";
-
-  // const bvhUrl2 =
-  //   "https://raw.githubusercontent.com/CreativeInquiry/BVH-Examples/master/example-threejs/bvh/pirouette.bvh";
-
+  useEffect(() => {
+    if (location.state)
+      setBvhUrl("http://127.0.0.1:5000/bvh/" + location.state.fileName);
+    else {
+      setBvhUrl("https://raw.githubusercontent.com/CreativeInquiry/BVH-Examples/master/example-threejs/bvh/Jackson.bvh");
+    }
+  }, [location.state]);
 
   const togglePlayPause = () => {
     setIsPlaying((prev) => !prev); // Toggle play/pause state

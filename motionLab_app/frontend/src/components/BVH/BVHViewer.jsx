@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { BVHLoader } from "three/examples/jsm/loaders/BVHLoader";
 
 
-const BVHViewer = ({ bvhUrl = "", isPlaying, currentTime, onDurationSet, onTimeUpdate, isScrolling }) => {
+const BVHViewer = ({ bvhUrl, isPlaying, currentTime, onDurationSet, onTimeUpdate, isScrolling }) => {
     const groupRef = useRef();
     const skeletonHelperRef = useRef();
     const mixerRef = useRef();
@@ -12,6 +12,7 @@ const BVHViewer = ({ bvhUrl = "", isPlaying, currentTime, onDurationSet, onTimeU
     const clock = useRef(new THREE.Clock());
 
     useEffect(() => {
+        if (!bvhUrl) return;
         const loader = new BVHLoader();
         loader.load(
             bvhUrl,
@@ -57,7 +58,7 @@ const BVHViewer = ({ bvhUrl = "", isPlaying, currentTime, onDurationSet, onTimeU
                 console.error("Error loading BVH file:", error);
             }
         );
-    }, [onDurationSet]);
+    }, [onDurationSet, bvhUrl]);
 
     const resetAnimation = () => {
         if (actionRef.current) {
