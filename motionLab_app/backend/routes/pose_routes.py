@@ -27,12 +27,12 @@ def process_video_route():
         result = process_video(temp_video_path)
         
         # Convert the result to a serializable format (list of lists) for JSON response
-        serializable_keypoints = [kp.tolist() for kp in result]
+        # serializable_keypoints = [kp.tolist() for kp in result]
 
         return jsonify(
             {
                 "success": True,
-                "keypoints": serializable_keypoints,
+                "bvh": result,
             }
         ), 200
     except Exception as e:

@@ -9,6 +9,8 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
 from utils.pose_estimator_3d import estimator_3d
+from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
+from datetime import datetime
 
 mediapipe_to_openpose = {
     0: 0, 13: 5, 14: 2, 15: 6, 16: 3, 17: 7, 18: 4,
@@ -144,6 +146,25 @@ def estimate_3d_from_2d(keypoints_list, estimator_3d, img_width, img_height):
     except Exception as e:
         print(f"Error in estimate_3d_from_2d: {e}")
         raise RuntimeError(f"Error in estimate_3d_from_2d: {e}")
+    
+def convert_3d_to_bvh(pose_3d, skeleton):
+    # Create the output directory if it doesn't exist
+    bvh_output_dir = Path('BVHs')
+    bvh_output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Generate a unique name based on the current timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    bvh_file = bvh_output_dir / f'bvh_{timestamp}.bvh'
+    
+    # Convert the 3D pose data to BVH format
+    cmu_skel = skeleton.CMUSkeleton()
+    channels, header = cmu_skel.poses2bvh(pose_3d, output_file=bvh_file)
+    
+    # Open the file and read the content
+    with open(bvh_file, 'r') as f:
+        content = f.read()
+    
+    return content
 
 # Main function to process the video
 def process_video(file_path):
@@ -159,8 +180,11 @@ def process_video(file_path):
         
         estimator_3d = initialize_estimator_3d()
         
-        return estimate_3d_from_2d(keypoints, estimator_3d, img_width, img_height)
+        points_3d = estimate_3d_from_2d(keypoints, estimator_3d, img_width, img_height)
         
+        bvh_data = convert_3d_to_bvh(points_3d, cmu_skeleton)
+        
+        return bvh_data
     except Exception as e:
         print(f"Error in process_video function: {e}")
         raise RuntimeError(f"Error in process_video function: {e}")
