@@ -3,3 +3,4 @@ venv
 __pycache__
 uploads/
 best_58.58.pth
+*.bvh
