@@ -1,0 +1,78 @@
+import { createBrowserRouter } from "react-router-dom";
+import App from "../App";
+
+import NotFoundPage from "../pages/404";
+
+import UserLayout from "../layouts/UserLayout";
+import AuthLayout from "../layouts/AuthLayout"
+import LandingPage from "../pages/User/Landing/LandingPage";
+
+import LoginPage from "../pages/User/Auth/Login";
+import SignUpPage from "../pages/User/Auth/SignUp";
+
+import UploadPage from "../pages/User/Upload/Upload"
+import AboutPage from  "../pages/User/About/About"
+import ContactPage from "../pages/User/Contact/Contact"
+
+import FeaturesPage from "../pages/User/Features/Features"
+import BVHScene from "../pages/User/Upload/BVHScene";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        path: "",
+        element: <UserLayout />,
+        children: [
+          {
+            path: "",
+            element: <LandingPage />,
+          },
+          {
+            path: "*",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "upload",
+            element: <UploadPage />,
+          },
+          {
+            path: "bvh-viewer",
+            element: <BVHScene />, // Add the BVHViewer route here
+          },
+          {
+            path: "about",
+            element: <AboutPage />,
+          },
+          {
+            path: "contact",
+            element: <ContactPage />,
+          },
+          {
+            path: "features",
+            element: <FeaturesPage />,
+          },
+        ],
+      },
+
+      {
+        path: "/",
+        element: <AuthLayout />,
+        children: [
+          {
+            path: "login",
+            element: <LoginPage />,
+          },
+          {
+            path: "signup",
+            element: <SignUpPage />,
+          },
+        ],
+      },
+    ],
+  },
+]);
+
+export default router;
