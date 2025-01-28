@@ -32,7 +32,7 @@ def process_video_route():
         return jsonify(
             {
                 "success": True,
-                "bvh": result,
+                "bvh_filename": result,
             }
         ), 200
     except Exception as e:

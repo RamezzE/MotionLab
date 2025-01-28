@@ -154,17 +154,14 @@ def convert_3d_to_bvh(pose_3d, skeleton):
     
     # Generate a unique name based on the current timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    bvh_file = bvh_output_dir / f'bvh_{timestamp}.bvh'
+    bvh_file_name = f'bvh_{timestamp}.bvh'
+    bvh_file = bvh_output_dir / bvh_file_name
     
     # Convert the 3D pose data to BVH format
     cmu_skel = skeleton.CMUSkeleton()
     channels, header = cmu_skel.poses2bvh(pose_3d, output_file=bvh_file)
     
-    # Open the file and read the content
-    with open(bvh_file, 'r') as f:
-        content = f.read()
-    
-    return content
+    return bvh_file_name
 
 # Main function to process the video
 def process_video(file_path):
@@ -182,9 +179,10 @@ def process_video(file_path):
         
         points_3d = estimate_3d_from_2d(keypoints, estimator_3d, img_width, img_height)
         
-        bvh_data = convert_3d_to_bvh(points_3d, cmu_skeleton)
+        bvh_file_name = convert_3d_to_bvh(points_3d, cmu_skeleton)
         
-        return bvh_data
+        return bvh_file_name
+    
     except Exception as e:
         print(f"Error in process_video function: {e}")
         raise RuntimeError(f"Error in process_video function: {e}")
