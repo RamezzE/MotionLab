@@ -5,6 +5,6 @@
 ```
 python -m venv venv
 venv\Scripts\activate
-pip install Flask python-dotenv
+pip install -r requirements.txt
 flask run
 ```
