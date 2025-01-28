@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { uploadVideo } from "../../../api/videoAPIs";
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
@@ -14,61 +14,40 @@ const UploadPage = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please select a file before uploading.");
+      alert("Please select a file to upload.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const response = await uploadVideo(file, (progress) => {
+      setProgress(progress);
+    });
 
-    try {
-      const response = await axios.post("http://127.0.0.1:8000/api/upload-bvh/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setProgress(percentCompleted);
-        },
-      });
+    if (response && response.success)
+      console.log("Upload Response Data:", response);
+    else console.error("Upload Error:", response);
 
-      if (response.status === 201) {
-        alert(`File uploaded successfully: ${file.name}`);
-        const filePath = response.data.file_path;
-
-        // Redirect to BVHViewer with the file path as a query parameter
-        navigate(`/bvh-viewer?file=${filePath}`);
-      } else {
-        alert("Upload failed.");
-      }
-    } catch (error) {
-      console.error("Upload Error:", error);
-      alert("An error occurred during the upload.");
-    }
   };
 
   return (
-    <div className="w-screen h-screen flex flex-col items-center justify-center text-white px-4">
-      <div className="text-center mb-8">
-        <h1 className="text-5xl font-bold mb-2">Upload Your BVH File</h1>
-        <p className="text-lg text-gray-300">
-          Upload your BVH file to visualize 3D landmarks and animations.
+    <div className="flex flex-col justify-center items-center px-4 w-screen h-screen text-white">
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 font-bold text-5xl">Upload Your MP4 File</h1>
+        <p className="text-gray-300 text-lg">
+          Upload your MP4 file to visualize 3D landmarks and animations.
         </p>
       </div>
 
-      <div className="w-full max-w-md bg-gray-800 border border-purple-600 rounded-lg shadow-lg p-6">
+      <div className="border-purple-600 bg-gray-800 shadow-lg p-6 border rounded-lg w-full max-w-md">
         <label
           htmlFor="file-upload"
-          className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-purple-600 rounded-lg bg-gray-900 hover:bg-gray-800 cursor-pointer transition"
+          className="flex flex-col justify-center items-center border-2 border-purple-600 bg-gray-900 hover:bg-gray-800 border-dashed rounded-lg h-40 transition cursor-pointer"
         >
           {file ? (
-            <p className="text-sm text-purple-400">{file.name}</p>
+            <p className="text-purple-400 text-sm">{file.name}</p>
           ) : (
             <>
               <svg
-                className="w-12 h-12 mb-2 text-purple-400"
+                className="mb-2 w-12 h-12 text-purple-400"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -81,32 +60,32 @@ const UploadPage = () => {
                   d="M3 16.5v1.25A2.25 2.25 0 005.25 20h13.5A2.25 2.25 0 0021 17.75V16.5M7.5 12l4.5 4.5m0 0l4.5-4.5m-4.5 4.5V3"
                 ></path>
               </svg>
-              <p className="text-sm text-gray-300">
-                Drag & drop your BVH file here, or{" "}
+              <p className="text-gray-300 text-sm">
+                Drag & drop your MP4 file here, or{" "}
                 <span className="text-purple-400">browse</span>
               </p>
-              <p className="text-xs text-gray-500 mt-2">Supported format: BVH</p>
+              <p className="mt-2 text-gray-500 text-xs">Supported format: MP4</p>
             </>
           )}
           <input
             id="file-upload"
             type="file"
             className="hidden"
-            accept=".bvh"
+            accept=".mp4"
             onChange={handleFileChange}
           />
         </label>
       </div>
 
       {progress > 0 && (
-        <div className="w-full max-w-md mt-4">
-          <div className="h-4 bg-gray-900 rounded-lg">
+        <div className="mt-4 w-full max-w-md">
+          <div className="bg-gray-900 rounded-lg h-4">
             <div
-              className="h-full bg-purple-600 rounded-lg"
+              className="bg-purple-600 rounded-lg h-full"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <p className="text-sm text-gray-300 text-center mt-2">
+          <p className="mt-2 text-center text-gray-300 text-sm">
             Upload Progress: {progress}%
           </p>
         </div>
@@ -115,13 +94,13 @@ const UploadPage = () => {
       <div className="flex space-x-4 mt-6">
         <button
           onClick={handleUpload}
-          className="bg-purple-800 text-white px-6 py-3 rounded-md hover:bg-purple-600 transition duration-300"
+          className="bg-purple-800 hover:bg-purple-600 px-6 py-3 rounded-md text-white transition duration-300"
         >
           Upload and Visualize
         </button>
         <button
           onClick={() => setFile(null)}
-          className="bg-gray-700 text-gray-300 px-6 py-3 rounded-md hover:bg-gray-600 transition duration-300"
+          className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-md text-gray-300 transition duration-300"
         >
           Cancel
         </button>
