@@ -1,0 +1,80 @@
+DATASET:
+  CAM_PARAMS: /home/kevin/public98/3dpose/Dataset/h36m/cameras.h5
+  IMAGE_HEIGHT: 1002
+  IMAGE_WIDTH: 1000
+  INPUT_LEFT_JOINTS:
+  - 5
+  - 6
+  - 7
+  - 12
+  - 13
+  - 14
+  - 16
+  - 18
+  - 19
+  - 20
+  - 21
+  INPUT_RIGHT_JOINTS:
+  - 2
+  - 3
+  - 4
+  - 9
+  - 10
+  - 11
+  - 15
+  - 17
+  - 22
+  - 23
+  - 24
+  INPUT_ROOT: /home/kevin/HDD/h36m_dataset/2D_openpose
+  IN_CHANNEL: 2
+  IN_JOINT: 25
+  NAME: h36m
+  OUTPUT_LEFT_JOINTS:
+  - 4
+  - 5
+  - 6
+  - 11
+  - 12
+  - 13
+  OUTPUT_RIGHT_JOINTS:
+  - 1
+  - 2
+  - 3
+  - 14
+  - 15
+  - 16
+  OUT_CHANNEL: 3
+  OUT_JOINT: 17
+  SEQ_LEN: 243
+  TARGET_ROOT: /home/kevin/HDD/h36m_dataset/3D_gt
+  TEST_FLIP: true
+  TRAIN_FLIP: true
+MODEL:
+  ACTIVATION: relu
+  BIAS: true
+  DROPOUT: 0.25
+  DSC: false
+  FILTER_WIDTHS:
+  - 3
+  - 3
+  - 3
+  - 3
+  - 3
+  HIDDEN_SIZE: 1024
+  NAME: video_pose
+  PRETRAIN: ''
+  RESIDUAL: true
+TRAIN:
+  AMSGRAD: true
+  BATCH_SIZE: 1024
+  BUFFER_SIZE: 4000000
+  EPOCH: 80
+  EVAL_FREQ: 5
+  LR: 0.001
+  LR_DECAY: 0.95
+  MPJPE_WEIGHT: 1
+  OPTIMIZER: adam
+  PRINT_FREQ: 50
+  SNAP_FREQ: 10000
+  WORKERS: 4

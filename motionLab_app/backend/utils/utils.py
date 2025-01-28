@@ -1,9 +1,14 @@
 import os
 import numpy as np
 import cv2
+import pathlib
+from pathlib import Path
+import importlib
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+
+from utils.pose_estimator_3d import estimator_3d
 
 mediapipe_to_openpose = {
     0: 0, 13: 5, 14: 2, 15: 6, 16: 3, 17: 7, 18: 4,
@@ -11,6 +16,8 @@ mediapipe_to_openpose = {
     31: 19, 32: 22, 29: 20, 30: 21, 28: 23, 27: 24,
     1: 16, 2: 15, 3: 18, 4: 17,
 }
+
+img_width, img_height = 0, 0
 
 # MediaPipe Pose detector initialization
 def initialize_pose_detector():
@@ -43,7 +50,7 @@ def open_video(file_path):
     return cap
 
 # Process a single frame
-def process_frame(frame, detector, img_width, img_height, mediapipe_to_openpose):
+def process_frame(frame, detector, img_width, img_height, mediapipe_to_openpose):    
     try:
         # Convert frame to RGB
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -77,10 +84,11 @@ def process_frame(frame, detector, img_width, img_height, mediapipe_to_openpose)
         print(f"Error processing a frame: {e}")
         raise RuntimeError(f"Error processing a frame: {e}")
 
+# Process the video and get keypoints list
 def get_keypoints_list(detector, cap, mediapipe_to_openpose):
-    
+    global img_width, img_height
     keypoints_list = []
-    
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -98,22 +106,62 @@ def get_keypoints_list(detector, cap, mediapipe_to_openpose):
 
     cap.release()
     
+    print(keypoints_list)
     return keypoints_list
+
+def initialize_estimator_3d(config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
+    try:
+        # Fix pathlib.PosixPath issue on Windows
+        temp = pathlib.PosixPath
+        pathlib.PosixPath = pathlib.WindowsPath
+
+        # Reload the `estimator_3d` module to ensure it's fresh
+        importlib.reload(estimator_3d)
+
+        # Initialize Estimator3D
+        e3d = estimator_3d.Estimator3D(
+            config_file=config_file,
+            checkpoint_file=checkpoint_file
+        )
+
+        # Revert pathlib changes (optional)
+        pathlib.PosixPath = temp
+
+        print("Estimator3D initialized successfully.")
+        return e3d
+
+    except Exception as e:
+        print(f"Error initializing Estimator3D: {e}")
+        raise RuntimeError(f"Error initializing Estimator3D: {e}")
+
+def estimate_3d_from_2d(keypoints_list, estimator_3d, img_width, img_height):
+
+    try:  
+        pose2d = np.stack(keypoints_list)[:, :, :2]
+        pose3d = estimator_3d.estimate(pose2d, image_width=img_width, image_height=img_height)
+        return pose3d
+
+    except Exception as e:
+        print(f"Error in estimate_3d_from_2d: {e}")
+        raise RuntimeError(f"Error in estimate_3d_from_2d: {e}")
 
 # Main function to process the video
 def process_video(file_path):
+    global img_width, img_height
     try:
         # Step 1: Initialize Pose Detector
         detector = initialize_pose_detector()
 
         # Step 2: Open Video File
         cap = open_video(file_path)
-
-        # Step 3: Get Keypoints List
-        return get_keypoints_list(detector, cap, mediapipe_to_openpose)
+        
+        keypoints = get_keypoints_list(detector, cap, mediapipe_to_openpose)
+        
+        estimator_3d = initialize_estimator_3d()
+        
+        return estimate_3d_from_2d(keypoints, estimator_3d, img_width, img_height)
         
     except Exception as e:
         print(f"Error in process_video function: {e}")
         raise RuntimeError(f"Error in process_video function: {e}")
-    
     
