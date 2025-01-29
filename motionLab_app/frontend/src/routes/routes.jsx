@@ -5,16 +5,16 @@ import NotFoundPage from "../pages/404";
 
 import UserLayout from "../layouts/UserLayout";
 import AuthLayout from "../layouts/AuthLayout"
-import LandingPage from "../pages/User/Landing/LandingPage";
+import LandingPage from "../pages/User/LandingPage";
 
 import LoginPage from "../pages/User/Auth/Login";
 import SignUpPage from "../pages/User/Auth/SignUp";
 
 import UploadPage from "../pages/User/Upload/Upload"
-import AboutPage from  "../pages/User/About/About"
-import ContactPage from "../pages/User/Contact/Contact"
+import AboutPage from  "../pages/User/About"
+import ContactPage from "../pages/User/Contact"
 
-import FeaturesPage from "../pages/User/Features/Features"
+import FeaturesPage from "../pages/User/Features"
 import BVHScene from "../pages/User/Upload/BVHScene";
 
 const router = createBrowserRouter([

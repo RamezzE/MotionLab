@@ -6,8 +6,7 @@ const UserLayout = () => {
     return (
         <>
             <NavBar />
-            <Outlet />
-            {/* Footer goes here */}
+            <div className="py-12"><Outlet /></div>
             <Footer />
         </>
     )

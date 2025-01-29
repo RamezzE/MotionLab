@@ -33,7 +33,7 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center px-4 w-screen h-screen text-white">
+    <div className="flex flex-col justify-center items-center px-8 w-screen text-white">
       <div className="mb-8 text-center">
         <h1 className="mb-2 font-bold text-5xl">Upload Your MP4 File</h1>
         <p className="text-gray-300 text-lg">
