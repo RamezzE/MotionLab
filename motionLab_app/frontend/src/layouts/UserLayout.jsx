@@ -4,11 +4,12 @@ import Footer from '../components/Footer';
 
 const UserLayout = () => {
     return (
-        <>
+        <div className="flex flex-col justify-between min-h-screen">
             <NavBar />
             <div className="py-12"><Outlet /></div>
+            <div className="mt-auto"></div>
             <Footer />
-        </>
+        </div>
     )
 }
 

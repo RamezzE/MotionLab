@@ -1,9 +1,9 @@
 const Footer = () => {
     return (
-      <footer className="text-gray-400 py-6">
-        <div className="container mx-auto px-4 text-center">
+      <footer className="py-6 text-gray-400">
+        <div className="mx-auto px-4 text-center container">
           {/* Main Content */}
-          <p className="text-sm mb-4">
+          <p className="mb-4 text-sm">
             © 2023 MotionLab. All rights reserved.
           </p>
   
