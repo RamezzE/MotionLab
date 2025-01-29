@@ -5,7 +5,8 @@ const FormField = ({ label,
     type = "text",
     placeholder = "",
     value,
-    onChange, }) => {
+    onChange,
+    extraStyles = "" }) => {
     return (
         <div>
             <label className="block mb-2 font-medium text-sm" htmlFor={id}>
@@ -19,7 +20,7 @@ const FormField = ({ label,
                     rows={5}
                     value={value}
                     onChange={onChange}
-                    className="bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none"
+                    className={`bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none ${extraStyles}`}
                 ></textarea>
             ) : (
                 <input
@@ -29,7 +30,7 @@ const FormField = ({ label,
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
-                    className="bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none"
+                    className={`bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none ${extraStyles}`}
                 />
             )}
         </div>

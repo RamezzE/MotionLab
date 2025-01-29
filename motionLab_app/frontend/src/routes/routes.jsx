@@ -54,13 +54,13 @@ const router = createBrowserRouter([
             path: "features",
             element: <FeaturesPage />,
           },
-        ],
-      },
+        // ],
+      // },
 
-      {
-        path: "/",
-        element: <AuthLayout />,
-        children: [
+      // {
+        // path: "/",
+        // element: <AuthLayout />,
+        // children: [
           {
             path: "login",
             element: <LoginPage />,
