@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Form, Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 // import { login, googleLogin } from "../../../api/userAPIs";
 // import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
@@ -16,6 +16,12 @@ const LoginPage = () => {
   const { isAuthenticated, login, error, clearError } = useUserStore();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,7 +80,7 @@ const LoginPage = () => {
             />
 
             {error.email && (
-              <p className="mt-1 text-red-500 text-sm">{error.email}</p>
+              <p className="mt-1 text-red-500 text-sm text-start">{error.email}</p>
             )}
 
             <FormField
@@ -83,11 +89,11 @@ const LoginPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={(e) => handleInputChange(e)}
-              extraStyles={`bg-gray-800 ${error.password && "ring-red-500"}`}
+              extraStyles={`bg-gray-800 ${error.login_password && "ring-red-500"}`}
             />
 
             {error.password && (
-              <p className="mt-1 text-red-500 text-sm">{error.password}</p>
+              <p className="mt-1 text-red-500 text-sm text-start">{error.password}</p>
             )}
           </div>
 
