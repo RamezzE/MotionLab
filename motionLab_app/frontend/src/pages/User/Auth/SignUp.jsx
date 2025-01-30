@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signup, googleLogin } from "../../../api/userAPIs";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+// import { signup, googleLogin } from "../../../api/userAPIs";
+// import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
 import FormField from "../../../components/UI/FormField";
+import useUserStore from "../../../store/useUserStore";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
@@ -14,8 +15,15 @@ const SignUpPage = () => {
     confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState({});
+  const { isAuthenticated, signup, error } = useUserStore();
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,51 +33,28 @@ const SignUpPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: "Passwords do not match" });
-      return;
-    }
-
-    try {
-      const { email, password, firstName, lastName } = formData;
-      await signup({
-        email,
-        password,
-        first_name: firstName,
-        last_name: lastName,
-      });
-      alert("Signup successful! Redirecting to login...");
-      navigate("/login");
-    } catch (error) {
-      console.error("Signup Error:", error);
-
-      if (error.response && error.response.data) {
-        setErrors(error.response.data);
-      } else {
-        alert("An unexpected error occurred during signup.");
-      }
-    }
+    await signup(formData);
   };
 
-  const handleGoogleSignUpSuccess = async (credentialResponse) => {
-    try {
-      const token = credentialResponse.credential;
-      await googleLogin(token);
-      alert("Google Signup Successful! Redirecting...");
-      navigate("/login");
-    } catch (error) {
-      console.error("Google Signup Error:", error.message);
-      alert("Google signup failed. Please try again.");
-    }
-  };
+  // const handleGoogleSignUpSuccess = async (credentialResponse) => {
+  //   try {
+  //     const token = credentialResponse.credential;
+  //     await googleLogin(token);
+  //     alert("Google Signup Successful! Redirecting...");
+  //     navigate("/login");
+  //   } catch (error) {
+  //     console.error("Google Signup Error:", error.message);
+  //     alert("Google signup failed. Please try again.");
+  //   }
+  // };
 
-  const handleGoogleSignUpFailure = (error) => {
-    console.error("Google Signup Failure:", error);
-    alert("Google Signup failed. Please try again.");
-  };
+  // const handleGoogleSignUpFailure = (error) => {
+  //   console.error("Google Signup Failure:", error);
+  //   alert("Google Signup failed. Please try again.");
+  // };
 
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    // <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <div className="flex justify-center items-center px-4 w-screen text-white">
         <div className="z-10 px-4 text-center">
           <h1 className="mb-6 font-bold text-5xl md:text-6xl leading-tight">
@@ -91,11 +76,11 @@ const SignUpPage = () => {
                   placeholder="First Name"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  extraStyles={`bg-gray-800 ${errors.firstName && "ring-red-500"}`}
+                  extraStyles={`bg-gray-800 ${error.firstName && "ring-red-500"}`}
                 />
 
-                {errors.firstName && (
-                  <p className="mt-1 text-red-500 text-sm">{errors.firstName}</p>
+                {error.firstName && (
+                  <p className="mt-1 text-red-500 text-sm">{error.firstName}</p>
                 )}
 
                 <FormField
@@ -104,11 +89,11 @@ const SignUpPage = () => {
                   placeholder="Last Name"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  extraStyles={`bg-gray-800 ${errors.lastName && "ring-red-500"}`}
+                  extraStyles={`bg-gray-800 ${error.lastName && "ring-red-500"}`}
                 />
 
-                {errors.lastName && (
-                  <p className="mt-1 text-red-500 text-sm">{errors.lastName}</p>
+                {error.lastName && (
+                  <p className="mt-1 text-red-500 text-sm">{error.lastName}</p>
                 )}
               </div>
               <FormField
@@ -117,11 +102,11 @@ const SignUpPage = () => {
                 placeholder="Email Address"
                 value={formData.email}
                 onChange={handleInputChange}
-                extraStyles={`bg-gray-800 ${errors.email && "ring-red-500"}`}
+                extraStyles={`bg-gray-800 ${error.email && "ring-red-500"}`}
               />
 
-              {errors.email && (
-                <p className="mt-1 text-red-500 text-sm">{errors.email}</p>
+              {error.email && (
+                <p className="mt-1 text-red-500 text-sm">{error.email}</p>
               )}
 
               <FormField
@@ -130,11 +115,11 @@ const SignUpPage = () => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleInputChange}
-                extraStyles={`bg-gray-800 ${errors.password && "ring-red-500"}`}
+                extraStyles={`bg-gray-800 ${error.password && "ring-red-500"}`}
               />
 
-              {errors.password && (
-                <p className="mt-1 text-red-500 text-sm">{errors.password}</p>
+              {error.password && (
+                <p className="mt-1 text-red-500 text-sm">{error.password}</p>
               )}
 
               <FormField
@@ -143,11 +128,11 @@ const SignUpPage = () => {
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                extraStyles={`bg-gray-800 ${errors.confirmPassword && "ring-red-500"}`}
+                extraStyles={`bg-gray-800 ${error.confirmPassword && "ring-red-500"}`}
               />
 
-              {errors.confirmPassword && (
-                <p className="mt-1 text-red-500 text-sm">{errors.confirmPassword}</p>
+              {error.confirmPassword && (
+                <p className="mt-1 text-red-500 text-sm">{error.confirmPassword}</p>
               )}
 
             </div>
@@ -173,7 +158,7 @@ const SignUpPage = () => {
           </p>
 
           {/* Google Signup */}
-          <div className="flex justify-center mt-8">
+          {/* <div className="flex justify-center mt-8">
             <GoogleLogin
               onSuccess={handleGoogleSignUpSuccess}
               onError={handleGoogleSignUpFailure}
@@ -181,10 +166,10 @@ const SignUpPage = () => {
               shape="circle"
               size="medium"
             />
-          </div>
+          </div> */}
         </div>
       </div>
-    </GoogleOAuthProvider>
+    // </GoogleOAuthProvider>
   );
 };
 
