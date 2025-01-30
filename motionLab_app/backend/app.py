@@ -1,17 +1,25 @@
 import os
 from flask import Flask, send_from_directory, abort
-from routes.user_routes import user_bp  # Import the Blueprint
-from routes.pose_routes import pose_bp  # Import the Blueprint
+
 from pathlib import Path
 from flask_cors import CORS
 
-app = Flask(__name__)
+from database import SQLALCHEMY_CONFIG, init_db
+from routes import user_bp, pose_bp  # Import the Blueprints
 
-CORS(app)
+def create_app():
+    app = Flask(__name__)
+    
+    app.config.update(SQLALCHEMY_CONFIG)
+    init_db(app)  # Initialize the database
+    CORS(app)
+    
+    app.register_blueprint(user_bp, url_prefix="/user")
+    app.register_blueprint(pose_bp, url_prefix="/pose")
+    
+    return app
 
-# Register the Blueprint with the app
-app.register_blueprint(user_bp, url_prefix="/user")
-app.register_blueprint(pose_bp, url_prefix="/pose")
+app = create_app()
 
 BVH_DIRECTORY = Path('BVHs')
 

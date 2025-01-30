@@ -2,5 +2,7 @@ venv
 .env
 __pycache__
 uploads/
+migrations/
+instance/
 best_58.58.pth
 *.bvh
