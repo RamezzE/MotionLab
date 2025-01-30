@@ -30,7 +30,7 @@ const BASE_URL = "http://127.0.0.1:5000"; // Flask backend URL
 export const signup = async (userData) => {
   try {
     const response = await axios.post(
-      `${BASE_URL}/auth/signup/`,
+      `${BASE_URL}/auth/signup`,
       { ...userData },
       {
         headers: {
@@ -41,14 +41,14 @@ export const signup = async (userData) => {
     return response.data;
   } catch (error) {
     console.error("Signup API Error:", error.response?.data || error.message);
-    return { success: false, error: error.response?.data || error.message };
+    return { success: false, data: error.response?.data || error.message };
   }
 };
 
 export const login = async (userData) => {
   try {
     const response = await axios.post(
-      `${BASE_URL}/auth/login/`,
+      `${BASE_URL}/auth/login`,
       { ...userData },
       {
         headers: {
@@ -59,6 +59,6 @@ export const login = async (userData) => {
     return response.data;
   } catch (error) {
     console.error("Login API Error:", error.response?.data || error.message);
-    return { success: false, error: error.response?.data || error.message };
+    return { success: false, data: error.response?.data || error.message };
   }
 };

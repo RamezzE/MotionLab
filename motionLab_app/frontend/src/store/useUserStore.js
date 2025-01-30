@@ -32,7 +32,7 @@ const useUserStore = create((set) => ({
       // localStorage.setItem("token", response.token);
     }
     else  {
-      set({ error: response.error || "An unexpected error occurred while logging in" });
+      set({ error: response.data.errors || "An unexpected error occurred while logging in" });
       return false;
     }
   },
@@ -59,7 +59,7 @@ const useUserStore = create((set) => ({
       // Store in localStorage
       // localStorage.setItem("token", response.token);
     } else {
-      set({ error: response.error || "An unexpected error occurred while signing up" });
+      set({ error: response.data.errors || "An unexpected error occurred while signing up" });
       return false;
     }
   },
@@ -69,10 +69,10 @@ const useUserStore = create((set) => ({
     });
   },
   logout: () => {
-    set({ user: null, isAuthenticated: false, token: null, error: null });
+    set({ user: null, isAuthenticated: false, token: null, error: {} });
 
     // Clear from localStorage
-    localStorage.removeItem("token");
+    // localStorage.removeItem("token");
   },
 }));
 
