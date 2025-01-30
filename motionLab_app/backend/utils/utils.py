@@ -51,6 +51,16 @@ def open_video(file_path):
 
     return cap
 
+def draw_keypoints(frame, keypoints):
+    """
+    Draw keypoints on the frame.
+    """
+    for i, (x, y, confidence) in enumerate(keypoints):
+        if confidence > 0:  # Only draw if confidence is > 0
+            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)  # Green circles
+    
+    return frame
+
 # Process a single frame
 def process_frame(frame, detector, img_width, img_height, mediapipe_to_openpose):    
     try:
@@ -81,6 +91,13 @@ def process_frame(frame, detector, img_width, img_height, mediapipe_to_openpose)
             mid_hip = interpolate_joint(landmarks[23], landmarks[24])
             keypoints[8] = [mid_hip[0] * img_width, mid_hip[1] * img_height, 1.0]
 
+        # Draw keypoints
+        frame_with_keypoints = draw_keypoints(frame, keypoints)
+    
+        # Show the frame
+        cv2.imshow("Pose Estimation", frame_with_keypoints)
+        cv2.waitKey(1)  # 1ms delay for video processing
+
         return keypoints
     except Exception as e:
         print(f"Error processing a frame: {e}")
@@ -107,11 +124,13 @@ def get_keypoints_list(detector, cap, mediapipe_to_openpose):
         keypoints_list.append(keypoints)
 
     cap.release()
-    
+    cv2.destroyAllWindows()
+
     print(keypoints_list)
     return keypoints_list
 
 def initialize_estimator_3d(config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
+# def initialize_estimator_3d(config_file='utils/linear_model.yaml', checkpoint_file='utils/best_64.12.pth'):
     try:
         # Fix pathlib.PosixPath issue on Windows
         temp = pathlib.PosixPath
@@ -147,6 +166,27 @@ def estimate_3d_from_2d(keypoints_list, estimator_3d, img_width, img_height):
         print(f"Error in estimate_3d_from_2d: {e}")
         raise RuntimeError(f"Error in estimate_3d_from_2d: {e}")
     
+def align_and_scale_3d_pose(pose_3d):
+    # Step 1: Apply 180-degree rotation around X-axis (flipping correction)
+    rotation_matrix_x = np.array([
+        [1,  0,  0], 
+        [0, -1,  0],  # Invert Y-axis
+        [0,  0, -1]   # Invert Z-axis
+    ])
+    pose_3d = np.einsum('ij,klj->kli', rotation_matrix_x, pose_3d)
+
+    # Step 2: Adjust the center so feet touch the ground
+    min_y = np.min(pose_3d[:, :, 1])  # Find lowest Y-coordinate (feet)
+    translation_y = -min_y  # Compute translation amount
+
+    # Apply translation (move up so feet are at Y=0)
+    pose_3d[:, :, 1] += translation_y
+    
+    pose_3d *= 0.1
+
+    return pose_3d
+    
+    
 def convert_3d_to_bvh(pose_3d, skeleton):
     # Create the output directory if it doesn't exist
     bvh_output_dir = Path('BVHs')
@@ -178,9 +218,12 @@ def process_video(file_path):
         estimator_3d = initialize_estimator_3d()
         
         points_3d = estimate_3d_from_2d(keypoints, estimator_3d, img_width, img_height)
+       
+        corrected_3d_points = align_and_scale_3d_pose(points_3d)
         
-        bvh_file_name = convert_3d_to_bvh(points_3d, cmu_skeleton)
-        
+        # Convert to BVH format
+        bvh_file_name = convert_3d_to_bvh(corrected_3d_points, cmu_skeleton)
+
         return bvh_file_name
     
     except Exception as e:
