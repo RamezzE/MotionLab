@@ -1,49 +1,29 @@
-import os
-import tempfile
-import numpy as np
-import cv2
 from flask import Blueprint, request, jsonify
-from utils.utils import process_video
+from controllers.pose_controller import PoseController
 
 pose_bp = Blueprint("pose", __name__)
+pose_controller = PoseController()  # Create a single instance of PoseController
+
 
 @pose_bp.route("/process-video", methods=["POST"])
 def process_video_route():
-    if "video" not in request.files:
-        return jsonify({"success": False, "error": "No video file provided"}), 400
+    video = request.files.get("video")
 
-    video = request.files["video"]
-    
-    if not video.filename.endswith(('.mp4', '.avi', '.mov', '.mkv')):
-        return jsonify({"success": False, "error": "Unsupported video format"}), 400
+    # Validate the video file
+    print("Validating video file...")
+    is_valid, error_message = PoseController.validate_video_file(video, request.files)
+    if not is_valid:
+        return jsonify({"success": False, "error": error_message}), 400
 
     try:
-        # Save the video to a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
-            temp_video.write(video.read())
-            temp_video_path = temp_video.name  # Get the temporary file path
+        # Save the file temporarily
+        print("Saving the video file temporarily...")
+        temp_video_path = PoseController.save_temp_video(video)
 
-        # Process the video and get keypoints
-        result = process_video(temp_video_path)
-        
-        # Convert the result to a serializable format (list of lists) for JSON response
-        # serializable_keypoints = [kp.tolist() for kp in result]
+        # Process the video
+        print("Processing the video...")
+        response = pose_controller.process_video(temp_video_path)
 
-        return jsonify(
-            {
-                "success": True,
-                "bvh_filename": result,
-            }
-        ), 200
+        return response
     except Exception as e:
-        print(f"Error encountered: {e}")
-
-        return jsonify(
-            {
-                "success": False,
-                "error": str(e),
-            }
-        ), 500
-    finally:
-        # Delete the temporary video file
-        os.remove(temp_video_path)
+        return jsonify({"success": False, "error": str(e)}), 500
