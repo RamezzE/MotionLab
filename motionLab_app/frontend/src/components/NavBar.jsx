@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react"; // Import icons
 import Logo from "/images/logo.png";
 
+import useUserStore from "../store/useUserStore";
+
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAuthenticated, logout } = useUserStore();
 
   return (
     <nav className="flex justify-between items-center bg-gray-700 bg-opacity-50 shadow-lg mx-auto mt-4 px-6 sm:px-7 py-3 rounded-3xl w-[90%] md:max-w-4xl text-white">
@@ -43,6 +46,8 @@ const NavBar = () => {
       </div>
 
       {/* Desktop Login/Signup Buttons */}
+
+      {!isAuthenticated && (
       <div className="md:flex items-center space-x-6 hidden font-medium text-sm md:text-base">
         <Link to="/login" className="hover:text-purple-400 transition duration-300">
           Log In
@@ -56,6 +61,18 @@ const NavBar = () => {
           </span>
         </Link>
       </div>
+      )}
+
+      {isAuthenticated && (
+        <div className="md:flex items-center space-x-6 hidden font-medium text-sm md:text-base">
+          <button
+            onClick={logout}
+            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-center text-white transition duration-300"
+            >
+            Log Out
+          </button>
+        </div>
+      )}
 
       {/* Mobile Menu (Dropdown) */}
       {isOpen && (
@@ -72,6 +89,8 @@ const NavBar = () => {
           <Link to="/upload" className="text-white hover:text-purple-400 transition duration-300" onClick={() => setIsOpen(false)}>
             Upload
           </Link>
+          {!isAuthenticated && (
+            <>
           <Link to="/login" className="text-white hover:text-purple-400 transition duration-300" onClick={() => setIsOpen(false)}>
             Log In
           </Link>
@@ -82,6 +101,19 @@ const NavBar = () => {
           >
             Join Now
           </Link>
+          </>
+          )}
+          {isAuthenticated && (
+            <button
+              onClick={() => {
+                logout();
+                setIsOpen(false);
+              }}
+              className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-center text-white transition duration-300"
+            >
+              Log Out
+            </button>
+          )}
         </div>
       )}
     </nav>
