@@ -14,7 +14,7 @@ import tempfile
 from utils.pose_estimator_3d import estimator_3d
 from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
 
 OPENPOSE_CONNECTIONS_25 = [
@@ -82,7 +82,7 @@ class PoseController:
         
         self.img_width = 0
         self.img_height = 0
-        self.pose_detector = self._initialize_pose_detector(model_path)
+        # self.pose_detector = self._initialize_pose_detector(model_path)
         self.estimator_3d = self._initialize_3D_pose_estimator(config_file, checkpoint_file)
         
         self.mp_pose = mp.solutions.pose
@@ -144,18 +144,15 @@ class PoseController:
     # Function to draw keypoints on the frame
     @staticmethod
     def draw_openpose_keypoints(frame, keypoints):
-        for i, (x, y, confidence) in enumerate(keypoints):
-            if confidence > 0:
-                cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+        for i, (x, y, _) in enumerate(keypoints):
+            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
+            cv2.putText(frame, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         
         for connection in OPENPOSE_CONNECTIONS_25:
             joint1 = keypoints[connection[0]]
             joint2 = keypoints[connection[1]] 
             cv2.line(frame, (int(joint1[0]), int(joint1[1])), (int(joint2[0]), int(joint2[1])), (0, 255, 0), 2)
         
-        for i, (x, y, confidence) in enumerate(keypoints):
-            if confidence > 0:
-                cv2.putText(frame, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         return frame
     
     # Open the video file and validate it
@@ -178,43 +175,59 @@ class PoseController:
             detection_result = self.pose.process(rgb_frame)
 
             keypoints = np.zeros((25, 3))
-
+            pose_world_keypoints = np.zeros((25, 3))
+            
             if detection_result.pose_landmarks:
                 landmarks = detection_result.pose_landmarks.landmark
                 # landmarks = detection_result.pose_world_landmarks.landmark
 
+                pose_world_landmarks = detection_result.pose_world_landmarks.landmark
+
                 for mp_idx, openpose_idx in self.mediapipe_to_openpose.items():
                     if mp_idx < len(landmarks):
                         landmark = landmarks[mp_idx]
-                        keypoints[openpose_idx, 0] = landmark.x * self.img_width
-                        keypoints[openpose_idx, 1] = landmark.y * self.img_height
-                        keypoints[openpose_idx, 2] = 1.0
+                        world_landmark = pose_world_landmarks[mp_idx]
+                        
+                        keypoints[openpose_idx] = [landmark.x * self.img_width, landmark.y * self.img_height, 1.0]
+                        
+                        pose_world_keypoints[openpose_idx] = [world_landmark.x, world_landmark.y, world_landmark.z]
                         
 
                 neck = self.interpolate_joint(landmarks[11], landmarks[12])
                 keypoints[1] = [neck[0] * self.img_width, neck[1] * self.img_height, 1.0]
-
+                
+                neck_world = self.interpolate_joint(pose_world_landmarks[11], pose_world_landmarks[12])
+                pose_world_keypoints[1] = [neck_world[0], neck_world[1], neck_world[2]]
+                
                 mid_hip = self.interpolate_joint(landmarks[23], landmarks[24])
                 keypoints[8] = [mid_hip[0] * self.img_width, mid_hip[1] * self.img_height, 1.0]
                 
+                mid_hip_world = self.interpolate_joint(pose_world_landmarks[23], pose_world_landmarks[24])
+                pose_world_keypoints[8] = [mid_hip_world[0], mid_hip_world[1], mid_hip_world[2]]
+                
+                
                 keypoints[21] = keypoints[14]
                 keypoints[24] = keypoints[11]
+                
+                pose_world_keypoints[21] = pose_world_keypoints[14]
+                pose_world_keypoints[24] = pose_world_keypoints[11]
 
             ## Draw keypoints
             if visualize:
                 frame_with_keypoints = self.draw_openpose_keypoints(frame, keypoints)
-            
+
                 # Show the frame
                 cv2.imshow("Pose Estimation", frame_with_keypoints)
                 cv2.waitKey(1)  # 1ms delay for video processing
-            return keypoints
+            return keypoints, pose_world_keypoints
         except Exception as e:
             print(f"Error processing a frame: {e}")
             raise RuntimeError(f"Error processing a frame: {e}")
 
-    # Get 2D keypoints list from the video
-    def _get_2D_keypoints_list(self, cap, visualize=False):
+    # Get keypoints list from the video
+    def _get_keypoints_list(self, cap, visualize=False):
         keypoints_list = []
+        pose_world_keypoints_list = []
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -225,13 +238,14 @@ class PoseController:
             if self.img_height == 0 or self.img_width == 0:
                 raise ValueError("Invalid frame dimensions: height or width is 0.")
 
-            keypoints = self._process_frame(frame, visualize)
+            keypoints, pose_world_keypoints = self._process_frame(frame, visualize)
             keypoints_list.append(keypoints)
+            pose_world_keypoints_list.append(pose_world_keypoints)
 
         cap.release()
         if visualize:
             cv2.destroyAllWindows()
-        return keypoints_list
+        return keypoints_list, pose_world_keypoints_list
 
     # Estimate 3D pose from 2D keypoints list
     def _estimate_3d_from_2d(self, keypoints_list):
@@ -255,6 +269,7 @@ class PoseController:
 
         pose_3d *= 0.05
         return pose_3d
+
 
     # Convert 3D pose to BVH format
     def _convert_3d_to_bvh(self, pose_3d):
@@ -354,56 +369,55 @@ class PoseController:
     #         cap.release()
     #         cv2.destroyAllWindows()
         
-    # def _visualize_3D_points(self, points_3d, connections= None):
-    #     fig = plt.figure()
-    #     ax = fig.add_subplot(111, projection='3d')
-        
-    #     for point in points_3d:
-    #         ax.clear()
-    #         x = point[:, 0]  # Extract all X coordinates
-    #         y = point[:, 1]  # Extract all Y coordinates
-    #         z = point[:, 2]  # Extract all Z coordinates
-            
-    #         x = np.array(x)
-    #         y = np.array(y)
-    #         z = np.array(z)
-            
-    #         ax.scatter(x, -z, -y)
-            
-    #         up_limit = 1
-    #         down_limit = -1
-            
-    #         # if connections == OPENPOSE_CONNECTIONS_25:
-    #         #     up_limit = 1000
-    #         #     down_limit = -1000
-    #         # elif connections == CONNECTIONS_17:
-    #         #     up_limit = 50
-    #         #     down_limit = -50
-                
-            
-    #         for connection in connections:
-    #             idx1, idx2 = connection
-    #             ax.plot([x[idx1], x[idx2]], [-z[idx1], -z[idx2]], [-y[idx1], -y[idx2]], color='black')
-            
-    #         ax.set_xlim(down_limit, up_limit)
-    #         ax.set_ylim(down_limit, up_limit)
-    #         ax.set_zlim(down_limit, up_limit)
-    #         ax.set_xlabel('X-axis')
-    #         ax.set_ylabel('Y-axis')
-    #         ax.set_zlabel('Z-axis')
-            
-    #         plt.pause(0.01)
-    #         plt.show(block=False)
+    def _visualize_3D_points(self, points_3d, connections=None):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        # 🔹 Compute dynamic limits based on all frames (before loop)
+        points_3d_numpy = np.array(points_3d)
+        x_max, y_max, z_max = np.max(points_3d_numpy[:, :, 0]), np.max(points_3d_numpy[:, :, 1]), np.max(points_3d_numpy[:, :, 2])
+        x_min, y_min, z_min = np.min(points_3d_numpy[:, :, 0]), np.min(points_3d_numpy[:, :, 1]), np.min(points_3d_numpy[:, :, 2])
+
+        up_limit = max(abs(x_max), abs(y_max), abs(z_max))
+        down_limit = -up_limit
+
+        for point in points_3d:
+            ax.clear()
+            x = point[:, 0]  # Extract X coordinates
+            y = point[:, 1]  # Extract Y coordinates
+            z = point[:, 2]  # Extract Z coordinates
+
+            ax.scatter(x, -z, -y)
+
+            for connection in connections:
+                idx1, idx2 = connection
+                ax.plot([x[idx1], x[idx2]], [-z[idx1], -z[idx2]], [-y[idx1], -y[idx2]], color='black')
+
+            ax.set_xlim(down_limit, up_limit)
+            ax.set_ylim(down_limit, up_limit)
+            ax.set_zlim(down_limit, up_limit)
+            # ax.set_xlim(-1, 1)
+            # ax.set_ylim(-1, 1)
+            # ax.set_zlim(-1, 1)
+            ax.set_xlabel('X-axis')
+            ax.set_ylabel('Y-axis')
+            ax.set_zlabel('Z-axis')
+
+            plt.pause(0.01)
+            plt.show(block=False)
         
     # Process the video file
     def process_video(self, temp_video_path):        
         try:
             cap = self._open_video(temp_video_path)
-            keypoints = self._get_2D_keypoints_list(cap, visualize=True)
-
+            keypoints, pose_world_keypoints = self._get_keypoints_list(cap, visualize=False)
+            
+            # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
+            # points_3d = self._estimate_3d_from_2d(keypoints)
             points_3d = self._estimate_3d_from_2d(keypoints)
 
             corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
+            
             bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points)
             
             # mediapipe_landmarks = self._get_mediapipe_landmarks(temp_video_path, visualize=False)
