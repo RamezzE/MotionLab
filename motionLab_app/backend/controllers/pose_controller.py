@@ -53,12 +53,43 @@ class PoseController:
         #     31: 19, 32: 22, 29: 20, 30: 21, 28: 23, 27: 24,
         #     1: 16, 2: 15, 3: 18, 4: 17,
         # }
+        # self.mediapipe_to_openpose = {
+        #     0: 0, 
+        #     13: 5, 
+        #     14: 2, 
+        #     15: 6, 
+        #     16: 3, 
+        #     17: 7, 
+        #     18: 4,
+        #     23: 12, 
+        #     24: 9, 
+        #     25: 13, 
+        #     26: 10, 
+        #     27: 14, 
+        #     28: 11,
+        #     31: 20, 
+        #     32: 23,
+        #     29: 19,
+        #     30: 22,
+        #     2: 16, 
+        #     5: 15, 
+        #     7: 18, 
+        #     8: 17,
+        #     # keypoints 21 = keypoints 14 & keypoints 24 = keypoints 11
+        #     # Neck [1] = (landmark 11 + landmark 12) / 2
+        #     # Mid Hip [8] = (landmark 23 + landmark 24) / 2
+        # }
+        
         self.mediapipe_to_openpose = {
-            0: 0, 
-            13: 5, 
-            14: 2, 
-            15: 6, 
-            16: 3, 
+            0: 0,
+            11: 5,
+            12: 2,
+            13: 6,
+            14: 3, 
+            # 13: 5, 
+            # 14: 2, 
+            # 15: 6, 
+            # 16: 3, 
             17: 7, 
             18: 4,
             23: 12, 
@@ -165,6 +196,9 @@ class PoseController:
             raise ValueError(f"Unable to open video file: {file_path}")
 
         return cap
+    
+    def _get_fps(self, cap):
+        return cap.get(cv2.CAP_PROP_FPS)
 
     # Process a single frame
     def _process_frame(self, frame, visualize = False):
@@ -272,7 +306,7 @@ class PoseController:
 
 
     # Convert 3D pose to BVH format
-    def _convert_3d_to_bvh(self, pose_3d):
+    def _convert_3d_to_bvh(self, pose_3d, fps = 30):
         try:
             bvh_output_dir = Path('BVHs')
             bvh_output_dir.mkdir(parents=True, exist_ok=True)
@@ -283,7 +317,7 @@ class PoseController:
             
             print(pose_3d.shape)
             
-            cmu_skeleton.CMUSkeleton().poses2bvh(pose_3d, output_file=bvh_file)
+            cmu_skeleton.CMUSkeleton().poses2bvh(pose_3d, output_file=bvh_file, fps=fps)
             
             print(f"BVH file saved: {bvh_file_name}")
             return bvh_file_name
@@ -410,6 +444,7 @@ class PoseController:
     def process_video(self, temp_video_path):        
         try:
             cap = self._open_video(temp_video_path)
+            fps = self._get_fps(cap)
             keypoints, pose_world_keypoints = self._get_keypoints_list(cap, visualize=False)
             
             # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
@@ -418,7 +453,7 @@ class PoseController:
 
             corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
             
-            bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points)
+            bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, fps)
             
             # mediapipe_landmarks = self._get_mediapipe_landmarks(temp_video_path, visualize=False)
             # self._visualize_3D_points(mediapipe_landmarks)

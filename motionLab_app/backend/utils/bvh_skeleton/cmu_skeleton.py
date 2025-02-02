@@ -276,15 +276,15 @@ class CMUSkeleton(object):
         return channel
 
 
-    def poses2bvh(self, poses_3d, header=None, output_file=None):
+    def poses2bvh(self, poses_3d, header=None, output_file=None, fps=30):
         if not header:
             header = self.get_bvh_header(poses_3d)
 
         channels = []
         for frame, pose in enumerate(poses_3d):
             channels.append(self.pose2euler(pose, header))
-
+        
         if output_file:
-            bvh_helper.write_bvh(output_file, header, channels)
+            bvh_helper.write_bvh(output_file, header, channels, fps)
         
         return channels, header
