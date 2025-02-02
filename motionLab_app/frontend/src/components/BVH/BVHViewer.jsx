@@ -33,7 +33,8 @@ const BVHViewer = ({ bvhUrl, isPlaying, currentTime, onDurationSet, onTimeUpdate
                 boneContainer.add(result.skeleton.bones[0]);
 
                 // Scale the skeleton down
-                boneContainer.scale.set(0.3, 0.3, 0.3); // Reduce the size (30% of original)
+                const scale = 1;
+                boneContainer.scale.set(scale,scale,scale); // Reduce the size (30% of original)
 
                 // Add to scene
                 groupRef.current.add(skeletonHelper);
