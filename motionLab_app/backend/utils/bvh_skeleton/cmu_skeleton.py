@@ -9,6 +9,8 @@ class CMUSkeleton(object):
 
     def __init__(self):
         self.root = 'Hips'
+        self.counter = -1
+        self.root_positions = []
         self.keypoint2index = {
             'Hips': 0,
             'RightUpLeg': 1,
@@ -377,8 +379,8 @@ class CMUSkeleton(object):
             if joint in bone_len:
                 # Use full precision and ensure multiplication is element-wise
                 initial_offset[joint] = np.array(direction) * np.array(bone_len[joint], dtype=np.float64)
-                print("Joint: ", joint, "Direction: ", direction, "Bone Length: ", bone_len[joint])
-                print("Initial Offset: ", initial_offset[joint])
+                # print("Joint: ", joint, "Direction: ", direction, "Bone Length: ", bone_len[joint])
+                # print("Initial Offset: ", initial_offset[joint])
             else:
                 initial_offset[joint] = np.array(direction) * 0.1  # Default small offset
 
@@ -418,7 +420,10 @@ class CMUSkeleton(object):
             joint_idx = self.keypoint2index[joint]
             
             if node.is_root:
-                channel.extend(pose[joint_idx])
+                self.counter += 1
+                scale = 0.05
+                pos = [self.root_positions[self.counter][0] * scale, 0, 0]
+                channel.extend(pos)
 
             index = self.keypoint2index
             order = None
@@ -502,7 +507,10 @@ class CMUSkeleton(object):
         return channel
 
 
-    def poses2bvh(self, poses_3d, header=None, output_file=None, fps=30):
+    def poses2bvh(self, poses_3d, header=None, output_file=None, fps=30, root_keypoints=None):
+        if root_keypoints:
+            self.root_positions = root_keypoints
+        
         if not header:
             header = self.get_bvh_header(poses_3d)
 

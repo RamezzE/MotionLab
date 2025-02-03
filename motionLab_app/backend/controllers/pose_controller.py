@@ -16,7 +16,10 @@ from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
 
 import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
-
+CMU_CONNECTIONS = [
+    (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), 
+    (8, 14), (14, 15), (15, 16),
+]
 OPENPOSE_CONNECTIONS_25 = [
     (0, 1),  
     (0, 15),
@@ -47,38 +50,6 @@ OPENPOSE_CONNECTIONS_25 = [
 class PoseController:
     def __init__(self, model_path='utils/pose_landmarker.task', config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
     # def __init__(self, model_path='utils/pose_landmarker.task', config_file='utils/linear_model.yaml', checkpoint_file='utils/best_64.12.pth'):
-        # self.mediapipe_to_openpose = {
-        #     0: 0, 13: 5, 14: 2, 15: 6, 16: 3, 17: 7, 18: 4,
-        #     23: 12, 24: 9, 25: 13, 26: 10, 27: 14, 28: 11,
-        #     31: 19, 32: 22, 29: 20, 30: 21, 28: 23, 27: 24,
-        #     1: 16, 2: 15, 3: 18, 4: 17,
-        # }
-        # self.mediapipe_to_openpose = {
-        #     0: 0, 
-        #     13: 5, 
-        #     14: 2, 
-        #     15: 6, 
-        #     16: 3, 
-        #     17: 7, 
-        #     18: 4,
-        #     23: 12, 
-        #     24: 9, 
-        #     25: 13, 
-        #     26: 10, 
-        #     27: 14, 
-        #     28: 11,
-        #     31: 20, 
-        #     32: 23,
-        #     29: 19,
-        #     30: 22,
-        #     2: 16, 
-        #     5: 15, 
-        #     7: 18, 
-        #     8: 17,
-        #     # keypoints 21 = keypoints 14 & keypoints 24 = keypoints 11
-        #     # Neck [1] = (landmark 11 + landmark 12) / 2
-        #     # Mid Hip [8] = (landmark 23 + landmark 24) / 2
-        # }
         
         self.mediapipe_to_openpose = {
             0: 0,
@@ -113,12 +84,13 @@ class PoseController:
         
         self.img_width = 0
         self.img_height = 0
+        self.fps = 30
         # self.pose_detector = self._initialize_pose_detector(model_path)
         self.estimator_3d = self._initialize_3D_pose_estimator(config_file, checkpoint_file)
         
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose()
-        self.mp_drawing = mp.solutions.drawing_utils
+        # self.mp_drawing = mp.solutions.drawing_utils
 
     # MediaPipe 2D Pose detector initialization
     def _initialize_pose_detector(self, model_path):
@@ -194,11 +166,8 @@ class PoseController:
         cap = cv2.VideoCapture(file_path)
         if not cap.isOpened():
             raise ValueError(f"Unable to open video file: {file_path}")
-
+        self.fps = cap.get(cv2.CAP_PROP_FPS)
         return cap
-    
-    def _get_fps(self, cap):
-        return cap.get(cv2.CAP_PROP_FPS)
 
     # Process a single frame
     def _process_frame(self, frame, visualize = False):
@@ -239,7 +208,6 @@ class PoseController:
                 mid_hip_world = self.interpolate_joint(pose_world_landmarks[23], pose_world_landmarks[24])
                 pose_world_keypoints[8] = [mid_hip_world[0], mid_hip_world[1], mid_hip_world[2]]
                 
-                
                 keypoints[21] = keypoints[14]
                 keypoints[24] = keypoints[11]
                 
@@ -251,6 +219,10 @@ class PoseController:
                 frame_with_keypoints = self.draw_openpose_keypoints(frame, keypoints)
 
                 # Show the frame
+                if self.img_height > 500:
+                    scale = 500 / self.img_height
+                    frame_with_keypoints = cv2.resize(frame_with_keypoints, (0, 0), fx=scale, fy=scale)
+                    
                 cv2.imshow("Pose Estimation", frame_with_keypoints)
                 cv2.waitKey(1)  # 1ms delay for video processing
             return keypoints, pose_world_keypoints
@@ -304,9 +276,8 @@ class PoseController:
         pose_3d *= 0.05
         return pose_3d
 
-
     # Convert 3D pose to BVH format
-    def _convert_3d_to_bvh(self, pose_3d, fps = 30):
+    def _convert_3d_to_bvh(self, pose_3d, root_keypoints):
         try:
             bvh_output_dir = Path('BVHs')
             bvh_output_dir.mkdir(parents=True, exist_ok=True)
@@ -317,7 +288,7 @@ class PoseController:
             
             print(pose_3d.shape)
             
-            cmu_skeleton.CMUSkeleton().poses2bvh(pose_3d, output_file=bvh_file, fps=fps)
+            cmu_skeleton.CMUSkeleton().poses2bvh(pose_3d, output_file=bvh_file, fps=self.fps, root_keypoints=root_keypoints)
             
             print(f"BVH file saved: {bvh_file_name}")
             return bvh_file_name
@@ -325,92 +296,11 @@ class PoseController:
             print(f"Error in _convert_3d_to_bvh: {e}")
             raise RuntimeError(f"Error in _convert_3d_to_bvh: {e}")
         
-    def _draw_mediapipe_landmarks(self, image, landmarks):
-        if landmarks is not None:
-            annotated_image = image.copy()
-            self.mp_drawing.draw_landmarks(
-                annotated_image,
-                landmarks,
-                self.mp_pose.POSE_CONNECTIONS)
-            return annotated_image
-        else:
-            return image
-        
-    # def _process_results_mediapipe(self, results, frame, ax, visualize=False):
-    #     landmarks = results.pose_world_landmarks.landmark
-    #     x = [landmark.x for landmark in landmarks]
-    #     y = [landmark.y for landmark in landmarks]
-    #     z = [landmark.z for landmark in landmarks]
-        
-    #     pose_3d = np.column_stack((x, y, z))  # Shape: (num_landmarks, 3)
-    #     x = np.array(x)
-    #     y = np.array(y)
-    #     z = np.array(z)
-        
-    #     if visualize:
-    #         ax.clear()
-    #         ax.scatter(x, -z, -y) # Invert y and z axes for visualization
-            
-    #         # Draw connections
-    #         for connection in self.mp_pose.POSE_CONNECTIONS:
-    #             idx1, idx2 = connection
-    #             ax.plot([x[idx1], x[idx2]], [-z[idx1], -z[idx2]], [-y[idx1], -y[idx2]], color='black')
-            
-    #         ax.set_xlim(-1, 1)
-    #         ax.set_ylim(-1, 1)
-    #         ax.set_zlim(-1, 1) 
-    #         ax.set_xlabel('X-axis')
-    #         ax.set_ylabel('Y-axis')
-    #         ax.set_zlabel('Z-axis')
-    #         plt.pause(0.01)
-    #         plt.show(block=False)
-            
-    #         annotated_frame = self._draw_mediapipe_landmarks(frame, results.pose_landmarks)
-
-    #         cv2.imshow('Pose Estimation', annotated_frame)
-    #         cv2.waitKey(1)
-            
-    #     return pose_3d
-            
-    # def _get_mediapipe_landmarks(self, video_path, visualize=False):
-        
-    #     try:
-    #         cap = cv2.VideoCapture(video_path)
-            
-    #         fig = plt.figure()
-    #         ax = fig.add_subplot(111, projection='3d')
-            
-    #         mediapipe_landmarks = []
-    #         while cap.isOpened():
-    #             ret, frame = cap.read()
-    #             if not ret:
-    #                 break
-    #             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #             results = self.pose.process(frame_rgb)
-                
-    #             if results.pose_world_landmarks:
-    #                 pose_3d = self._process_results_mediapipe(results, frame, ax, visualize)
-    #                 # landmarks = results.pose_world_landmarks.landmark
-    #                 # Append correctly structured 3D pose
-    #                 # mediapipe_landmarks.append(landmarks)
-    #                 mediapipe_landmarks.append(pose_3d)
-                    
-    #         return np.array(mediapipe_landmarks)
-    #     except Exception as e:
-    #         print(f"Error in _get_mediapipe_landmarks: {e}")
-    #         raise RuntimeError(f"Error in _get_mediapipe_landmarks: {e}")
-    #     finally:
-    #         cap.release()
-    #         cv2.destroyAllWindows()
-        
     def _visualize_3D_points(self, points_3d, connections=None):
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-
-        # 🔹 Compute dynamic limits based on all frames (before loop)
+        ax = fig.add_subplot(111, projection='3d')        
         points_3d_numpy = np.array(points_3d)
         x_max, y_max, z_max = np.max(points_3d_numpy[:, :, 0]), np.max(points_3d_numpy[:, :, 1]), np.max(points_3d_numpy[:, :, 2])
-        x_min, y_min, z_min = np.min(points_3d_numpy[:, :, 0]), np.min(points_3d_numpy[:, :, 1]), np.min(points_3d_numpy[:, :, 2])
 
         up_limit = max(abs(x_max), abs(y_max), abs(z_max))
         down_limit = -up_limit
@@ -430,30 +320,33 @@ class PoseController:
             ax.set_xlim(down_limit, up_limit)
             ax.set_ylim(down_limit, up_limit)
             ax.set_zlim(down_limit, up_limit)
-            # ax.set_xlim(-1, 1)
-            # ax.set_ylim(-1, 1)
-            # ax.set_zlim(-1, 1)
+
             ax.set_xlabel('X-axis')
             ax.set_ylabel('Y-axis')
             ax.set_zlabel('Z-axis')
 
             plt.pause(0.01)
             plt.show(block=False)
-        
+            
     # Process the video file
     def process_video(self, temp_video_path):        
         try:
             cap = self._open_video(temp_video_path)
-            fps = self._get_fps(cap)
-            keypoints, pose_world_keypoints = self._get_keypoints_list(cap, visualize=False)
             
+            keypoints, pose_world_keypoints = self._get_keypoints_list(cap, visualize=False)
+            root_keypoints = []
+            for keypoint in keypoints:
+                root_keypoints.append(keypoint[8])
+                
             # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
-            # points_3d = self._estimate_3d_from_2d(keypoints)
             points_3d = self._estimate_3d_from_2d(keypoints)
 
             corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
             
-            bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, fps)
+            
+            # self._visualize_3D_points(corrected_3d_points, connections=CMU_CONNECTIONS)
+            
+            bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, root_keypoints)
             
             # mediapipe_landmarks = self._get_mediapipe_landmarks(temp_video_path, visualize=False)
             # self._visualize_3D_points(mediapipe_landmarks)
