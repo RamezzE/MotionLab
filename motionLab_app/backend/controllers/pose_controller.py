@@ -179,9 +179,10 @@ class PoseController:
 
             keypoints = np.zeros((25, 3))
             pose_world_keypoints = np.zeros((25, 3))
-            
+            landmarks_list = []
             if detection_result.pose_landmarks:
                 landmarks = detection_result.pose_landmarks.landmark
+                landmarks_list.append(landmarks)
                 # landmarks = detection_result.pose_world_landmarks.landmark
 
                 pose_world_landmarks = detection_result.pose_world_landmarks.landmark
@@ -192,7 +193,6 @@ class PoseController:
                         world_landmark = pose_world_landmarks[mp_idx]
                         
                         keypoints[openpose_idx] = [landmark.x * self.img_width, landmark.y * self.img_height, 1.0]
-                        
                         pose_world_keypoints[openpose_idx] = [world_landmark.x, world_landmark.y, world_landmark.z]
                         
 
@@ -213,7 +213,7 @@ class PoseController:
                 
                 pose_world_keypoints[21] = pose_world_keypoints[14]
                 pose_world_keypoints[24] = pose_world_keypoints[11]
-
+                
             ## Draw keypoints
             if visualize:
                 frame_with_keypoints = self.draw_openpose_keypoints(frame, keypoints)
@@ -225,7 +225,7 @@ class PoseController:
                     
                 cv2.imshow("Pose Estimation", frame_with_keypoints)
                 cv2.waitKey(1)  # 1ms delay for video processing
-            return keypoints, pose_world_keypoints
+            return keypoints, pose_world_keypoints, landmarks_list
         except Exception as e:
             print(f"Error processing a frame: {e}")
             raise RuntimeError(f"Error processing a frame: {e}")
@@ -234,6 +234,7 @@ class PoseController:
     def _get_keypoints_list(self, cap, visualize=False):
         keypoints_list = []
         pose_world_keypoints_list = []
+        landmarks_list = []
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -244,14 +245,15 @@ class PoseController:
             if self.img_height == 0 or self.img_width == 0:
                 raise ValueError("Invalid frame dimensions: height or width is 0.")
 
-            keypoints, pose_world_keypoints = self._process_frame(frame, visualize)
+            keypoints, pose_world_keypoints, landmarks = self._process_frame(frame, visualize)
             keypoints_list.append(keypoints)
             pose_world_keypoints_list.append(pose_world_keypoints)
+            landmarks_list.append(landmarks)
 
         cap.release()
         if visualize:
             cv2.destroyAllWindows()
-        return keypoints_list, pose_world_keypoints_list
+        return keypoints_list, pose_world_keypoints_list, landmarks_list
 
     # Estimate 3D pose from 2D keypoints list
     def _estimate_3d_from_2d(self, keypoints_list):
@@ -333,11 +335,28 @@ class PoseController:
         try:
             cap = self._open_video(temp_video_path)
             
-            keypoints, pose_world_keypoints = self._get_keypoints_list(cap, visualize=False)
+            keypoints, pose_world_keypoints, landmarks_list = self._get_keypoints_list(cap, visualize=False)
+            
             root_keypoints = []
-            for keypoint in keypoints:
-                root_keypoints.append(keypoint[8])
-                
+
+            # Relevant keypoints for stable root motion
+            relevant_indices = [23, 24, 25, 26, 27, 28]  # Hips, knees, ankles
+            
+            for frame in landmarks_list:
+                if frame:  # Ensure the frame is not empty
+                    frame_keypoints = []  # Store only relevant keypoints
+                    
+                    for landmarks in frame:
+                        if landmarks:
+                            for i in relevant_indices:  # Use only selected keypoints
+                                landmark = landmarks[i]
+                                frame_keypoints.append([landmark.x, landmark.y, landmark.z])  # Collect selected keypoints
+                    
+                    if frame_keypoints:  # Avoid division by zero
+                        # Compute the average of selected keypoints
+                        avg_root = np.mean(frame_keypoints, axis=0)  # Mean of relevant keypoints
+                        root_keypoints.append(avg_root.tolist())  # Store as list
+                        
             # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
             points_3d = self._estimate_3d_from_2d(keypoints)
 

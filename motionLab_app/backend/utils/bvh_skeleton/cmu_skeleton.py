@@ -421,8 +421,16 @@ class CMUSkeleton(object):
             
             if node.is_root:
                 self.counter += 1
-                scale = 0.05
-                pos = [self.root_positions[self.counter][0] * scale, 0, 0]
+                MAX_X = 50
+                MAX_Y = 50
+                MIN_Y = 0
+                
+                OLD_MAX = 1
+                OLD_MIN = 0
+                                
+                x = ((self.root_positions[self.counter][0] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_X - -MAX_X) + -MAX_X
+                y = ((self.root_positions[self.counter][1] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_Y - MIN_Y) + MIN_Y
+                pos = [x, y, 0]
                 channel.extend(pos)
 
             index = self.keypoint2index
