@@ -213,7 +213,7 @@ class PoseController:
                 
                 pose_world_keypoints[21] = pose_world_keypoints[14]
                 pose_world_keypoints[24] = pose_world_keypoints[11]
-                
+            
             ## Draw keypoints
             if visualize:
                 frame_with_keypoints = self.draw_openpose_keypoints(frame, keypoints)
@@ -330,6 +330,49 @@ class PoseController:
             plt.pause(0.01)
             plt.show(block=False)
             
+    def _get_root_keypoints(self, landmarks_list):
+        root_keypoints = []
+
+        # Relevant keypoints for stable root motion
+        relevant_indices = [23, 24, 25, 26, 27, 28]  # Hips, knees, ankles
+        num_keypoints = len(relevant_indices)  # Expected number of keypoints per frame
+        default_value = [0.0, 0.0, 0.0]  # Default value if no previous frame exists
+
+        # Store the last valid frame to fill missing values
+        previous_frame = [default_value] * num_keypoints  # Initialize with default
+
+        for frame in landmarks_list:
+            frame_keypoints = []  # Store only relevant keypoints
+
+            if frame:  # Ensure the frame is not empty
+                for landmarks in frame:
+                    if landmarks:
+                        for i in relevant_indices:
+                            if i < len(landmarks):  # Ensure index is within bounds
+                                landmark = landmarks[i]
+                                frame_keypoints.append([landmark.x, landmark.y, landmark.z])  # Collect selected keypoints
+                            else:
+                                frame_keypoints.append(previous_frame[i])  # Use previous frame value if missing
+                    else:
+                        frame_keypoints = previous_frame.copy()  # Use entire previous frame if landmarks are empty
+            else:
+                frame_keypoints = previous_frame.copy()  # Use previous frame if entire frame is missing
+
+            # Ensure the frame has the correct number of keypoints
+            while len(frame_keypoints) < num_keypoints:
+                frame_keypoints.append(previous_frame[len(frame_keypoints)])  # Fill with previous values
+
+            # Store this frame for future reference
+            previous_frame = frame_keypoints.copy()
+
+            # Compute the average of selected keypoints
+            avg_root = np.mean(frame_keypoints, axis=0)  # Mean of relevant keypoints
+            root_keypoints.append(avg_root.tolist())  # Store as list
+            
+        return root_keypoints
+
+        
+            
     # Process the video file
     def process_video(self, temp_video_path):        
         try:
@@ -337,27 +380,10 @@ class PoseController:
             
             keypoints, pose_world_keypoints, landmarks_list = self._get_keypoints_list(cap, visualize=False)
             
-            root_keypoints = []
-
-            # Relevant keypoints for stable root motion
-            relevant_indices = [23, 24, 25, 26, 27, 28]  # Hips, knees, ankles
-            
-            for frame in landmarks_list:
-                if frame:  # Ensure the frame is not empty
-                    frame_keypoints = []  # Store only relevant keypoints
-                    
-                    for landmarks in frame:
-                        if landmarks:
-                            for i in relevant_indices:  # Use only selected keypoints
-                                landmark = landmarks[i]
-                                frame_keypoints.append([landmark.x, landmark.y, landmark.z])  # Collect selected keypoints
-                    
-                    if frame_keypoints:  # Avoid division by zero
-                        # Compute the average of selected keypoints
-                        avg_root = np.mean(frame_keypoints, axis=0)  # Mean of relevant keypoints
-                        root_keypoints.append(avg_root.tolist())  # Store as list
+            root_keypoints = self._get_root_keypoints(landmarks_list)
                         
             # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
+            print("Root points shape: ", np.array(root_keypoints).shape)
             points_3d = self._estimate_3d_from_2d(keypoints)
 
             corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
