@@ -5,4 +5,7 @@ uploads/
 migrations/
 instance/
 best_58.58.pth
+best_64.12.pth
+linear_model.yaml
+mediapipe_skeleton.py
 *.bvh
