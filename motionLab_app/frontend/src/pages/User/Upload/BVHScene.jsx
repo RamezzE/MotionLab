@@ -5,33 +5,39 @@ import BVHViewer from "../../../components/BVH/BVHViewer";
 import { useLocation } from "react-router-dom";
 
 const BVHScene = () => {
-  const [isPlaying, setIsPlaying] = useState(false); // Track animation state
-  const [duration, setDuration] = useState(0); // Animation duration
-  const [currentTime, setCurrentTime] = useState(0); // Current animation time
-  const [isScrolling, setIsScrolling] = useState(false); // Track slider interaction
-  const [bvhUrl, setBvhUrl] = useState(null); // BVH file URL
-  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [bvhUrl, setBvhUrl] = useState(null);
+  const [bvhUrlList, setBvhUrlList] = useState([]);
+  const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
+
   const location = useLocation();
 
   useEffect(() => {
-    if (location.state)
-      setBvhUrl("http://127.0.0.1:5000/bvh/" + location.state.fileName);
+    if (location.state) {
+      // setBvhUrl("http://127.0.0.1:5000/bvh/" + location.state.fileName);
+      const updatedUrls = location.state.fileNames_list.map(
+        (fileName) => `http://127.0.0.1:5000/bvh/${fileName}`
+      );
+      setBvhUrlList(updatedUrls);    }
     else {
       setBvhUrl("https://raw.githubusercontent.com/CreativeInquiry/BVH-Examples/master/example-threejs/bvh/Jackson.bvh");
     }
   }, [location.state]);
 
   const togglePlayPause = () => {
-    setIsPlaying((prev) => !prev); // Toggle play/pause state
+    setIsPlaying((prev) => !prev);
   };
 
   const handleTimeChange = (e) => {
-    const newTime = parseFloat(e.target.value); // Update current time based on slider
-    setCurrentTime(newTime); // Update the slider state
+    const newTime = parseFloat(e.target.value);
+    setCurrentTime(newTime);
   };
 
   const handleDurationScroll = (isScrolling) => {
-    setIsScrolling(isScrolling); // Update scrolling state
+    setIsScrolling(isScrolling);
   };
 
   return (
@@ -40,31 +46,29 @@ const BVHScene = () => {
         <Canvas camera={{ position: [0, 100, 200], fov: 60 }}>
           <ambientLight intensity={0.8} />
           <directionalLight position={[10, 10, 10]} intensity={1} />
-          <BVHViewer
-            bvhUrl={bvhUrl}
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            onDurationSet={setDuration}
-            onTimeUpdate={setCurrentTime}
-            isScrolling={isScrolling}
-          />
-          {/* <BVHViewer
-            bvhUrl={bvhUrl2}
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            onDurationSet={setDuration}
-            onTimeUpdate={setCurrentTime}
-            isScrolling={isScrolling}
-          /> */}
-          <OrbitControls minDistance={50} maxDistance={300} />
+          {bvhUrlList.map((url, index) => {
+            return (
+              <BVHViewer
+                key={index}
+                bvhUrl={url}
+                isPlaying={isPlaying}
+                currentTime={currentTime}
+                onDurationSet={setDuration}
+                onTimeUpdate={setCurrentTime}
+                isScrolling={isScrolling}
+                rotation={rotation}
+              />
+            );
+          })}
+
+          <OrbitControls minDistance={10} maxDistance={300} />
         </Canvas>
       </div>
 
       <div className="flex flex-col gap-y-4 w-full lg:w-1/3">
+        <h1 className="font-bold text-center text-white">Animation Controls</h1>
 
-            <h1 className="font-bold text-center text-white">Animation Controls</h1>
-
-      {/* Play Pause Button & Slider */}
+        {/* Play/Pause Button & Slider */}
         <div className="flex flex-col items-center gap-y-2 w-full">
           <button
             onClick={togglePlayPause}
@@ -72,7 +76,7 @@ const BVHScene = () => {
           >
             {isPlaying ? "Pause" : "Play"}
           </button>
-          {/* Duration Scroller */}
+
           <div className="z-10 w-full">
             <input
               type="range"
@@ -81,10 +85,10 @@ const BVHScene = () => {
               step="0.01"
               value={currentTime}
               onChange={handleTimeChange}
-              onMouseDown={() => handleDurationScroll(true)} // Start scrolling
-              onMouseUp={() => handleDurationScroll(false)} // Stop scrolling
-              onTouchStart={() => handleDurationScroll(true)} // Start scrolling on touch
-              onTouchEnd={() => handleDurationScroll(false)} // Stop scrolling on touch
+              onMouseDown={() => handleDurationScroll(true)}
+              onMouseUp={() => handleDurationScroll(false)}
+              onTouchStart={() => handleDurationScroll(true)}
+              onTouchEnd={() => handleDurationScroll(false)}
               className="w-full"
             />
             <div className="flex justify-between mt-2 text-sm text-white">
@@ -94,6 +98,43 @@ const BVHScene = () => {
           </div>
         </div>
 
+        {/* Rotation Controls */}
+        <div className="bg-gray-800 p-4 rounded-md">
+          <h2 className="font-semibold text-center text-white">Rotation Controls</h2>
+
+          <label className="text-white">X Rotation: {rotation.x.toFixed(1)}°</label>
+          <input
+            type="range"
+            min="-180"
+            max="180"
+            step="1"
+            value={rotation.x}
+            onChange={(e) => setRotation({ ...rotation, x: parseFloat(e.target.value) })}
+            className="w-full"
+          />
+
+          <label className="text-white">Y Rotation: {rotation.y.toFixed(1)}°</label>
+          <input
+            type="range"
+            min="-180"
+            max="180"
+            step="1"
+            value={rotation.y}
+            onChange={(e) => setRotation({ ...rotation, y: parseFloat(e.target.value) })}
+            className="w-full"
+          />
+
+          <label className="text-white">Z Rotation: {rotation.z.toFixed(1)}°</label>
+          <input
+            type="range"
+            min="-180"
+            max="180"
+            step="1"
+            value={rotation.z}
+            onChange={(e) => setRotation({ ...rotation, z: parseFloat(e.target.value) })}
+            className="w-full"
+          />
+        </div>
       </div>
     </div>
   );
