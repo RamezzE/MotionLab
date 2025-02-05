@@ -9,3 +9,5 @@ best_64.12.pth
 linear_model.yaml
 mediapipe_skeleton.py
 *.bvh
+*.pt
+*.mp4
