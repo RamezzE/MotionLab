@@ -9,7 +9,6 @@ from mediapipe.tasks.python import vision
 from pathlib import Path
 from datetime import datetime
 from flask import jsonify
-import tempfile
 
 from utils.pose_estimator_3d import estimator_3d
 from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
@@ -48,58 +47,27 @@ OPENPOSE_CONNECTIONS_25 = [
 ]
 
 class PoseController:
-    def __init__(self, model_path='utils/pose_landmarker.task', config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
-    # def __init__(self, model_path='utils/pose_landmarker.task', config_file='utils/linear_model.yaml', checkpoint_file='utils/best_64.12.pth'):
+    def __init__(self, config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
         
         self.mediapipe_to_openpose = {
-            0: 0,
-            11: 5,
-            12: 2,
-            13: 6,
-            14: 3, 
-            # 13: 5, 
-            # 14: 2, 
-            # 15: 6, 
-            # 16: 3, 
-            17: 7, 
-            18: 4,
-            23: 12, 
-            24: 9, 
-            25: 13, 
-            26: 10, 
-            27: 14, 
-            28: 11,
-            31: 20, 
-            32: 23,
-            29: 19,
-            30: 22,
-            2: 16, 
-            5: 15, 
-            7: 18, 
-            8: 17,
-            # keypoints 21 = keypoints 14 & keypoints 24 = keypoints 11
-            # Neck [1] = (landmark 11 + landmark 12) / 2
-            # Mid Hip [8] = (landmark 23 + landmark 24) / 2
+            0: 0, 11: 5, 12: 2, 13: 6, 14: 3, 
+            # 13: 5, # 14: 2, # 15: 6, # 16: 3, 
+            17: 7, 18: 4, 23: 12,  24: 9,  
+            25: 13,  26: 10, 27: 14,
+            28: 11, 31: 20, 32: 23, 29: 19, 30: 22, 
+            2: 16, 5: 15, 7: 18, 8: 17,
         }
         
         self.img_width = 0
         self.img_height = 0
         self.fps = 30
-        # self.pose_detector = self._initialize_pose_detector(model_path)
-        self.estimator_3d = self._initialize_3D_pose_estimator(config_file, checkpoint_file)
         
+        # 2D Pose detector initialization
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose()
-        # self.mp_drawing = mp.solutions.drawing_utils
-
-    # MediaPipe 2D Pose detector initialization
-    def _initialize_pose_detector(self, model_path):
-        try:
-            base_options = python.BaseOptions(model_asset_path=model_path)
-            options = vision.PoseLandmarkerOptions(base_options=base_options, output_segmentation_masks=True)
-            return vision.PoseLandmarker.create_from_options(options)
-        except Exception as e:
-            raise RuntimeError(f"Error initializing pose detector: {e}")
+        
+        # 3D Pose Estimator initialization
+        self.estimator_3d = self._initialize_3D_pose_estimator(config_file, checkpoint_file)
 
     # 3D Pose Estimator initialization
     def _initialize_3D_pose_estimator(self, config_file, checkpoint_file):
@@ -120,30 +88,7 @@ class PoseController:
     @staticmethod
     def interpolate_joint(lm1, lm2):
         return [(lm1.x + lm2.x) / 2, (lm1.y + lm2.y) / 2, (lm1.z + lm2.z) / 2]
-    
-    # Validate the video file
-    @staticmethod
-    def validate_video_file(video, request_files):
-        if "video" not in request_files:
-            return False, "No video file provided"
 
-        if not video.filename.endswith(('.mp4', '.avi', '.mov', '.mkv')):
-            return False, "Unsupported video format"
-
-        return True, None
-    
-    # Function to save video temporarily
-    @staticmethod
-    def save_temp_video(video):
-        try:
-            temp_video = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-            temp_video.write(video.read())
-            temp_video_path = temp_video.name  # Get the file path
-            temp_video.close()
-            return temp_video_path
-        except Exception as e:
-            raise RuntimeError(f"Error saving temporary video: {e}")
-    
     # Function to draw keypoints on the frame
     @staticmethod
     def draw_openpose_keypoints(frame, keypoints):
@@ -158,6 +103,22 @@ class PoseController:
         
         return frame
     
+    # Align and scale 3D pose
+    @staticmethod
+    def align_and_scale_3d_pose(pose_3d):
+        rotation_matrix_x = np.array([
+            [1,  0,  0], 
+            [0, -1,  0], 
+            [0,  0, -1]   
+        ])
+        pose_3d = np.einsum('ij,klj->kli', rotation_matrix_x, pose_3d)
+
+        min_y = np.min(pose_3d[:, :, 1])
+        pose_3d[:, :, 1] += -min_y
+
+        pose_3d *= 0.05
+        return pose_3d
+
     # Open the video file and validate it
     def _open_video(self, file_path):
         if not os.path.exists(file_path):
@@ -263,21 +224,6 @@ class PoseController:
         except Exception as e:
             raise RuntimeError(f"Error in _estimate_3d_from_2d: {e}")
 
-    @staticmethod
-    def align_and_scale_3d_pose(pose_3d):
-        rotation_matrix_x = np.array([
-            [1,  0,  0], 
-            [0, -1,  0], 
-            [0,  0, -1]   
-        ])
-        pose_3d = np.einsum('ij,klj->kli', rotation_matrix_x, pose_3d)
-
-        min_y = np.min(pose_3d[:, :, 1])
-        pose_3d[:, :, 1] += -min_y
-
-        pose_3d *= 0.05
-        return pose_3d
-
     # Convert 3D pose to BVH format
     def _convert_3d_to_bvh(self, pose_3d, root_keypoints):
         try:
@@ -370,8 +316,6 @@ class PoseController:
             root_keypoints.append(avg_root.tolist())  # Store as list
             
         return root_keypoints
-
-        
             
     # Process the video file
     def process_video(self, temp_video_path):        
@@ -383,20 +327,13 @@ class PoseController:
             root_keypoints = self._get_root_keypoints(landmarks_list)
                         
             # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
-            print("Root points shape: ", np.array(root_keypoints).shape)
             points_3d = self._estimate_3d_from_2d(keypoints)
 
             corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
             
-            
             # self._visualize_3D_points(corrected_3d_points, connections=CMU_CONNECTIONS)
             
             bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, root_keypoints)
-            
-            # mediapipe_landmarks = self._get_mediapipe_landmarks(temp_video_path, visualize=False)
-            # self._visualize_3D_points(mediapipe_landmarks)
-            # print(mediapipe_landmarks.shape) 
-            # bvh_filename =  self._convert_3d_to_bvh(mediapipe_landmarks)
             
             return jsonify({
                 "success": True,
