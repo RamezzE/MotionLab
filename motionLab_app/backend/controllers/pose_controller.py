@@ -14,6 +14,8 @@ from utils.pose_estimator_3d import estimator_3d
 from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
 
 import matplotlib.pyplot as plt
+from ultralytics import YOLO
+
 # from mpl_toolkits.mplot3d import Axes3D
 CMU_CONNECTIONS = [
     (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), 
@@ -61,6 +63,9 @@ class PoseController:
         self.img_width = 0
         self.img_height = 0
         self.fps = 30
+        
+        # YOLO model initialization
+        # self.yolo_model = YOLO('yolov8n-pose.pt')
         
         # 2D Pose detector initialization
         self.mp_pose = mp.solutions.pose
@@ -116,7 +121,7 @@ class PoseController:
         min_y = np.min(pose_3d[:, :, 1])
         pose_3d[:, :, 1] += -min_y
 
-        pose_3d *= 0.05
+        pose_3d *= 0.025
         return pose_3d
 
     # Open the video file and validate it
@@ -280,7 +285,7 @@ class PoseController:
         root_keypoints = []
 
         # Relevant keypoints for stable root motion
-        relevant_indices = [23, 24, 25, 26, 27, 28]  # Hips, knees, ankles
+        relevant_indices = [11, 12, 23, 24, 25, 26]  # Hips, knees, ankles
         num_keypoints = len(relevant_indices)  # Expected number of keypoints per frame
         default_value = [0.0, 0.0, 0.0]  # Default value if no previous frame exists
 
@@ -335,14 +340,118 @@ class PoseController:
             
             bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, root_keypoints)
             
-            return jsonify({
-                "success": True,
-                "bvh_filename": bvh_filename,
-            }), 200
+            # return jsonify({
+            #     "success": True,
+            #     "bvh_filename": bvh_filename,
+            # }), 200
             
+            return bvh_filename
         except Exception as e:
             print(f"Error in process_video: {e}")
             return jsonify({"success": False, "error": str(e)}), 500
         finally:
             if temp_video_path and os.path.exists(temp_video_path):
                 os.remove(temp_video_path)  # Ensure file cleanup
+
+    def multiple_human_segmentation(self, video_path):
+        
+        try:
+            # self.yolo_model = YOLO('yolo11m-pose.pt')
+            self.yolo_model = YOLO('yolo11s-pose.pt')
+            # self.yolo_model = YOLO('yolo11n.pt')
+            writers = {}
+            self.output_video_paths = []
+            # Create an output folder
+            output_folder = 'output_videos'
+            
+            cap = self._open_video(video_path)
+            
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            
+            pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
+            
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                
+                self.img_height, self.img_width = frame.shape[:2]
+                
+                self._process_YOLO_frame(writers, frame, output_folder, "utils/bytetrack.yaml")
+            
+            cap.release()
+            for writer in writers.values():
+                writer.release()
+                
+            cv2.destroyAllWindows()
+            
+            bvh_filenames = []
+            
+            for video_path in self.output_video_paths:
+                cap = cv2.VideoCapture(video_path)
+                frames_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                cap.release()
+
+                if frames_num < 0.4 * total_frames:
+                    os.remove(video_path)
+                    continue
+
+                print("Processing video:", video_path)
+                bvh_filename = self.process_video(video_path)
+                bvh_filenames.append(bvh_filename)
+                
+            print("BVH filenames:", bvh_filenames)
+            return jsonify({"success": True, "bvh_filenames": bvh_filenames}), 200
+            
+        except Exception as e:
+            print(f"Error in _multiple_human_segmentation: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+        
+    def _process_YOLO_frame(self, writers, frame, output_folder, tracker_path):
+        try:            
+            
+            results = self.yolo_model.track(frame, persist = True, tracker = tracker_path)
+            
+            for result in results:
+                boxes = result.boxes.xyxy
+                labels = result.boxes.cls
+                confidences = result.boxes.conf
+                
+                if len(boxes) == 0:
+                    continue
+                
+                for i, box in enumerate(boxes):
+                    x1, y1, x2, y2 = box
+                    confidence = confidences[i]
+                    
+                    bbox_area = abs(x2 - x1) * abs(y2 - y1)  # Compute bounding box area
+                    image_area = self.img_width * self.img_height  # Total image area
+
+                    if bbox_area < 0.05 * image_area:  # Adjust the threshold as needed
+                        continue
+                    
+                    if labels[i] == 0 and confidence > 0.7:
+                        black_background = np.zeros_like(frame)
+                        person_frame = frame[int(y1):int(y2), int(x1):int(x2)]  # Crop the person
+                        black_background[int(y1):int(y2), int(x1):int(x2)] = person_frame  # Paste on black background
+                        person_id = int(result.boxes.id[i])  # Get tracking ID
+                        
+                        if person_id not in writers:
+                            writers[person_id], output_video_path = self._initialize_video_writer(person_id, output_folder)
+                            self.output_video_paths.append(output_video_path)
+                            
+                        # Write the processed frame to the corresponding VideoWriter object
+                        writers[person_id].write(black_background)
+            
+        except Exception as e:
+            print(f"Error in _process_YOLO_frame: {e}")
+            raise RuntimeError(f"Error in _process_YOLO_frame: {e}")
+                    
+    def _initialize_video_writer(self, person_id, output_folder):
+        """
+        Initializes a VideoWriter object for the given person_id.
+        """
+        output_video_path = os.path.join(output_folder, f'person_{person_id}.mp4')
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        writer = cv2.VideoWriter(output_video_path, fourcc, self.fps, (self.img_width, self.img_height))
+        return writer, output_video_path

@@ -110,8 +110,6 @@ class CMUSkeleton(object):
             'LeftForeArm': ['LeftHand'],
             # 'LeftHand': ['LeftHandEndSite'],
             
-            
-            
             # 'LeftHandEndSite': [],
             'Neck': ['Neck1'],
             'Neck1': ['HeadEndSite'],
@@ -278,8 +276,6 @@ class CMUSkeleton(object):
             "RightPinky": [-1, 0, -0.2],
             "RightPinkyMid": [-1, 0, -0.15],
             "RightPinkyTip": [-1, 0, -0.13]
-        
-
     }
 
     def get_initial_offset(self, poses_3d):
@@ -308,7 +304,7 @@ class CMUSkeleton(object):
                         'Pinky': [2.5, 2.0, 1.5]    
                     }
                     
-                    scale = 0.75
+                    scale = 0.5
 
                     for finger, lengths in finger_lengths.items():
                         if finger in child:
@@ -422,6 +418,8 @@ class CMUSkeleton(object):
             if node.is_root:
                 self.counter += 1
                 MAX_X = 50
+                # MAX_X = 100
+                # MAX_X = 30
                 MAX_Y = 50
                 MIN_Y = 0
                 
@@ -430,6 +428,7 @@ class CMUSkeleton(object):
                                 
                 x = ((self.root_positions[self.counter][0] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_X - -MAX_X) + -MAX_X
                 y = ((self.root_positions[self.counter][1] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_Y - MIN_Y) + MIN_Y
+                # z = ((self.root_positions[self.counter][2] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (50 - 0) + 0
                 pos = [x, y, 0]
                 channel.extend(pos)
 

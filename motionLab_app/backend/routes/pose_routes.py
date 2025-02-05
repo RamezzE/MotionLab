@@ -41,7 +41,8 @@ def process_video_route():
 
         # Process the video
         print("Processing the video...")
-        response = pose_controller.process_video(temp_video_path)
+        # response = pose_controller.process_video(temp_video_path)
+        response = pose_controller.multiple_human_segmentation(temp_video_path)
 
         return response
     except Exception as e:
