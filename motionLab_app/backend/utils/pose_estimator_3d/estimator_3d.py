@@ -1,6 +1,6 @@
 from .model.factory import create_model
 from .dataset.wild_pose_dataset import WildPoseDataset
-
+import mediapipe as mp
 import numpy as np
 import pprint
 import torch
@@ -8,6 +8,7 @@ import torch.utils.data
 import yaml
 from easydict import EasyDict
 from pathlib import Path
+import cv2
 
 class Estimator3D(object):
     """Base class of 3D human pose estimator."""
@@ -31,9 +32,13 @@ class Estimator3D(object):
         print(f'=> Use device {self.device}.')
         self.model.to(self.device)
 
-    def estimate(self, poses_2d, image_width, image_height):
-        # Estimation logic remains the same
-        ...
+        # Initialize MediaPipe Hands
+        self.mp_hands = mp.solutions.hands.Hands(
+            static_image_mode=False,
+            max_num_hands=2,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        )
 
     def estimate(self, poses_2d, image_width, image_height):
         # pylint: disable=no-member
@@ -79,3 +84,100 @@ class Estimator3D(object):
                 print(f'{frame} / {poses_2d.shape[0]}')
         
         return poses_3d
+
+    def process_hands(self, frame):
+        """Process hand landmarks using MediaPipe"""
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = self.mp_hands.process(frame_rgb)
+        
+        hand_landmarks = {
+            'left': None,
+            'right': None
+        }
+        
+        if results.multi_hand_landmarks:
+            for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
+                hand_side = handedness.classification[0].label.lower()
+                hand_landmarks[hand_side] = np.array([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark])
+        
+        return hand_landmarks
+
+    def combine_body_hands(self, body_pose_3d, hand_landmarks):
+        """Combine body pose with hand landmarks"""
+        # MediaPipe hand landmark indices:
+        # 0: Wrist
+        # 1-4: Thumb (1=base, 4=tip)
+        # 5-8: Index finger (5=base, 8=tip)
+        # 9-12: Middle finger (9=base, 12=tip)
+        # 13-16: Ring finger (13=base, 16=tip)
+        # 17-20: Pinky finger (17=base, 20=tip)
+        
+        HAND_MAPPING = {
+            'left': {
+                'LeftThumb': 1,      # Base of thumb
+                'LeftThumbMid': 2,   # Middle of thumb
+                'LeftThumbTip': 4,   # Tip of thumb
+                
+                'LeftIndex': 5,      # Base of index
+                'LeftIndexMid': 6,   # Middle of index
+                'LeftIndexTip': 8,   # Tip of index
+                
+                'LeftMiddle': 9,     # Base of middle
+                'LeftMiddleMid': 10, # Middle of middle
+                'LeftMiddleTip': 12, # Tip of middle
+                
+                'LeftRing': 13,      # Base of ring
+                'LeftRingMid': 14,   # Middle of ring
+                'LeftRingTip': 16,   # Tip of ring
+                
+                'LeftPinky': 17,     # Base of pinky
+                'LeftPinkyMid': 18,  # Middle of pinky
+                'LeftPinkyTip': 20,  # Tip of pinky
+            },
+            'right': {
+                'RightThumb': 1,
+                'RightThumbMid': 2,
+                'RightThumbTip': 4,
+                
+                'RightIndex': 5,
+                'RightIndexMid': 6,
+                'RightIndexTip': 8,
+                
+                'RightMiddle': 9,
+                'RightMiddleMid': 10,
+                'RightMiddleTip': 12,
+                
+                'RightRing': 13,
+                'RightRingMid': 14,
+                'RightRingTip': 16,
+                
+                'RightPinky': 17,
+                'RightPinkyMid': 18,
+                'RightPinkyTip': 20,
+            }
+        }
+
+        # Create a copy of the body pose to modify
+        combined_pose = body_pose_3d.copy()
+
+        # Process left hand
+        if hand_landmarks['left'] is not None:
+            landmarks = hand_landmarks['left']
+            for joint_name, mp_idx in HAND_MAPPING['left'].items():
+                # Get the corresponding index in your skeleton
+                skeleton_idx = self.keypoint2index.get(joint_name, -1)
+                if skeleton_idx != -1:  # If this joint exists in your skeleton
+                    # Convert MediaPipe coordinates to your coordinate system
+                    pos = landmarks[mp_idx] * 1000  # Scale to millimeters
+                    combined_pose[skeleton_idx] = pos
+
+        # Process right hand
+        if hand_landmarks['right'] is not None:
+            landmarks = hand_landmarks['right']
+            for joint_name, mp_idx in HAND_MAPPING['right'].items():
+                skeleton_idx = self.keypoint2index.get(joint_name, -1)
+                if skeleton_idx != -1:
+                    pos = landmarks[mp_idx] * 1000
+                    combined_pose[skeleton_idx] = pos
+
+        return combined_pose

@@ -1,7 +1,6 @@
 from django.db import models
-
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -9,13 +8,19 @@ class UserManager(BaseUserManager):
             raise ValueError("The Email field is required")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        user.password = password
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_admin", True)
+        extra_fields.setdefault("is_active", True)
+
+        if not extra_fields.get("is_admin"):
+            raise ValueError("Superuser must have is_admin=True.")
+
         return self.create_user(email, password, **extra_fields)
+
 
 class User(AbstractBaseUser):
     email = models.EmailField(unique=True)
@@ -31,6 +36,11 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    @property
+    def is_staff(self):
+        return self.is_admin
+
 
 class Video(models.Model):
     title = models.CharField(max_length=255)

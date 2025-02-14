@@ -12,20 +12,35 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-ti2yu64a86b*^eq1fsar*k92gz7_=z^gcxr!ps65o*r0bsuf(a'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+import json
+
+import os
+
+MEDIA_URL = '/uploads/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads') 
+
+
+
+
+
+class DebugMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            print(f"Raw Request Body: {request.body.decode('utf-8')}")
+        except Exception as e:
+            print(f"Error decoding request body: {e}")
+        return self.get_response(request)
+
 
 
 # Application definition

@@ -9,6 +9,7 @@ from mediapipe.tasks.python import vision
 from pathlib import Path
 from datetime import datetime
 from flask import jsonify
+import traceback
 
 from utils.pose_estimator_3d import estimator_3d
 from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
@@ -239,14 +240,63 @@ class PoseController:
             bvh_file_name = f'bvh_{timestamp}.bvh'
             bvh_file = bvh_output_dir / bvh_file_name
             
-            print(pose_3d.shape)
+            print("\nStarting BVH conversion:")
+            print(f"Original pose_3d shape: {pose_3d.shape}")
             
-            cmu_skeleton.CMUSkeleton().poses2bvh(pose_3d, output_file=bvh_file, fps=self.fps, root_keypoints=root_keypoints)
+            # Initialize CMU skeleton
+            skeleton = cmu_skeleton.CMUSkeleton()
+            
+            # Get number of active joints (excluding -1 indices)
+            active_joints = len([v for v in skeleton.keypoint2index.values() if v >= 0])
+            print(f"Expected active joints in skeleton: {active_joints}")
+            
+            # Create expanded pose array to include hand joints
+            expanded_pose = np.zeros((pose_3d.shape[0], active_joints, 3))
+            
+            # Copy existing body joint data (0-16)
+            body_joint_count = min(pose_3d.shape[1], 17)  # First 17 joints are body joints
+            expanded_pose[:, :body_joint_count] = pose_3d[:, :body_joint_count]
+            
+            # For hand joints (17 onwards), initialize from wrist positions
+            if body_joint_count >= 17:
+                # Left hand initialization (using left wrist as reference)
+                left_wrist_idx = skeleton.keypoint2index['LeftHand']
+                left_wrist_pos = pose_3d[:, left_wrist_idx]
+                
+                # Initialize left hand joints relative to wrist
+                for joint_name, idx in skeleton.keypoint2index.items():
+                    if idx >= 17 and idx <= 31:  # Left hand joint range
+                        expanded_pose[:, idx] = left_wrist_pos
+                
+                # Right hand initialization (using right wrist as reference)
+                right_wrist_idx = skeleton.keypoint2index['RightHand']
+                right_wrist_pos = pose_3d[:, right_wrist_idx]
+                
+                # Initialize right hand joints relative to wrist
+                for joint_name, idx in skeleton.keypoint2index.items():
+                    if idx >= 32:  # Right hand joint range
+                        expanded_pose[:, idx] = right_wrist_pos
+            
+            print(f"Expanded pose_3d shape: {expanded_pose.shape}")
+            
+            # Convert to BVH
+            skeleton.poses2bvh(
+                poses_3d=expanded_pose,
+                output_file=bvh_file,
+                fps=self.fps,
+                root_keypoints=root_keypoints
+            )
             
             print(f"BVH file saved: {bvh_file_name}")
             return bvh_file_name
+            
         except Exception as e:
             print(f"Error in _convert_3d_to_bvh: {e}")
+            print(f"pose_3d type: {type(pose_3d)}")
+            print(f"pose_3d shape: {pose_3d.shape if hasattr(pose_3d, 'shape') else 'no shape'}")
+            if isinstance(pose_3d, np.ndarray):
+                print(f"pose_3d non-zero elements: {np.count_nonzero(pose_3d)}")
+                print(f"pose_3d min: {np.min(pose_3d)}, max: {np.max(pose_3d)}")
             raise RuntimeError(f"Error in _convert_3d_to_bvh: {e}")
         
     def _visualize_3D_points(self, points_3d, connections=None):
@@ -323,35 +373,64 @@ class PoseController:
         return root_keypoints
             
     # Process the video file
-    def process_video(self, temp_video_path):        
+    def process_video(self, video_path):
         try:
-            cap = self._open_video(temp_video_path)
+            print("Starting video processing...")
+            # Get video info
+            cap = cv2.VideoCapture(str(video_path))
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            self.fps = int(cap.get(cv2.CAP_PROP_FPS))
             
-            keypoints, pose_world_keypoints, landmarks_list = self._get_keypoints_list(cap, visualize=False)
+            print(f"Video dimensions: {frame_width}x{frame_height}, FPS: {self.fps}")
             
-            root_keypoints = self._get_root_keypoints(landmarks_list)
-                        
-            # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
-            points_3d = self._estimate_3d_from_2d(keypoints)
-
-            corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
+            # Process frames
+            frames = []
+            poses_2d = []
+            root_keypoints = []
             
-            # self._visualize_3D_points(corrected_3d_points, connections=CMU_CONNECTIONS)
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frames.append(frame)
+                
+            cap.release()
+            print(f"Processed {len(frames)} frames")
             
-            bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, root_keypoints)
+            # Get 2D poses
+            for frame in frames:
+                pose = self._process_frame(frame, visualize=False)
+                if pose is not None:
+                    poses_2d.append(pose[0])
+                    root_keypoints.append(pose[0][0])  # Assuming first keypoint is root
             
-            # return jsonify({
-            #     "success": True,
-            #     "bvh_filename": bvh_filename,
-            # }), 200
+            poses_2d = np.array(poses_2d)
+            root_keypoints = np.array(root_keypoints)
             
+            print(f"2D poses shape: {poses_2d.shape}")
+            print(f"Root keypoints shape: {root_keypoints.shape}")
+            
+            # Get 3D poses
+            pose_3d = self._estimate_3d_from_2d(poses_2d)
+            print(f"3D poses shape after estimation: {pose_3d.shape}")
+            
+            # Verify pose_3d data
+            if pose_3d.size == 0:
+                raise ValueError("pose_3d is empty after estimation")
+            
+            if not isinstance(pose_3d, np.ndarray):
+                pose_3d = np.array(pose_3d)
+                print(f"Converted pose_3d to numpy array, new shape: {pose_3d.shape}")
+            
+            # Convert to BVH
+            bvh_filename = self._convert_3d_to_bvh(pose_3d, root_keypoints)
             return bvh_filename
+            
         except Exception as e:
             print(f"Error in process_video: {e}")
-            return jsonify({"success": False, "error": str(e)}), 500
-        finally:
-            if temp_video_path and os.path.exists(temp_video_path):
-                os.remove(temp_video_path)  # Ensure file cleanup
+            print(f"Stack trace: {traceback.format_exc()}")
+            raise RuntimeError(f"Error in process_video: {e}")
 
     def multiple_human_segmentation(self, video_path):
         
