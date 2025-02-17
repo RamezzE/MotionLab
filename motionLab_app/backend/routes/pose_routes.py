@@ -43,13 +43,14 @@ def process_video_route():
         temp_video_path = save_temp_video(video)
         
         print("Creating project...")
-        print(ProjectController.create_project({"projectName": project_name, "userId": user_id}))
-        
+        project = ProjectController.create_project({"projectName": project_name, "userId": user_id})
+        project = project.to_dict()
+        print("Project created:", project)
         # Process the video
         print("Processing the video...")
         # response = pose_controller.process_video(temp_video_path)
-        response = pose_controller.multiple_human_segmentation(temp_video_path)
-
-        return response
+        bvh_filenames = pose_controller.multiple_human_segmentation(temp_video_path, project["id"])
+                
+        return jsonify({"success": True, "bvh_filenames": bvh_filenames}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

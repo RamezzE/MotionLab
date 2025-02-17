@@ -7,8 +7,7 @@ class ProjectController:
         project_name = data["projectName"]
         user_id = data["userId"]
         
-        project = Project.create(project_name, user_id)
-        return {"success": True, "project": project.to_dict()}
+        return Project.create(project_name, user_id)
     
     @staticmethod
     def get_project_by_id(project_id):

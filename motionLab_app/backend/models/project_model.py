@@ -21,8 +21,9 @@ class Project(db.Model):
             "creation_date": self.creation_date
         }
         
-    def get_project_by_id(cls, project_id):
-        return cls.query.get(project_id)
+    @staticmethod
+    def get_project_by_id(project_id):
+        return Project.query.get(project_id)
     
     @staticmethod
     def get_projects_by_user_id(user_id):
