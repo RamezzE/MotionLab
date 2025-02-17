@@ -11,3 +11,13 @@ export const getProjectsByUser = async (userId) => {
         return { success: false, data: error.message };
     }
 };
+
+export const deleteProjectById = async (projectId, userId) => {
+    try {
+        const response = await axios.delete(`${BASE_URL}/project/delete-project?projectId=${projectId}&userId=${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting project:", error.message);
+        return { success: false, data: error.message };
+    }
+}
