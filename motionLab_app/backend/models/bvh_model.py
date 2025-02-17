@@ -12,6 +12,15 @@ class BVH(db.Model):
         db.session.commit()
         return bvh
     
+    @staticmethod
+    def delete_bvhs_by_project_id(project_id):
+        bvh_files = BVH.query.filter_by(project_id=project_id).all()
+        bvh_paths = [bvh.path for bvh in bvh_files]
+        for bvh in bvh_files:
+            db.session.delete(bvh)
+        db.session.commit()
+        return bvh_paths
+    
     def get_by_id(bvh_id):
         return BVH.query.get(bvh_id)
     

@@ -13,6 +13,17 @@ class Project(db.Model):
         db.session.commit()
         return project
     
+    @staticmethod
+    def delete_project_by_id(project_id, user_id):
+        """Deletes a project by its ID && its user id."""
+        project = Project.get_project_by_id(project_id)
+        project_dict = project.to_dict()
+        if project and str(project_dict["user_id"]) == user_id:
+            db.session.delete(project)
+            db.session.commit()
+            return True
+        return False
+    
     def to_dict(self):
         return {
             "id": self.id,

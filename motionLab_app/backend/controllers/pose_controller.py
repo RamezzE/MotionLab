@@ -16,8 +16,6 @@ from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 
-from controllers.BVH_controller import BVHController
-
 # from mpl_toolkits.mplot3d import Axes3D
 CMU_CONNECTIONS = [
     (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), 
@@ -355,8 +353,7 @@ class PoseController:
             if temp_video_path and os.path.exists(temp_video_path):
                 os.remove(temp_video_path)  # Ensure file cleanup
 
-    def multiple_human_segmentation(self, video_path, project_id):
-        print("Project id in multiple_human_segmentation:", project_id)
+    def multiple_human_segmentation(self, video_path):
         try:
             # self.yolo_model = YOLO('yolo11m-pose.pt')
             self.yolo_model = YOLO('yolo11s-pose.pt')
@@ -401,15 +398,8 @@ class PoseController:
                 print("Processing video:", video_path)
                 bvh_filename = self.process_video(video_path)
                 bvh_filenames.append(bvh_filename)
-                
-            print("BVH filenames:", bvh_filenames)
             
-            if(BVHController.create_bvhs(bvh_filenames, project_id)):
-                print("BVHs records created successfully")
-            else:
-                print("Error creating BVHs records")
-            
-            return bvh_filenames
+            return True, bvh_filenames
             
         except Exception as e:
             print(f"Error in _multiple_human_segmentation: {e}")

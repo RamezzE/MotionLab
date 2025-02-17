@@ -1,4 +1,5 @@
 from models.bvh_model import BVH
+import os
 
 class BVHController:
     
@@ -18,6 +19,17 @@ class BVHController:
             for filename in filenames:
                 BVH.create(filename, project_id)
             
+            return True
+        except Exception as e:
+            return False
+        
+    @staticmethod
+    def delete_bvhs_by_project_id(project_id):
+        try:
+            bvh_filenames = BVH.delete_bvhs_by_project_id(project_id)
+            for filename in bvh_filenames:
+                os.remove(os.path.join("BVHs", filename))
+                
             return True
         except Exception as e:
             return False

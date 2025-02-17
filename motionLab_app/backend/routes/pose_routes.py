@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from controllers.pose_controller import PoseController
 from controllers.project_controller import ProjectController
+from controllers.BVH_controller import BVHController
 import tempfile
 
 pose_bp = Blueprint("pose", __name__)
@@ -45,12 +46,19 @@ def process_video_route():
         print("Creating project...")
         project = ProjectController.create_project({"projectName": project_name, "userId": user_id})
         project = project.to_dict()
-        print("Project created:", project)
+        
         # Process the video
         print("Processing the video...")
         # response = pose_controller.process_video(temp_video_path)
-        bvh_filenames = pose_controller.multiple_human_segmentation(temp_video_path, project["id"])
-                
-        return jsonify({"success": True, "bvh_filenames": bvh_filenames}), 200
+        success, bvh_filenames = pose_controller.multiple_human_segmentation(temp_video_path)
+        
+        # Create BVH files
+        print("Creating BVH files...")
+        BVHController.create_bvhs(bvh_filenames, project["id"])
+        
+        if success:
+            return jsonify({"success": True, "bvh_filenames": bvh_filenames}), 200
+        else:
+            return jsonify({"success": False, "error": "Error processing video"}), 500
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
