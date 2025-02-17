@@ -83,6 +83,7 @@ const UploadPage = () => {
         settings={settings}
         setSettings={setSettings}
         error={settingsError}
+        loading={loading}
       />
 
     </div>
