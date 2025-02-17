@@ -5,6 +5,7 @@ import UploadVideoSection from "./Sections/UploadVideoSection";
 import UploadVideoSettingsSection from "./Sections/UploadVideoSettingsSection";
 
 import { validateProjectSettings } from "../../../utils/validateProjectSettings";
+import useUserStore from "../../../store/useUserStore";
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
@@ -20,6 +21,8 @@ const UploadPage = () => {
 
   const [settingsError, setSettingsError] = useState(null);
   const [uploadError, setUploadError] = useState(null);
+
+  const { user } = useUserStore();
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -40,11 +43,16 @@ const UploadPage = () => {
       return false;
     }
 
+    if (!user || !user.id) {
+      alert("User ID not found.");
+      return;
+    }
+
     setTimeout(() => {
       setLoading(true);
     }, 1500);
 
-    const response = await uploadVideo(file, (progress) => {
+    const response = await uploadVideo(file, settings.projectName, user.id, (progress) => {
       setProgress(progress);
     });
 

@@ -17,6 +17,8 @@ import ContactPage from "../pages/User/Contact"
 import FeaturesPage from "../pages/User/Features"
 import BVHScene from "../pages/User/Upload/BVHScene";
 
+import Projects from "../pages/User/Profile/Projects/Projects";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -54,13 +56,6 @@ const router = createBrowserRouter([
             path: "features",
             element: <FeaturesPage />,
           },
-        // ],
-      // },
-
-      // {
-        // path: "/",
-        // element: <AuthLayout />,
-        // children: [
           {
             path: "login",
             element: <LoginPage />,
@@ -69,6 +64,15 @@ const router = createBrowserRouter([
             path: "signup",
             element: <SignUpPage />,
           },
+          {
+            path: "profile",
+            children: [
+              {
+                path: "projects",
+                element: <Projects />,
+              }
+            ]
+          }
         ],
       },
     ],
