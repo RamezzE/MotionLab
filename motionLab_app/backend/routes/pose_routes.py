@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from controllers.pose_controller import PoseController
+from controllers.project_controller import ProjectController
 import tempfile
 
 pose_bp = Blueprint("pose", __name__)
@@ -27,7 +28,9 @@ def save_temp_video(video):
 @pose_bp.route("/process-video", methods=["POST"])
 def process_video_route():
     video = request.files.get("video")
-
+    project_name = request.form.get("projectName")
+    user_id = request.form.get("userId")
+    
     # Validate the video file
     print("Validating video file...")
     is_valid, error_message = validate_video_file(video, request.files)
@@ -38,7 +41,10 @@ def process_video_route():
         # Save the file temporarily
         print("Saving the video file temporarily...")
         temp_video_path = save_temp_video(video)
-
+        
+        print("Creating project...")
+        print(ProjectController.create_project({"projectName": project_name, "userId": user_id}))
+        
         # Process the video
         print("Processing the video...")
         # response = pose_controller.process_video(temp_video_path)

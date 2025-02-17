@@ -5,7 +5,7 @@ from pathlib import Path
 from flask_cors import CORS
 
 from database import SQLALCHEMY_CONFIG, init_db, db
-from routes import auth_bp, pose_bp  # Import the Blueprints
+from routes import auth_bp, pose_bp, project_bp  # Import the Blueprints
 
 def create_app():
     app = Flask(__name__)
@@ -20,6 +20,7 @@ def create_app():
     
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(pose_bp, url_prefix="/pose")
+    app.register_blueprint(project_bp, url_prefix="/project")
     
     return app
 
