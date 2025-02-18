@@ -160,7 +160,6 @@ class PoseUtils:
             
         return root_keypoints
     
-    
     @staticmethod
     def initialize_3D_pose_estimator(config_file, checkpoint_file):
         try:
@@ -175,3 +174,11 @@ class PoseUtils:
             return e3d
         except Exception as e:
             raise RuntimeError(f"Error initializing Estimator3D: {e}")
+        
+    @staticmethod
+    def estimate_3d_from_2d(keypoints_list, estimator_3d, img_width, img_height):
+        try:
+            pose2d = np.stack(keypoints_list)[:, :, :2]
+            return estimator_3d.estimate(pose2d, image_width=img_width, image_height=img_height)
+        except Exception as e:
+            raise RuntimeError(f"Error in estimate_3d_from_2d: {e}")

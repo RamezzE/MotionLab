@@ -6,6 +6,7 @@ import mediapipe as mp
 from flask import jsonify
 
 from utils import VideoUtils, PoseUtils, BVHUtils, ObjectDetectionUtils, DrawingUtils
+from services import PoseProcessingService
 from ultralytics import YOLO
 
 class PoseController:
@@ -21,42 +22,17 @@ class PoseController:
         
         # 3D Pose Estimator initialization
         self.estimator_3d = PoseUtils.initialize_3D_pose_estimator(config_file, checkpoint_file)
-
-    # Estimate 3D pose from 2D keypoints list
-    def _estimate_3d_from_2d(self, keypoints_list):
-        try:
-            pose2d = np.stack(keypoints_list)[:, :, :2]
-            return self.estimator_3d.estimate(pose2d, image_width=self.img_width, image_height=self.img_height)
-        except Exception as e:
-            raise RuntimeError(f"Error in _estimate_3d_from_2d: {e}")
+    
             
     # Process the video file
     def process_video(self, temp_video_path):        
         try:
-            cap = VideoUtils.open_video(temp_video_path)
-            self.fps = VideoUtils.get_video_fps(cap)
-            self.img_width, self.img_height = VideoUtils.get_video_dimensions(cap)
+            bvh_filename = PoseProcessingService.convert_video_to_bvh(temp_video_path, self.pose, self.estimator_3d)
+            if bvh_filename:
+                return bvh_filename
             
-            keypoints, pose_world_keypoints, landmarks_list = PoseUtils.get_keypoints_list(cap, self.pose, self.img_width, self.img_height)
-            
-            # DrawingUtils.visualize_openpose_keypoints(cap, keypoints, self.img_height)
-            
-            root_keypoints = PoseUtils.get_root_keypoints(landmarks_list)
-                        
-            points_3d = self._estimate_3d_from_2d(keypoints)
-
-            corrected_3d_points = PoseUtils.align_and_scale_3d_pose(points_3d)
-            
-            # DrawingUtils.visualize_3D_points(corrected_3d_points, connections=DrawingUtils.CMU_CONNECTIONS)
-            
-            bvh_filename =  BVHUtils.convert_3d_to_bvh(corrected_3d_points, root_keypoints, self.fps)
-            cap.release()
-            # return jsonify({
-            #     "success": True,
-            #     "bvh_filename": bvh_filename,
-            # }), 200
-            
-            return bvh_filename
+            return None
+        
         except Exception as e:
             print(f"Error in process_video: {e}")
             return jsonify({"success": False, "error": str(e)}), 500
@@ -88,7 +64,9 @@ class PoseController:
                 
                 self.img_height, self.img_width = frame.shape[:2]
                 
-                self._process_YOLO_frame(writers, frame, output_folder, "utils/bytetrack.yaml")
+                # self._process_YOLO_frame(writers, frame, output_folder, "utils/bytetrack.yaml")
+                cropped_people = ObjectDetectionUtils.detect_and_crop_people(self.yolo_model, frame, "utils/bytetrack.yaml", self.img_width, self.img_height)
+                VideoUtils.write_cropped_people(writers, cropped_people, output_folder, self.fps, (self.img_width, self.img_height), self.output_video_paths)
             
             cap.release()
             for writer in writers.values():
@@ -99,7 +77,6 @@ class PoseController:
             bvh_filenames = []
             
             for video_path in self.output_video_paths:
-                print("Or is the problem ehre")
                 cap = cv2.VideoCapture(video_path)
                 frames_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
                 cap.release()
@@ -111,24 +88,9 @@ class PoseController:
                 print("Processing video:", video_path)
                 bvh_filename = self.process_video(video_path)
                 bvh_filenames.append(bvh_filename)
-                print("Is the problem here?")
             
             return True, bvh_filenames
             
         except Exception as e:
             print(f"Error in _multiple_human_segmentation: {e}")
             return jsonify({"success": False, "error": str(e)}), 500
-        
-    def _process_YOLO_frame(self, writers, frame, output_folder, tracker_path):
-        try:
-            cropped_people = ObjectDetectionUtils.detect_and_crop_people(
-                self.yolo_model, frame, tracker_path, self.img_width, self.img_height
-            )
-
-            VideoUtils.write_cropped_people(
-                writers, cropped_people, output_folder, self.fps, (self.img_width, self.img_height), self.output_video_paths
-            )
-
-        except Exception as e:
-            print(f"Error in _process_YOLO_frame: {e}")
-            raise RuntimeError(f"Error in _process_YOLO_frame: {e}")
