@@ -1,56 +1,51 @@
-from models.project_model import Project
-from controllers.BVH_controller import BVHController
+from services import ProjectService
+from flask import jsonify
 
 class ProjectController:
     
     @staticmethod
-    def create_project(data):
-        try:
-            project_name = data["projectName"]
-            user_id = data["userId"]
-            
-            return Project.create(project_name, user_id)
-        except Exception as e:
-            print(f"Error in create_project: {e}")
-            return None
-    
-    @staticmethod
-    def get_projects_by_user_id(user_id):
-        try:
-            projects = Project.get_projects_by_user_id(user_id)
-            if projects is None:
-                return {"success": False, "message": "No projects found"}
-            
-            return {"success": True, "projects": [project.to_dict() for project in projects]}
-        except Exception as e:
-            return {"success": False, "message": str(e)}
+    def get_projects_by_user_id(request):
+        
+        user_id = request.args.get("userId")
+        if not user_id:
+            return {"success": False, "message": "Missing userId parameter"}
+        
+        projects = ProjectService.get_projects_by_user_id(user_id)
+        if projects:
+            return jsonify({"success": True, "projects": projects}), 200
+        
+        return jsonify({"success": False, "message": "No projects found"}), 404
         
     @staticmethod
-    def delete_project(project_id, user_id):
-        try:
-            if (Project.delete_project_by_id(project_id, user_id)):
-                BVHController.delete_bvhs_by_project_id(project_id)
-            else:
-                return {"success": False, "message": "Project not found"}
-            
-            return {"success": True, "message": "Project deleted successfully"}
-        except Exception as e:
-            return {"success": False, "message": str(e)}
+    def delete_project(request):
+        project_id = request.args.get("projectId")
+        user_id = request.args.get("userId")
+        
+        if not project_id:
+            return jsonify({"success": False, "message": "Missing projectId parameter"}), 400
+        
+        if not user_id:
+            return jsonify({"success": False, "message": "Missing userId parameter"}), 400
+        
+        bool_val, message = ProjectService.delete_project(project_id, user_id)
+        
+        if bool_val:
+            return jsonify({"success": True, "message": message}), 200
+        
+        return jsonify({"success": False, "message": message}), 400
         
     @staticmethod
-    def get_bvh_filenames(project_id, user_id):
-        try:
-            project = Project.get_project_by_id(project_id)
-            project_dict = project.to_dict()
-
-            if str(project_dict["user_id"]) != str(user_id):
-                return {"success": False, "message": "Unauthorized"}
-            
-            bvh_dicts = BVHController.get_bvhs_by_project_id(project_id)
-            if bvh_dicts is None:
-                return {"success": False, "message": "No BVH files found"}
-            
-            bvh_filenames = [bvh["path"] for bvh in bvh_dicts]
-            return {"success": True, "filenames": bvh_filenames}
-        except Exception as e:
-            return {"success": False, "message": str(e)}
+    def get_bvh_filenames(request):
+        
+        project_id = request.args.get("projectId")
+        user_id = request.args.get("userId")
+        
+        if not project_id:
+            return jsonify({"success": False, "message": "Missing projectId parameter"}), 400
+        
+        bvh_filenames, error_message = ProjectService.get_bvh_filenames(project_id, user_id)
+        
+        if bvh_filenames:
+            return jsonify({"success": True, "filenames": bvh_filenames}), 200
+        
+        return jsonify({"success": False, "message": error_message}), 400

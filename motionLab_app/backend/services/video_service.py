@@ -4,6 +4,21 @@ from utils import VideoUtils
 class VideoService:
     
     @staticmethod
+    def handle_video_upload(video, request_files):
+        """Handles the video upload process and returns the temporary video path."""
+        # Validating Video File
+        is_valid, error_message = VideoService.validate_video_file(video, request_files)
+        if not is_valid:
+            return None, error_message
+            
+        # Saving Temp Video
+        temp_video_path = VideoService.save_temp_video(video)
+        if not temp_video_path:
+            return None, "Error saving video"
+        
+        return temp_video_path, None
+    
+    @staticmethod
     def save_temp_video(video):
         """Saves the uploaded video temporarily and returns its path."""
         try:

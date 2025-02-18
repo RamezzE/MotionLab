@@ -43,10 +43,11 @@ class User(db.Model):
         except Exception as e:
             print("Error getting user by id in get_by_id / user_model.py:", e)
             return None
-
-    def get_by_email(self, email):
+        
+    @classmethod
+    def get_by_email(cls, email):
         try:
-            return User.query.filter_by(email=email).first()
+            return cls.query.filter_by(email=email).first()
         except Exception as e:
             print("Error getting user by email in get_by_email / user_model.py:", e)
             return None

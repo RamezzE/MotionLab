@@ -2,10 +2,7 @@ import os
 import logging
 from flask import jsonify
 
-from controllers.project_controller import ProjectController
-from controllers.BVH_controller import BVHController
-from controllers.user_controller import UserController
-from services import PoseProcessingService, SegmentationService, VideoService
+from services import PoseProcessingService, SegmentationService, VideoService, UserService, ProjectService, BVHService
 
 class PoseController:
     def __init__(self):
@@ -91,25 +88,17 @@ class PoseController:
                 return jsonify({"success": False, "error": "Missing required fields"}), 400
             
             # Check if user exists
-            if not UserController.does_user_exist(user_id):
+            if not UserService.does_user_exist_by_id(user_id):
                 return jsonify({"success": False, "error": "User not found"}), 404
             
-            # Validating Video File
-            is_valid, error_message = VideoService.validate_video_file(video, request.files)
-            if not is_valid:
+            temp_video_path, error_message = VideoService.handle_video_upload(video, request.files)
+            if not temp_video_path:
                 return jsonify({"success": False, "error": error_message}), 400
             
-            # Saving Temp Video
-            temp_video_path = VideoService.save_temp_video(video)
-            if not temp_video_path:
-                return jsonify({"success": False, "error": "Error saving video"}), 500
-            
             # Creating Project
-            project = ProjectController.create_project({"projectName": project_name, "userId": user_id})
+            project = ProjectService.create_project({"projectName": project_name, "userId": user_id})
             if not project:
                 return jsonify({"success": False, "error": "Error creating project"}), 500
-            
-            project = project.to_dict()
             
             # Segmenting and Processing Video
             bvh_filenames = self.segment_people_into_separate_videos(temp_video_path)
@@ -119,7 +108,7 @@ class PoseController:
                 return jsonify({"success": False, "error": "Error processing video"}), 500
             
             # Creating BVH Files
-            if BVHController.create_bvhs(bvh_filenames, project["id"]):
+            if BVHService.create_bvhs(bvh_filenames, project["id"]):
                 return jsonify({"success": True, "bvh_filenames": bvh_filenames, "projectId": project["id"]}), 200
             
             return jsonify({"success": False, "error": "Error processing video"}), 500

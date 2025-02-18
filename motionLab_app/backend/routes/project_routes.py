@@ -6,32 +6,12 @@ project_bp = Blueprint("project", __name__)
 
 @project_bp.route("/get-projects", methods=["GET"])
 def get_projects_route():
-    user_id = request.args.get("userId")
-    
-    if not user_id:
-        return jsonify({"success": False, "message": "Missing userId parameter"}), 400
-    
-    return ProjectController.get_projects_by_user_id(user_id)
+    return ProjectController.get_projects_by_user_id(request)
 
 @project_bp.route("/delete-project", methods=["DELETE"])
 def delete_project_route():
-    project_id = request.args.get("projectId")
-    user_id = request.args.get("userId")
-    
-    if not project_id:
-        return jsonify({"success": False, "message": "Missing projectId parameter"}), 400
-    
-    if not user_id:
-        return jsonify({"success": False, "message": "Missing userId parameter"}),
-    
-    return ProjectController.delete_project(project_id, user_id)
+    return ProjectController.delete_project(request)
 
 @project_bp.route("/get-bvh-filenames", methods=["GET"])
 def get_bvh_filenames_route():
-    project_id = request.args.get("projectId")
-    user_id = request.args.get("userId")
-    
-    if not project_id:
-        return jsonify({"success": False, "message": "Missing projectId parameter"}), 400
-    
-    return ProjectController.get_bvh_filenames(project_id, user_id)
+    return ProjectController.get_bvh_filenames(request)

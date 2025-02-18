@@ -1,7 +1,7 @@
 from models.bvh_model import BVH
 import os
 
-class BVHController:
+class BVHService:
     
     @staticmethod
     def create_bvh(data):
@@ -11,9 +11,9 @@ class BVHController:
         
         bvh = BVH.create(name, path, project_id)
         if not bvh:
-            return {"success": False, "error": "Error creating BVH"}
+            return None
         
-        return {"success": True, "bvh": bvh.to_dict()}
+        return bvh.to_dict()
     
     @staticmethod
     def create_bvhs(filenames, project_id):
