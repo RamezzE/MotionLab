@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react"; // Import icons
+import { Menu, X, User } from "lucide-react"; // Import icons
 import Logo from "/images/logo.png";
 
 import useUserStore from "../store/useUserStore";
@@ -24,13 +24,13 @@ const NavBar = () => {
       {/* Hamburger Icon (Visible on Small Screens) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden text-white focus:outline-none"
+        className="md:hidden focus:outline-none text-white"
       >
         {isOpen ? <X size={28} /> : <Menu size={28} />}
       </button>
 
       {/* Desktop Menu */}
-      <div className="md:flex space-x-4 md:space-x-12 hidden font-medium text-sm md:text-base">
+      <div className="hidden md:flex space-x-4 md:space-x-12 font-medium text-sm md:text-base">
         <Link to="/about" className="hover:text-purple-400 transition duration-300">
           About
         </Link>
@@ -45,38 +45,40 @@ const NavBar = () => {
         </Link>
       </div>
 
-      {/* Desktop Login/Signup Buttons */}
-
-      {!isAuthenticated && (
-      <div className="md:flex items-center space-x-6 hidden font-medium text-sm md:text-base">
-        <Link to="/login" className="hover:text-purple-400 transition duration-300">
-          Log In
-        </Link>
-        <Link
-          to="/signup"
-          className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-center text-white transition duration-300"
-        >
-          <span className="flex flex-row">
-            Join<span className="sm:block hidden">&nbsp;Now</span>
-          </span>
-        </Link>
-      </div>
-      )}
-
-      {isAuthenticated && (
-        <div className="md:flex items-center space-x-6 hidden font-medium text-sm md:text-base">
-          <button
-            onClick={logout}
-            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-center text-white transition duration-300"
+      {/* Desktop Auth Buttons & Profile Icon */}
+      <div className="hidden md:flex items-center space-x-6 font-medium text-sm md:text-base">
+        {!isAuthenticated ? (
+          <>
+            <Link to="/login" className="hover:text-purple-400 transition duration-300">
+              Log In
+            </Link>
+            <Link
+              to="/signup"
+              className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
             >
-            Log Out
-          </button>
-        </div>
-      )}
+              <span className="flex flex-row">
+                Join<span className="hidden sm:block">&nbsp;Now</span>
+              </span>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/profile/projects" className="hover:text-purple-400 transition duration-300">
+              <User size={24} />
+            </Link>
+            <button
+              onClick={logout}
+              className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+            >
+              Log Out
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Mobile Menu (Dropdown) */}
       {isOpen && (
-        <div className="top-20 left-0 z-50 absolute flex flex-col items-center space-y-4 md:hidden bg-gray-800 bg-opacity-95 py-6 w-full">
+        <div className="md:hidden top-20 left-0 z-50 absolute flex flex-col items-center space-y-4 bg-gray-800 bg-opacity-95 py-6 w-full">
           <Link to="/about" className="text-white hover:text-purple-400 transition duration-300" onClick={() => setIsOpen(false)}>
             About
           </Link>
@@ -89,30 +91,39 @@ const NavBar = () => {
           <Link to="/upload" className="text-white hover:text-purple-400 transition duration-300" onClick={() => setIsOpen(false)}>
             Upload
           </Link>
-          {!isAuthenticated && (
+          {!isAuthenticated ? (
             <>
-          <Link to="/login" className="text-white hover:text-purple-400 transition duration-300" onClick={() => setIsOpen(false)}>
-            Log In
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-center text-white transition duration-300"
-            onClick={() => setIsOpen(false)}
-          >
-            Join Now
-          </Link>
-          </>
-          )}
-          {isAuthenticated && (
-            <button
-              onClick={() => {
-                logout();
-                setIsOpen(false);
-              }}
-              className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-center text-white transition duration-300"
-            >
-              Log Out
-            </button>
+              <Link to="/login" className="text-white hover:text-purple-400 transition duration-300" onClick={() => setIsOpen(false)}>
+                Log In
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                onClick={() => setIsOpen(false)}
+              >
+                Join Now
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/profile/projects"
+                className="flex items-center space-x-2 text-white hover:text-purple-400 transition duration-300"
+                onClick={() => setIsOpen(false)}
+              >
+                <User size={24} />
+                <span>Profile</span>
+              </Link>
+              <button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+              >
+                Log Out
+              </button>
+            </>
           )}
         </div>
       )}

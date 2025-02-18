@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 # Database URI (Change for PostgreSQL/MySQL)
-DB_URI = os.getenv("DATABASE_URL", "sqlite:///users.db")
+DB_URI = os.getenv("DATABASE_URL", "sqlite:///database.db")
 
 SQLALCHEMY_CONFIG = {
     "SQLALCHEMY_DATABASE_URI": DB_URI,

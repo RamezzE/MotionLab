@@ -2,10 +2,12 @@ import axios from "axios";
 
 const BASE_URL = "http://127.0.0.1:5000"; // Flask backend URL
 
-export const uploadVideo = async (file, onUploadProgress) => {
+export const uploadVideo = async (file, projectName, userId, onUploadProgress) => {
     const formData = new FormData();
     formData.append("video", file); // Append the video file with the key 'video'
-
+    formData.append("projectName", projectName); // Append the project name
+    formData.append("userId", userId); // Append the user ID
+    
     try {
         const response = await axios.post(
             `${BASE_URL}/pose/process-video`,

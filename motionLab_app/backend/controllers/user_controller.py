@@ -1,45 +1,27 @@
-from models.user_model import User
-from validators.user_validator import UserValidator
+from services import UserService
 
 class UserController:
     
     @staticmethod
-    def create_user(data):
-        errors = UserValidator.validate_signup(data)
+    def sign_up(request):
+        data = request.get_json()
+        user, errors = UserService.create_user(data)
+        
         if errors:
             return {"success": False, "errors": errors}, 400
         
-        first_name = data["firstName"]
-        last_name = data["lastName"]
-        email = data["email"]
-        password = data["password"]
-        
-        if User.get_by_email(email):
-            return {
-                "success": False,
-                "errors": {"email": "Email already in use"}
-            }, 400
-        
-        user = User.create(first_name, last_name, email, password)
-        return {"success": True, "user": user.to_dict()}
+        return {"success": True, "user": user}, 201
     
     @staticmethod
-    def authenticate_user(data):
-        errors = UserValidator.validate_login(data)
+    def login(request):
+        data = request.get_json()
+        user, errors = UserService.authenticate_user(data)
+        
         if errors:
             return {"success": False, "errors": errors}, 400
         
-        email = data["email"]
-        password = data["password"]
-        
-        user = User.get_by_email(email)
-        if user and user.check_password(password):
-            return {"success": True, "user": user.to_dict()}, 200
-        
-        return {"success": False, "errors": {"password": "Invalid Credentials"}}, 400
+        return {"success": True, "user": user}, 200
     
-    
-
     # @staticmethod
     # def get_user_by_id(user_id):
     #     return User.get_by_id(user_id)

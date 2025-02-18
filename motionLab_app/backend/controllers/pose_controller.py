@@ -1,536 +1,117 @@
 import os
-import numpy as np
-import cv2
-import pathlib
-import importlib
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
-from pathlib import Path
-from datetime import datetime
+import logging
 from flask import jsonify
-import traceback
 
-from utils.pose_estimator_3d import estimator_3d
-from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
-
-import matplotlib.pyplot as plt
-from ultralytics import YOLO
-
-# from mpl_toolkits.mplot3d import Axes3D
-CMU_CONNECTIONS = [
-    (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), 
-    (8, 14), (14, 15), (15, 16),
-]
-OPENPOSE_CONNECTIONS_25 = [
-    (0, 1),  
-    (0, 15),
-    (0, 16),
-    (1, 2), 
-    (1,5),
-    (1, 8),
-    (2, 3),
-    (3, 4),
-    (5, 6), 
-    (6, 7),
-    (8, 9),
-    (8, 12),
-    (9, 10),
-    (10, 11),
-    (11, 22),
-    (11, 24),
-    (12, 13),
-    (13, 14),
-    (14, 19),
-    (14, 21),
-    (15, 17),
-    (16, 18),
-    (19, 20),
-    (22, 23),    
-]
+from services import PoseProcessingService, SegmentationService, VideoService, UserService, ProjectService, BVHService
 
 class PoseController:
-    def __init__(self, config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
-        
-        self.mediapipe_to_openpose = {
-            0: 0, 11: 5, 12: 2, 13: 6, 14: 3, 
-            # 13: 5, # 14: 2, # 15: 6, # 16: 3, 
-            17: 7, 18: 4, 23: 12,  24: 9,  
-            25: 13,  26: 10, 27: 14,
-            28: 11, 31: 20, 32: 23, 29: 19, 30: 22, 
-            2: 16, 5: 15, 7: 18, 8: 17,
-        }
-        
-        self.img_width = 0
-        self.img_height = 0
-        self.fps = 30
-        
-        # YOLO model initialization
-        # self.yolo_model = YOLO('yolov8n-pose.pt')
-        
-        # 2D Pose detector initialization
-        self.mp_pose = mp.solutions.pose
-        self.pose = self.mp_pose.Pose()
-        
-        # 3D Pose Estimator initialization
-        self.estimator_3d = self._initialize_3D_pose_estimator(config_file, checkpoint_file)
+    def __init__(self):
+        self.pose_processing_service = PoseProcessingService()
+        self.segmentation_service = SegmentationService()
 
-    # 3D Pose Estimator initialization
-    def _initialize_3D_pose_estimator(self, config_file, checkpoint_file):
+    def convert_video_to_bvh(self, temp_video_path):
+        """
+        Processes a single video and converts it to BVH format.
+            :param temp_video_path: Path to the video file
+            :return: BVH filename if successful, None otherwise
+        """
         try:
-            temp = pathlib.PosixPath
-            pathlib.PosixPath = pathlib.WindowsPath
-
-            importlib.reload(estimator_3d)
-
-            e3d = estimator_3d.Estimator3D(config_file=config_file, checkpoint_file=checkpoint_file)
-
-            pathlib.PosixPath = temp
-            return e3d
-        except Exception as e:
-            raise RuntimeError(f"Error initializing Estimator3D: {e}")
-
-    # Interpolate joints
-    @staticmethod
-    def interpolate_joint(lm1, lm2):
-        return [(lm1.x + lm2.x) / 2, (lm1.y + lm2.y) / 2, (lm1.z + lm2.z) / 2]
-
-    # Function to draw keypoints on the frame
-    @staticmethod
-    def draw_openpose_keypoints(frame, keypoints):
-        for i, (x, y, _) in enumerate(keypoints):
-            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
-            cv2.putText(frame, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            bvh_filename = self.pose_processing_service.convert_video_to_bvh(temp_video_path)
+            if bvh_filename:
+                return bvh_filename
+            
+            return None
         
-        for connection in OPENPOSE_CONNECTIONS_25:
-            joint1 = keypoints[connection[0]]
-            joint2 = keypoints[connection[1]] 
-            cv2.line(frame, (int(joint1[0]), int(joint1[1])), (int(joint2[0]), int(joint2[1])), (0, 255, 0), 2)
-        
-        return frame
-    
-    # Align and scale 3D pose
-    @staticmethod
-    def align_and_scale_3d_pose(pose_3d):
-        rotation_matrix_x = np.array([
-            [1,  0,  0], 
-            [0, -1,  0], 
-            [0,  0, -1]   
-        ])
-        pose_3d = np.einsum('ij,klj->kli', rotation_matrix_x, pose_3d)
-
-        min_y = np.min(pose_3d[:, :, 1])
-        pose_3d[:, :, 1] += -min_y
-
-        pose_3d *= 0.025
-        return pose_3d
-
-    # Open the video file and validate it
-    def _open_video(self, file_path):
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Video file not found: {file_path}")
-
-        cap = cv2.VideoCapture(file_path)
-        if not cap.isOpened():
-            raise ValueError(f"Unable to open video file: {file_path}")
-        self.fps = cap.get(cv2.CAP_PROP_FPS)
-        return cap
-
-    # Process a single frame
-    def _process_frame(self, frame, visualize = False):
-        try:
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-            # detection_result = self.pose_detector.detect(mp_image)
-            detection_result = self.pose.process(rgb_frame)
-
-            keypoints = np.zeros((25, 3))
-            pose_world_keypoints = np.zeros((25, 3))
-            landmarks_list = []
-            if detection_result.pose_landmarks:
-                landmarks = detection_result.pose_landmarks.landmark
-                landmarks_list.append(landmarks)
-                # landmarks = detection_result.pose_world_landmarks.landmark
-
-                pose_world_landmarks = detection_result.pose_world_landmarks.landmark
-
-                for mp_idx, openpose_idx in self.mediapipe_to_openpose.items():
-                    if mp_idx < len(landmarks):
-                        landmark = landmarks[mp_idx]
-                        world_landmark = pose_world_landmarks[mp_idx]
-                        
-                        keypoints[openpose_idx] = [landmark.x * self.img_width, landmark.y * self.img_height, 1.0]
-                        pose_world_keypoints[openpose_idx] = [world_landmark.x, world_landmark.y, world_landmark.z]
-                        
-
-                neck = self.interpolate_joint(landmarks[11], landmarks[12])
-                keypoints[1] = [neck[0] * self.img_width, neck[1] * self.img_height, 1.0]
-                
-                neck_world = self.interpolate_joint(pose_world_landmarks[11], pose_world_landmarks[12])
-                pose_world_keypoints[1] = [neck_world[0], neck_world[1], neck_world[2]]
-                
-                mid_hip = self.interpolate_joint(landmarks[23], landmarks[24])
-                keypoints[8] = [mid_hip[0] * self.img_width, mid_hip[1] * self.img_height, 1.0]
-                
-                mid_hip_world = self.interpolate_joint(pose_world_landmarks[23], pose_world_landmarks[24])
-                pose_world_keypoints[8] = [mid_hip_world[0], mid_hip_world[1], mid_hip_world[2]]
-                
-                keypoints[21] = keypoints[14]
-                keypoints[24] = keypoints[11]
-                
-                pose_world_keypoints[21] = pose_world_keypoints[14]
-                pose_world_keypoints[24] = pose_world_keypoints[11]
-            
-            ## Draw keypoints
-            if visualize:
-                frame_with_keypoints = self.draw_openpose_keypoints(frame, keypoints)
-
-                # Show the frame
-                if self.img_height > 500:
-                    scale = 500 / self.img_height
-                    frame_with_keypoints = cv2.resize(frame_with_keypoints, (0, 0), fx=scale, fy=scale)
-                    
-                cv2.imshow("Pose Estimation", frame_with_keypoints)
-                cv2.waitKey(1)  # 1ms delay for video processing
-            return keypoints, pose_world_keypoints, landmarks_list
         except Exception as e:
-            print(f"Error processing a frame: {e}")
-            raise RuntimeError(f"Error processing a frame: {e}")
-
-    # Get keypoints list from the video
-    def _get_keypoints_list(self, cap, visualize=False):
-        keypoints_list = []
-        pose_world_keypoints_list = []
-        landmarks_list = []
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            self.img_height, self.img_width = frame.shape[:2]
-
-            if self.img_height == 0 or self.img_width == 0:
-                raise ValueError("Invalid frame dimensions: height or width is 0.")
-
-            keypoints, pose_world_keypoints, landmarks = self._process_frame(frame, visualize)
-            keypoints_list.append(keypoints)
-            pose_world_keypoints_list.append(pose_world_keypoints)
-            landmarks_list.append(landmarks)
-
-        cap.release()
-        if visualize:
-            cv2.destroyAllWindows()
-        return keypoints_list, pose_world_keypoints_list, landmarks_list
-
-    # Estimate 3D pose from 2D keypoints list
-    def _estimate_3d_from_2d(self, keypoints_list):
-        try:
-            pose2d = np.stack(keypoints_list)[:, :, :2]
-            return self.estimator_3d.estimate(pose2d, image_width=self.img_width, image_height=self.img_height)
-        except Exception as e:
-            raise RuntimeError(f"Error in _estimate_3d_from_2d: {e}")
-
-    # Convert 3D pose to BVH format
-    def _convert_3d_to_bvh(self, pose_3d, root_keypoints):
-        try:
-            bvh_output_dir = Path('BVHs')
-            bvh_output_dir.mkdir(parents=True, exist_ok=True)
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            bvh_file_name = f'bvh_{timestamp}.bvh'
-            bvh_file = bvh_output_dir / bvh_file_name
-            
-            print("\nStarting BVH conversion:")
-            print(f"Original pose_3d shape: {pose_3d.shape}")
-            
-            # Initialize CMU skeleton
-            skeleton = cmu_skeleton.CMUSkeleton()
-            
-            # Get number of active joints (excluding -1 indices)
-            active_joints = len([v for v in skeleton.keypoint2index.values() if v >= 0])
-            print(f"Expected active joints in skeleton: {active_joints}")
-            
-            # Create expanded pose array to include hand joints
-            expanded_pose = np.zeros((pose_3d.shape[0], active_joints, 3))
-            
-            # Copy existing body joint data (0-16)
-            body_joint_count = min(pose_3d.shape[1], 17)  # First 17 joints are body joints
-            expanded_pose[:, :body_joint_count] = pose_3d[:, :body_joint_count]
-            
-            # For hand joints (17 onwards), initialize from wrist positions
-            if body_joint_count >= 17:
-                # Left hand initialization (using left wrist as reference)
-                left_wrist_idx = skeleton.keypoint2index['LeftHand']
-                left_wrist_pos = pose_3d[:, left_wrist_idx]
-                
-                # Initialize left hand joints relative to wrist
-                for joint_name, idx in skeleton.keypoint2index.items():
-                    if idx >= 17 and idx <= 31:  # Left hand joint range
-                        expanded_pose[:, idx] = left_wrist_pos
-                
-                # Right hand initialization (using right wrist as reference)
-                right_wrist_idx = skeleton.keypoint2index['RightHand']
-                right_wrist_pos = pose_3d[:, right_wrist_idx]
-                
-                # Initialize right hand joints relative to wrist
-                for joint_name, idx in skeleton.keypoint2index.items():
-                    if idx >= 32:  # Right hand joint range
-                        expanded_pose[:, idx] = right_wrist_pos
-            
-            print(f"Expanded pose_3d shape: {expanded_pose.shape}")
-            
-            # Convert to BVH
-            skeleton.poses2bvh(
-                poses_3d=expanded_pose,
-                output_file=bvh_file,
-                fps=self.fps,
-                root_keypoints=root_keypoints
-            )
-            
-            print(f"BVH file saved: {bvh_file_name}")
-            return bvh_file_name
-            
-        except Exception as e:
-            print(f"Error in _convert_3d_to_bvh: {e}")
-            print(f"pose_3d type: {type(pose_3d)}")
-            print(f"pose_3d shape: {pose_3d.shape if hasattr(pose_3d, 'shape') else 'no shape'}")
-            if isinstance(pose_3d, np.ndarray):
-                print(f"pose_3d non-zero elements: {np.count_nonzero(pose_3d)}")
-                print(f"pose_3d min: {np.min(pose_3d)}, max: {np.max(pose_3d)}")
-            raise RuntimeError(f"Error in _convert_3d_to_bvh: {e}")
-        
-    def _visualize_3D_points(self, points_3d, connections=None):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')        
-        points_3d_numpy = np.array(points_3d)
-        x_max, y_max, z_max = np.max(points_3d_numpy[:, :, 0]), np.max(points_3d_numpy[:, :, 1]), np.max(points_3d_numpy[:, :, 2])
-
-        up_limit = max(abs(x_max), abs(y_max), abs(z_max))
-        down_limit = -up_limit
-
-        for point in points_3d:
-            ax.clear()
-            x = point[:, 0]  # Extract X coordinates
-            y = point[:, 1]  # Extract Y coordinates
-            z = point[:, 2]  # Extract Z coordinates
-
-            ax.scatter(x, -z, -y)
-
-            for connection in connections:
-                idx1, idx2 = connection
-                ax.plot([x[idx1], x[idx2]], [-z[idx1], -z[idx2]], [-y[idx1], -y[idx2]], color='black')
-
-            ax.set_xlim(down_limit, up_limit)
-            ax.set_ylim(down_limit, up_limit)
-            ax.set_zlim(down_limit, up_limit)
-
-            ax.set_xlabel('X-axis')
-            ax.set_ylabel('Y-axis')
-            ax.set_zlabel('Z-axis')
-
-            plt.pause(0.01)
-            plt.show(block=False)
-            
-    def _get_root_keypoints(self, landmarks_list):
-        root_keypoints = []
-
-        # Relevant keypoints for stable root motion
-        relevant_indices = [11, 12, 23, 24, 25, 26]  # Hips, knees, ankles
-        num_keypoints = len(relevant_indices)  # Expected number of keypoints per frame
-        default_value = [0.0, 0.0, 0.0]  # Default value if no previous frame exists
-
-        # Store the last valid frame to fill missing values
-        previous_frame = [default_value] * num_keypoints  # Initialize with default
-
-        for frame in landmarks_list:
-            frame_keypoints = []  # Store only relevant keypoints
-
-            if frame:  # Ensure the frame is not empty
-                for landmarks in frame:
-                    if landmarks:
-                        for i in relevant_indices:
-                            if i < len(landmarks):  # Ensure index is within bounds
-                                landmark = landmarks[i]
-                                frame_keypoints.append([landmark.x, landmark.y, landmark.z])  # Collect selected keypoints
-                            else:
-                                frame_keypoints.append(previous_frame[i])  # Use previous frame value if missing
-                    else:
-                        frame_keypoints = previous_frame.copy()  # Use entire previous frame if landmarks are empty
-            else:
-                frame_keypoints = previous_frame.copy()  # Use previous frame if entire frame is missing
-
-            # Ensure the frame has the correct number of keypoints
-            while len(frame_keypoints) < num_keypoints:
-                frame_keypoints.append(previous_frame[len(frame_keypoints)])  # Fill with previous values
-
-            # Store this frame for future reference
-            previous_frame = frame_keypoints.copy()
-
-            # Compute the average of selected keypoints
-            avg_root = np.mean(frame_keypoints, axis=0)  # Mean of relevant keypoints
-            root_keypoints.append(avg_root.tolist())  # Store as list
-            
-        return root_keypoints
-            
-    # Process the video file
-    def process_video(self, video_path):
-        try:
-            print("Starting video processing...")
-            # Get video info
-            cap = cv2.VideoCapture(str(video_path))
-            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            self.fps = int(cap.get(cv2.CAP_PROP_FPS))
-            
-            print(f"Video dimensions: {frame_width}x{frame_height}, FPS: {self.fps}")
-            
-            # Process frames
-            frames = []
-            poses_2d = []
-            root_keypoints = []
-            
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                frames.append(frame)
-                
-            cap.release()
-            print(f"Processed {len(frames)} frames")
-            
-            # Get 2D poses
-            for frame in frames:
-                pose = self._process_frame(frame, visualize=False)
-                if pose is not None:
-                    poses_2d.append(pose[0])
-                    root_keypoints.append(pose[0][0])  # Assuming first keypoint is root
-            
-            poses_2d = np.array(poses_2d)
-            root_keypoints = np.array(root_keypoints)
-            
-            print(f"2D poses shape: {poses_2d.shape}")
-            print(f"Root keypoints shape: {root_keypoints.shape}")
-            
-            # Get 3D poses
-            pose_3d = self._estimate_3d_from_2d(poses_2d)
-            print(f"3D poses shape after estimation: {pose_3d.shape}")
-            
-            # Verify pose_3d data
-            if pose_3d.size == 0:
-                raise ValueError("pose_3d is empty after estimation")
-            
-            if not isinstance(pose_3d, np.ndarray):
-                pose_3d = np.array(pose_3d)
-                print(f"Converted pose_3d to numpy array, new shape: {pose_3d.shape}")
-            
-            # Convert to BVH
-            bvh_filename = self._convert_3d_to_bvh(pose_3d, root_keypoints)
-            return bvh_filename
-            
-        except Exception as e:
-            print(f"Error in process_video: {e}")
-            print(f"Stack trace: {traceback.format_exc()}")
-            raise RuntimeError(f"Error in process_video: {e}")
-
-    def multiple_human_segmentation(self, video_path):
-        
-        try:
-            # self.yolo_model = YOLO('yolo11m-pose.pt')
-            self.yolo_model = YOLO('yolo11s-pose.pt')
-            # self.yolo_model = YOLO('yolo11n.pt')
-            writers = {}
-            self.output_video_paths = []
-            # Create an output folder
-            output_folder = 'output_videos'
-            
-            cap = self._open_video(video_path)
-            
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            
-            pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
-            
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                
-                self.img_height, self.img_width = frame.shape[:2]
-                
-                self._process_YOLO_frame(writers, frame, output_folder, "utils/bytetrack.yaml")
-            
-            cap.release()
-            for writer in writers.values():
-                writer.release()
-                
-            cv2.destroyAllWindows()
-            
-            bvh_filenames = []
-            
-            for video_path in self.output_video_paths:
-                cap = cv2.VideoCapture(video_path)
-                frames_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                cap.release()
-
-                if frames_num < 0.4 * total_frames:
-                    os.remove(video_path)
-                    continue
-
-                print("Processing video:", video_path)
-                bvh_filename = self.process_video(video_path)
-                bvh_filenames.append(bvh_filename)
-                
-            print("BVH filenames:", bvh_filenames)
-            return jsonify({"success": True, "bvh_filenames": bvh_filenames}), 200
-            
-        except Exception as e:
-            print(f"Error in _multiple_human_segmentation: {e}")
+            logging.error(f"Error in process_video: {e}")
             return jsonify({"success": False, "error": str(e)}), 500
         
-    def _process_YOLO_frame(self, writers, frame, output_folder, tracker_path):
-        try:            
-            
-            results = self.yolo_model.track(frame, persist = True, tracker = tracker_path)
-            
-            for result in results:
-                boxes = result.boxes.xyxy
-                labels = result.boxes.cls
-                confidences = result.boxes.conf
-                
-                if len(boxes) == 0:
-                    continue
-                
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = box
-                    confidence = confidences[i]
-                    
-                    bbox_area = abs(x2 - x1) * abs(y2 - y1)  # Compute bounding box area
-                    image_area = self.img_width * self.img_height  # Total image area
+        finally:
+            if temp_video_path and os.path.exists(temp_video_path):
+                os.remove(temp_video_path)  # Ensure file cleanup
 
-                    if bbox_area < 0.05 * image_area:  # Adjust the threshold as needed
-                        continue
-                    
-                    if labels[i] == 0 and confidence > 0.7:
-                        black_background = np.zeros_like(frame)
-                        person_frame = frame[int(y1):int(y2), int(x1):int(x2)]  # Crop the person
-                        black_background[int(y1):int(y2), int(x1):int(x2)] = person_frame  # Paste on black background
-                        person_id = int(result.boxes.id[i])  # Get tracking ID
-                        
-                        if person_id not in writers:
-                            writers[person_id], output_video_path = self._initialize_video_writer(person_id, output_folder)
-                            self.output_video_paths.append(output_video_path)
-                            
-                        # Write the processed frame to the corresponding VideoWriter object
-                        writers[person_id].write(black_background)
-            
+    def segment_people_into_separate_videos(self, video_path):
+        """
+        Handles segmentation and passes segmented videos for further processing.
+        :param video_path: Path to the video file
+        :return: List of BVH filenames if successful, None otherwise
+        """
+        try:
+            output_video_paths = self.segmentation_service.segment_video(video_path)
+            if not output_video_paths:
+                return jsonify({"success": False, "error": "No segmented videos found"}), 500
+
+            # Process segmented videos
+            bvh_filenames = self.process_segmented_videos(output_video_paths, video_path)
+
+            return bvh_filenames
+
         except Exception as e:
-            print(f"Error in _process_YOLO_frame: {e}")
-            raise RuntimeError(f"Error in _process_YOLO_frame: {e}")
-                    
-    def _initialize_video_writer(self, person_id, output_folder):
+            logging.error(f"Error in multiple_human_segmentation: {e}")
+            return None
+
+    def process_segmented_videos(self, output_video_paths, original_video_path):
         """
-        Initializes a VideoWriter object for the given person_id.
+        Processes each segmented video and converts it to BVH if it meets the frame count criteria.
+        :param output_video_paths: List of paths to segmented videos
         """
-        output_video_path = os.path.join(output_folder, f'person_{person_id}.mp4')
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(output_video_path, fourcc, self.fps, (self.img_width, self.img_height))
-        return writer, output_video_path
+        bvh_filenames = []
+        total_frames = VideoService.get_video_frame_count(original_video_path)
+
+        for segmented_video_path in output_video_paths:
+            frames_num = VideoService.get_video_frame_count(segmented_video_path)
+
+            if frames_num < 0.4 * total_frames:
+                os.remove(segmented_video_path)
+                continue
+
+            print("Converting Video to BVH:", segmented_video_path)
+            bvh_filename = self.convert_video_to_bvh(segmented_video_path)
+
+            if bvh_filename:  # Ensure only valid BVH files are added
+                bvh_filenames.append(bvh_filename)
+
+        return bvh_filenames
+
+    def process_request(self, request):
+        """
+        Handles API requests (assuming request contains a video path).
+        :param request: Flask request object
+        :return: JSON response
+        """
+        try:
+            video = request.files.get("video")
+            project_name = request.form.get("projectName")
+            user_id = request.form.get("userId")   
+
+            if not video or not project_name or not user_id:
+                return jsonify({"success": False, "error": "Missing required fields"}), 400
+            
+            # Check if user exists
+            if not UserService.does_user_exist_by_id(user_id):
+                return jsonify({"success": False, "error": "User not found"}), 404
+            
+            temp_video_path, error_message = VideoService.handle_video_upload(video, request.files)
+            if not temp_video_path:
+                return jsonify({"success": False, "error": error_message}), 400
+            
+            # Creating Project
+            project = ProjectService.create_project({"projectName": project_name, "userId": user_id})
+            if not project:
+                return jsonify({"success": False, "error": "Error creating project"}), 500
+            
+            # Segmenting and Processing Video
+            bvh_filenames = self.segment_people_into_separate_videos(temp_video_path)
+            
+            # Error Handling
+            if not bvh_filenames:
+                return jsonify({"success": False, "error": "Error processing video"}), 500
+            
+            # Creating BVH Files
+            if BVHService.create_bvhs(bvh_filenames, project["id"]):
+                return jsonify({"success": True, "bvh_filenames": bvh_filenames, "projectId": project["id"]}), 200
+            
+            return jsonify({"success": False, "error": "Error processing video"}), 500
+        
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
