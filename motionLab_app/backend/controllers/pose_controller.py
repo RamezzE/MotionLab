@@ -2,18 +2,13 @@ import os
 import numpy as np
 import cv2
 import pathlib
-import importlib
 import mediapipe as mp
-from pathlib import Path
-from datetime import datetime
 from flask import jsonify
-
-from utils.pose_estimator_3d import estimator_3d
-from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
 
 from utils.video_utils import VideoUtils
 from utils.pose_utils import PoseUtils
 from utils.drawing_utils import DrawingUtils
+from utils.bvh_utils import BVHUtils
 
 from ultralytics import YOLO
 
@@ -38,22 +33,7 @@ class PoseController:
         self.pose = self.mp_pose.Pose()
         
         # 3D Pose Estimator initialization
-        self.estimator_3d = self._initialize_3D_pose_estimator(config_file, checkpoint_file)
-
-    # 3D Pose Estimator initialization
-    def _initialize_3D_pose_estimator(self, config_file, checkpoint_file):
-        try:
-            temp = pathlib.PosixPath
-            pathlib.PosixPath = pathlib.WindowsPath
-
-            importlib.reload(estimator_3d)
-
-            e3d = estimator_3d.Estimator3D(config_file=config_file, checkpoint_file=checkpoint_file)
-
-            pathlib.PosixPath = temp
-            return e3d
-        except Exception as e:
-            raise RuntimeError(f"Error initializing Estimator3D: {e}")
+        self.estimator_3d = PoseUtils.initialize_3D_pose_estimator(config_file, checkpoint_file)    
 
     # Process a single frame
     def _process_frame(self, frame, visualize = False):
@@ -146,67 +126,6 @@ class PoseController:
             return self.estimator_3d.estimate(pose2d, image_width=self.img_width, image_height=self.img_height)
         except Exception as e:
             raise RuntimeError(f"Error in _estimate_3d_from_2d: {e}")
-
-    # Convert 3D pose to BVH format
-    def _convert_3d_to_bvh(self, pose_3d, root_keypoints):
-        try:
-            bvh_output_dir = Path('BVHs')
-            bvh_output_dir.mkdir(parents=True, exist_ok=True)
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            bvh_file_name = f'bvh_{timestamp}.bvh'
-            bvh_file = bvh_output_dir / bvh_file_name
-            
-            print(pose_3d.shape)
-            
-            cmu_skeleton.CMUSkeleton().poses2bvh(pose_3d, output_file=bvh_file, fps=self.fps, root_keypoints=root_keypoints)
-            
-            print(f"BVH file saved: {bvh_file_name}")
-            return bvh_file_name
-        except Exception as e:
-            print(f"Error in _convert_3d_to_bvh: {e}")
-            raise RuntimeError(f"Error in _convert_3d_to_bvh: {e}")
-            
-    def _get_root_keypoints(self, landmarks_list):
-        root_keypoints = []
-
-        # Relevant keypoints for stable root motion
-        relevant_indices = [11, 12, 23, 24, 25, 26]  # Hips, knees, ankles
-        num_keypoints = len(relevant_indices)  # Expected number of keypoints per frame
-        default_value = [0.0, 0.0, 0.0]  # Default value if no previous frame exists
-
-        # Store the last valid frame to fill missing values
-        previous_frame = [default_value] * num_keypoints  # Initialize with default
-
-        for frame in landmarks_list:
-            frame_keypoints = []  # Store only relevant keypoints
-
-            if frame:  # Ensure the frame is not empty
-                for landmarks in frame:
-                    if landmarks:
-                        for i in relevant_indices:
-                            if i < len(landmarks):  # Ensure index is within bounds
-                                landmark = landmarks[i]
-                                frame_keypoints.append([landmark.x, landmark.y, landmark.z])  # Collect selected keypoints
-                            else:
-                                frame_keypoints.append(previous_frame[i])  # Use previous frame value if missing
-                    else:
-                        frame_keypoints = previous_frame.copy()  # Use entire previous frame if landmarks are empty
-            else:
-                frame_keypoints = previous_frame.copy()  # Use previous frame if entire frame is missing
-
-            # Ensure the frame has the correct number of keypoints
-            while len(frame_keypoints) < num_keypoints:
-                frame_keypoints.append(previous_frame[len(frame_keypoints)])  # Fill with previous values
-
-            # Store this frame for future reference
-            previous_frame = frame_keypoints.copy()
-
-            # Compute the average of selected keypoints
-            avg_root = np.mean(frame_keypoints, axis=0)  # Mean of relevant keypoints
-            root_keypoints.append(avg_root.tolist())  # Store as list
-            
-        return root_keypoints
             
     # Process the video file
     def process_video(self, temp_video_path):        
@@ -216,7 +135,7 @@ class PoseController:
             
             keypoints, pose_world_keypoints, landmarks_list = self._get_keypoints_list(cap, visualize=False)
             
-            root_keypoints = self._get_root_keypoints(landmarks_list)
+            root_keypoints = PoseUtils.get_root_keypoints(landmarks_list)
                         
             points_3d = self._estimate_3d_from_2d(keypoints)
 
@@ -224,7 +143,7 @@ class PoseController:
             
             # DrawingUtils.visualize_3D_points(corrected_3d_points, connections=DrawingUtils.CMU_CONNECTIONS)
             
-            bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, root_keypoints)
+            bvh_filename =  BVHUtils.convert_3d_to_bvh(corrected_3d_points, root_keypoints, self.fps)
             
             # return jsonify({
             #     "success": True,

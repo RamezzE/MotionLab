@@ -1,4 +1,7 @@
 import numpy as np
+import importlib
+import pathlib
+from utils.pose_estimator_3d import estimator_3d
 
 class PoseUtils:
     
@@ -32,3 +35,60 @@ class PoseUtils:
 
         pose_3d *= 0.025
         return pose_3d
+    
+    @staticmethod
+    def get_root_keypoints(landmarks_list):
+        root_keypoints = []
+
+        # Relevant keypoints for stable root motion
+        relevant_indices = [11, 12, 23, 24, 25, 26]  # Hips, knees, ankles
+        num_keypoints = len(relevant_indices)  # Expected number of keypoints per frame
+        default_value = [0.0, 0.0, 0.0]  # Default value if no previous frame exists
+
+        # Store the last valid frame to fill missing values
+        previous_frame = [default_value] * num_keypoints  # Initialize with default
+
+        for frame in landmarks_list:
+            frame_keypoints = []  # Store only relevant keypoints
+
+            if frame:  # Ensure the frame is not empty
+                for landmarks in frame:
+                    if landmarks:
+                        for i in relevant_indices:
+                            if i < len(landmarks):  # Ensure index is within bounds
+                                landmark = landmarks[i]
+                                frame_keypoints.append([landmark.x, landmark.y, landmark.z])  # Collect selected keypoints
+                            else:
+                                frame_keypoints.append(previous_frame[i])  # Use previous frame value if missing
+                    else:
+                        frame_keypoints = previous_frame.copy()  # Use entire previous frame if landmarks are empty
+            else:
+                frame_keypoints = previous_frame.copy()  # Use previous frame if entire frame is missing
+
+            # Ensure the frame has the correct number of keypoints
+            while len(frame_keypoints) < num_keypoints:
+                frame_keypoints.append(previous_frame[len(frame_keypoints)])  # Fill with previous values
+
+            # Store this frame for future reference
+            previous_frame = frame_keypoints.copy()
+
+            # Compute the average of selected keypoints
+            avg_root = np.mean(frame_keypoints, axis=0)  # Mean of relevant keypoints
+            root_keypoints.append(avg_root.tolist())  # Store as list
+            
+        return root_keypoints
+    
+    @staticmethod
+    def initialize_3D_pose_estimator(config_file, checkpoint_file):
+        try:
+            temp = pathlib.PosixPath
+            pathlib.PosixPath = pathlib.WindowsPath
+
+            importlib.reload(estimator_3d)
+
+            e3d = estimator_3d.Estimator3D(config_file=config_file, checkpoint_file=checkpoint_file)
+
+            pathlib.PosixPath = temp
+            return e3d
+        except Exception as e:
+            raise RuntimeError(f"Error initializing Estimator3D: {e}")
