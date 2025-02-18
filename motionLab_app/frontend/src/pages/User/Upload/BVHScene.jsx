@@ -20,7 +20,7 @@ const BVHScene = () => {
 
   useEffect(() => {
     if (location.state) {
-      const updatedUrls = location.state.fileNames_list.map(
+      const updatedUrls = location.state.filenames_list.map(
         (fileName) => `http://127.0.0.1:5000/bvh/${fileName}`
       );
       setBvhUrlList(updatedUrls);    }
