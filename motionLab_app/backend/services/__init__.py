@@ -1,2 +1,3 @@
 from services.pose_processing_service import PoseProcessingService
 from services.segmentation_service import SegmentationService
+from services.video_service import VideoService

@@ -40,6 +40,10 @@ class UserController:
             return {"success": True, "user": user.to_dict()}, 200
         
         return {"success": False, "errors": {"password": "Invalid Credentials"}}, 400
+    
+    @staticmethod
+    def does_user_exist(user_id):
+        return User.get_by_id(user_id) is not None
 
     # @staticmethod
     # def get_user_by_id(user_id):

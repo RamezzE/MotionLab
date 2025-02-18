@@ -19,6 +19,16 @@ class VideoUtils:
             raise ValueError(f"Unable to open video file: {file_path}")
         return cap
     
+    @staticmethod
+    def delete_video(file_path):
+        """
+        Deletes a video file if it exists.
+
+        :param file_path: Path to the video file
+        """
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+    
     @staticmethod 
     def get_video_dimensions(video):
         """
@@ -30,6 +40,19 @@ class VideoUtils:
         width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         return width, height
+    
+    @staticmethod
+    def get_video_frame_count(video_path):
+        """
+        Returns the total number of frames in a video.
+
+        :param video: OpenCV VideoCapture object
+        :return: Total number of frames in the video
+        """
+        video = cv2.VideoCapture(video_path)
+        frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+        video.release()
+        return frame_count
     
     @staticmethod
     def get_video_fps(video):

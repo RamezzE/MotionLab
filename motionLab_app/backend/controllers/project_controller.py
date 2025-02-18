@@ -5,10 +5,14 @@ class ProjectController:
     
     @staticmethod
     def create_project(data):
-        project_name = data["projectName"]
-        user_id = data["userId"]
-        
-        return Project.create(project_name, user_id)
+        try:
+            project_name = data["projectName"]
+            user_id = data["userId"]
+            
+            return Project.create(project_name, user_id)
+        except Exception as e:
+            print(f"Error in create_project: {e}")
+            return None
     
     @staticmethod
     def get_projects_by_user_id(user_id):

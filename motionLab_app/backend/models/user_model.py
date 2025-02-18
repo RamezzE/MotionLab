@@ -36,9 +36,10 @@ class User(db.Model):
             print("Error creating user in create / user_model.py:", e)
             return None
 
-    def get_by_id(self, user_id):
+    @classmethod
+    def get_by_id(cls, user_id):
         try:
-            return User.query.get(user_id)
+            return cls.query.get(user_id)
         except Exception as e:
             print("Error getting user by id in get_by_id / user_model.py:", e)
             return None
