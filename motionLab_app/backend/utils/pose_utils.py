@@ -2,9 +2,18 @@ import numpy as np
 import importlib
 import pathlib
 from utils.pose_estimator_3d import estimator_3d
+import cv2
 
 class PoseUtils:
-    
+    mediapipe_to_openpose = {
+            0: 0, 11: 5, 12: 2, 13: 6, 14: 3, 
+            # 13: 5, # 14: 2, # 15: 6, # 16: 3, 
+            17: 7, 18: 4, 23: 12,  24: 9,  
+            25: 13,  26: 10, 27: 14,
+            28: 11, 31: 20, 32: 23, 29: 19, 30: 22, 
+            2: 16, 5: 15, 7: 18, 8: 17,
+    }
+     
     @staticmethod
     def interpolate_joint(lm1, lm2):
         """
@@ -35,6 +44,79 @@ class PoseUtils:
 
         pose_3d *= 0.025
         return pose_3d
+    
+    @staticmethod
+    def get_keypoints_list(cap, pose_model, img_width, img_height):
+        keypoints_list = []
+        pose_world_keypoints_list = []
+        landmarks_list = []
+                
+        if img_width == 0 or img_height == 0:
+                raise ValueError("Invalid frame dimensions: height or width is 0.")
+            
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            keypoints, pose_world_keypoints, landmarks = PoseUtils.process_frame(frame, pose_model, img_width, img_height)
+            keypoints_list.append(keypoints)
+            pose_world_keypoints_list.append(pose_world_keypoints)
+            landmarks_list.append(landmarks)
+
+
+        return keypoints_list, pose_world_keypoints_list, landmarks_list
+    
+    @staticmethod
+    def process_frame(frame, pose_model, img_width, img_height):
+        try:
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            detection_result = pose_model.process(rgb_frame)
+
+            keypoints = np.zeros((25, 3))
+            pose_world_keypoints = np.zeros((25, 3))
+            landmarks_list = []
+            
+            if detection_result.pose_landmarks:
+                landmarks = detection_result.pose_landmarks.landmark
+                landmarks_list.append(landmarks)
+                # landmarks = detection_result.pose_world_landmarks.landmark
+
+                pose_world_landmarks = detection_result.pose_world_landmarks.landmark
+
+                for mp_idx, openpose_idx in PoseUtils.mediapipe_to_openpose.items():
+                    if mp_idx < len(landmarks):
+                        landmark = landmarks[mp_idx]
+                        world_landmark = pose_world_landmarks[mp_idx]
+                        
+                        keypoints[openpose_idx] = [landmark.x * img_width, landmark.y * img_height, 1.0]
+                        pose_world_keypoints[openpose_idx] = [world_landmark.x, world_landmark.y, world_landmark.z]
+                        
+
+                neck = PoseUtils.interpolate_joint(landmarks[11], landmarks[12])
+                keypoints[1] = [neck[0] * img_width, neck[1] * img_height, 1.0]
+                
+                neck_world = PoseUtils.interpolate_joint(pose_world_landmarks[11], pose_world_landmarks[12])
+                pose_world_keypoints[1] = [neck_world[0], neck_world[1], neck_world[2]]
+                
+                mid_hip = PoseUtils.interpolate_joint(landmarks[23], landmarks[24])
+                keypoints[8] = [mid_hip[0] * img_width, mid_hip[1] * img_height, 1.0]
+                
+                mid_hip_world = PoseUtils.interpolate_joint(pose_world_landmarks[23], pose_world_landmarks[24])
+                pose_world_keypoints[8] = [mid_hip_world[0], mid_hip_world[1], mid_hip_world[2]]
+                
+                keypoints[21] = keypoints[14]
+                keypoints[24] = keypoints[11]
+                
+                pose_world_keypoints[21] = pose_world_keypoints[14]
+                pose_world_keypoints[24] = pose_world_keypoints[11]
+                       
+            return keypoints, pose_world_keypoints, landmarks_list
+        except Exception as e:
+            print(f"Error processing a frame: {e}")
+            raise RuntimeError(f"Error processing a frame: {e}")
     
     @staticmethod
     def get_root_keypoints(landmarks_list):
@@ -77,6 +159,7 @@ class PoseUtils:
             root_keypoints.append(avg_root.tolist())  # Store as list
             
         return root_keypoints
+    
     
     @staticmethod
     def initialize_3D_pose_estimator(config_file, checkpoint_file):

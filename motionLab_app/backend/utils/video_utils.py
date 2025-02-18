@@ -17,8 +17,19 @@ class VideoUtils:
         cap = cv2.VideoCapture(file_path)
         if not cap.isOpened():
             raise ValueError(f"Unable to open video file: {file_path}")
-
         return cap
+    
+    @staticmethod 
+    def get_video_dimensions(video):
+        """
+        Returns the dimensions of a video.
+
+        :param video: OpenCV VideoCapture object
+        :return: Tuple (width, height) of the video frame
+        """
+        width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        return width, height
     
     @staticmethod
     def get_video_fps(video):
@@ -45,3 +56,20 @@ class VideoUtils:
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         writer = cv2.VideoWriter(output_video_path, fourcc, fps, frame_size)
         return writer, output_video_path
+    
+    @staticmethod
+    def write_cropped_people(writers, cropped_people, output_folder, fps, frame_size, output_video_paths):
+        """
+        Writes cropped person frames to individual video files.
+        """
+        for person_id, cropped_frame in cropped_people:
+            if person_id is None:
+                continue  # Skip if no ID assigned
+
+            if person_id not in writers:
+                writers[person_id], output_video_path = VideoUtils.initialize_video_writer(
+                    person_id, output_folder, fps, frame_size
+                )
+                output_video_paths.append(output_video_path)
+
+            writers[person_id].write(cropped_frame)

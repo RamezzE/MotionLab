@@ -47,6 +47,30 @@ class DrawingUtils:
         
         return frame
     
+    # @staticmethod
+    # def visualize_openpose_keypoints(cap, keypoints, img_height):
+    #     """Draws and displays keypoints on the frame when visualization is required."""
+    #     while cap.isOpened():
+    #         ret, frame = cap.read()
+    #         if not ret:
+    #             break
+            
+    #         try:
+    #             frame_with_keypoints = DrawingUtils.draw_openpose_keypoints(frame, keypoints)
+
+    #             # Resize the frame for better visualization
+    #             if img_height > 500:
+    #                 scale = 500 / img_height
+    #                 frame_with_keypoints = cv2.resize(frame_with_keypoints, (0, 0), fx=scale, fy=scale)
+
+    #             # Display the frame
+    #             cv2.imshow("Pose Estimation", frame_with_keypoints)
+    #             cv2.waitKey(1)  # 1ms delay for video processing
+    #         except Exception as e:
+    #             print(f"Error in visualize_keypoints: {e}")
+    #             raise RuntimeError(f"Error in visualize_keypoints: {e}")
+    #     cv2.destroyAllWindows()
+        
     @staticmethod
     def visualize_3D_points(points_3d, connections=None):
         fig = plt.figure()
