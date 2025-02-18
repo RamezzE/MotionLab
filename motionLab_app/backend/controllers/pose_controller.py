@@ -4,8 +4,6 @@ import cv2
 import pathlib
 import importlib
 import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 from pathlib import Path
 from datetime import datetime
 from flask import jsonify
@@ -13,40 +11,11 @@ from flask import jsonify
 from utils.pose_estimator_3d import estimator_3d
 from utils.bvh_skeleton import openpose_skeleton, h36m_skeleton, cmu_skeleton
 
-import matplotlib.pyplot as plt
-from ultralytics import YOLO
+from utils.video_utils import VideoUtils
+from utils.pose_utils import PoseUtils
+from utils.drawing_utils import DrawingUtils
 
-# from mpl_toolkits.mplot3d import Axes3D
-CMU_CONNECTIONS = [
-    (0, 1), (0, 4), (1, 2), (4, 5), (2, 3), (5, 6), (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), 
-    (8, 14), (14, 15), (15, 16),
-]
-OPENPOSE_CONNECTIONS_25 = [
-    (0, 1),  
-    (0, 15),
-    (0, 16),
-    (1, 2), 
-    (1,5),
-    (1, 8),
-    (2, 3),
-    (3, 4),
-    (5, 6), 
-    (6, 7),
-    (8, 9),
-    (8, 12),
-    (9, 10),
-    (10, 11),
-    (11, 22),
-    (11, 24),
-    (12, 13),
-    (13, 14),
-    (14, 19),
-    (14, 21),
-    (15, 17),
-    (16, 18),
-    (19, 20),
-    (22, 23),    
-]
+from ultralytics import YOLO
 
 class PoseController:
     def __init__(self, config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
@@ -63,9 +32,6 @@ class PoseController:
         self.img_width = 0
         self.img_height = 0
         self.fps = 30
-        
-        # YOLO model initialization
-        # self.yolo_model = YOLO('yolov8n-pose.pt')
         
         # 2D Pose detector initialization
         self.mp_pose = mp.solutions.pose
@@ -89,58 +55,10 @@ class PoseController:
         except Exception as e:
             raise RuntimeError(f"Error initializing Estimator3D: {e}")
 
-    # Interpolate joints
-    @staticmethod
-    def interpolate_joint(lm1, lm2):
-        return [(lm1.x + lm2.x) / 2, (lm1.y + lm2.y) / 2, (lm1.z + lm2.z) / 2]
-
-    # Function to draw keypoints on the frame
-    @staticmethod
-    def draw_openpose_keypoints(frame, keypoints):
-        for i, (x, y, _) in enumerate(keypoints):
-            cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), -1)
-            cv2.putText(frame, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        
-        for connection in OPENPOSE_CONNECTIONS_25:
-            joint1 = keypoints[connection[0]]
-            joint2 = keypoints[connection[1]] 
-            cv2.line(frame, (int(joint1[0]), int(joint1[1])), (int(joint2[0]), int(joint2[1])), (0, 255, 0), 2)
-        
-        return frame
-    
-    # Align and scale 3D pose
-    @staticmethod
-    def align_and_scale_3d_pose(pose_3d):
-        rotation_matrix_x = np.array([
-            [1,  0,  0], 
-            [0, -1,  0], 
-            [0,  0, -1]   
-        ])
-        pose_3d = np.einsum('ij,klj->kli', rotation_matrix_x, pose_3d)
-
-        min_y = np.min(pose_3d[:, :, 1])
-        pose_3d[:, :, 1] += -min_y
-
-        pose_3d *= 0.025
-        return pose_3d
-
-    # Open the video file and validate it
-    def _open_video(self, file_path):
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Video file not found: {file_path}")
-
-        cap = cv2.VideoCapture(file_path)
-        if not cap.isOpened():
-            raise ValueError(f"Unable to open video file: {file_path}")
-        self.fps = cap.get(cv2.CAP_PROP_FPS)
-        return cap
-
     # Process a single frame
     def _process_frame(self, frame, visualize = False):
         try:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-            # detection_result = self.pose_detector.detect(mp_image)
             detection_result = self.pose.process(rgb_frame)
 
             keypoints = np.zeros((25, 3))
@@ -162,16 +80,16 @@ class PoseController:
                         pose_world_keypoints[openpose_idx] = [world_landmark.x, world_landmark.y, world_landmark.z]
                         
 
-                neck = self.interpolate_joint(landmarks[11], landmarks[12])
+                neck = PoseUtils.interpolate_joint(landmarks[11], landmarks[12])
                 keypoints[1] = [neck[0] * self.img_width, neck[1] * self.img_height, 1.0]
                 
-                neck_world = self.interpolate_joint(pose_world_landmarks[11], pose_world_landmarks[12])
+                neck_world = PoseUtils.interpolate_joint(pose_world_landmarks[11], pose_world_landmarks[12])
                 pose_world_keypoints[1] = [neck_world[0], neck_world[1], neck_world[2]]
                 
-                mid_hip = self.interpolate_joint(landmarks[23], landmarks[24])
+                mid_hip = PoseUtils.interpolate_joint(landmarks[23], landmarks[24])
                 keypoints[8] = [mid_hip[0] * self.img_width, mid_hip[1] * self.img_height, 1.0]
                 
-                mid_hip_world = self.interpolate_joint(pose_world_landmarks[23], pose_world_landmarks[24])
+                mid_hip_world = PoseUtils.interpolate_joint(pose_world_landmarks[23], pose_world_landmarks[24])
                 pose_world_keypoints[8] = [mid_hip_world[0], mid_hip_world[1], mid_hip_world[2]]
                 
                 keypoints[21] = keypoints[14]
@@ -182,7 +100,7 @@ class PoseController:
             
             ## Draw keypoints
             if visualize:
-                frame_with_keypoints = self.draw_openpose_keypoints(frame, keypoints)
+                frame_with_keypoints = DrawingUtils.draw_openpose_keypoints(frame, keypoints)
 
                 # Show the frame
                 if self.img_height > 500:
@@ -248,38 +166,6 @@ class PoseController:
         except Exception as e:
             print(f"Error in _convert_3d_to_bvh: {e}")
             raise RuntimeError(f"Error in _convert_3d_to_bvh: {e}")
-        
-    def _visualize_3D_points(self, points_3d, connections=None):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')        
-        points_3d_numpy = np.array(points_3d)
-        x_max, y_max, z_max = np.max(points_3d_numpy[:, :, 0]), np.max(points_3d_numpy[:, :, 1]), np.max(points_3d_numpy[:, :, 2])
-
-        up_limit = max(abs(x_max), abs(y_max), abs(z_max))
-        down_limit = -up_limit
-
-        for point in points_3d:
-            ax.clear()
-            x = point[:, 0]  # Extract X coordinates
-            y = point[:, 1]  # Extract Y coordinates
-            z = point[:, 2]  # Extract Z coordinates
-
-            ax.scatter(x, -z, -y)
-
-            for connection in connections:
-                idx1, idx2 = connection
-                ax.plot([x[idx1], x[idx2]], [-z[idx1], -z[idx2]], [-y[idx1], -y[idx2]], color='black')
-
-            ax.set_xlim(down_limit, up_limit)
-            ax.set_ylim(down_limit, up_limit)
-            ax.set_zlim(down_limit, up_limit)
-
-            ax.set_xlabel('X-axis')
-            ax.set_ylabel('Y-axis')
-            ax.set_zlabel('Z-axis')
-
-            plt.pause(0.01)
-            plt.show(block=False)
             
     def _get_root_keypoints(self, landmarks_list):
         root_keypoints = []
@@ -325,18 +211,18 @@ class PoseController:
     # Process the video file
     def process_video(self, temp_video_path):        
         try:
-            cap = self._open_video(temp_video_path)
+            cap = VideoUtils.open_video(temp_video_path)
+            self.fps = VideoUtils.get_video_fps(cap)
             
             keypoints, pose_world_keypoints, landmarks_list = self._get_keypoints_list(cap, visualize=False)
             
             root_keypoints = self._get_root_keypoints(landmarks_list)
                         
-            # self._visualize_3D_points(pose_world_keypoints, connections=OPENPOSE_CONNECTIONS_25)
             points_3d = self._estimate_3d_from_2d(keypoints)
 
-            corrected_3d_points = self.align_and_scale_3d_pose(points_3d)
+            corrected_3d_points = PoseUtils.align_and_scale_3d_pose(points_3d)
             
-            # self._visualize_3D_points(corrected_3d_points, connections=CMU_CONNECTIONS)
+            # DrawingUtils.visualize_3D_points(corrected_3d_points, connections=DrawingUtils.CMU_CONNECTIONS)
             
             bvh_filename =  self._convert_3d_to_bvh(corrected_3d_points, root_keypoints)
             
@@ -363,7 +249,8 @@ class PoseController:
             # Create an output folder
             output_folder = 'output_videos'
             
-            cap = self._open_video(video_path)
+            cap = VideoUtils.open_video(video_path)
+            self.fps = VideoUtils.get_video_fps(cap)
             
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             
@@ -435,7 +322,7 @@ class PoseController:
                         person_id = int(result.boxes.id[i])  # Get tracking ID
                         
                         if person_id not in writers:
-                            writers[person_id], output_video_path = self._initialize_video_writer(person_id, output_folder)
+                            writers[person_id], output_video_path = VideoUtils.initialize_video_writer(person_id, output_folder, self.fps, (self.img_width, self.img_height))
                             self.output_video_paths.append(output_video_path)
                             
                         # Write the processed frame to the corresponding VideoWriter object
@@ -444,12 +331,3 @@ class PoseController:
         except Exception as e:
             print(f"Error in _process_YOLO_frame: {e}")
             raise RuntimeError(f"Error in _process_YOLO_frame: {e}")
-                    
-    def _initialize_video_writer(self, person_id, output_folder):
-        """
-        Initializes a VideoWriter object for the given person_id.
-        """
-        output_video_path = os.path.join(output_folder, f'person_{person_id}.mp4')
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(output_video_path, fourcc, self.fps, (self.img_width, self.img_height))
-        return writer, output_video_path
