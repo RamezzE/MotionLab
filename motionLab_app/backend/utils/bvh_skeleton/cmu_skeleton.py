@@ -12,7 +12,6 @@ class CMUSkeleton(object):
         self.counter = -1
         self.root_positions = []
         self.keypoint2index = {
-            # Body joints (0-16)
             'Hips': 0,
             'RightUpLeg': 1,
             'RightLeg': 2,
@@ -30,50 +29,68 @@ class CMUSkeleton(object):
             'RightArm': 14,
             'RightForeArm': 15,
             'RightHand': 16,
-            
-            # Left hand joints (17-31)
-            'LeftThumb': 17,
-            'LeftThumbMid': 18,
-            'LeftThumbTip': 19,
-            'LeftIndex': 20,
-            'LeftIndexMid': 21,
-            'LeftIndexTip': 22,
-            'LeftMiddle': 23,
-            'LeftMiddleMid': 24,
-            'LeftMiddleTip': 25,
-            'LeftRing': 26,
-            'LeftRingMid': 27,
-            'LeftRingTip': 28,
-            'LeftPinky': 29,
-            'LeftPinkyMid': 30,
-            'LeftPinkyTip': 31,
-            
-            # Right hand joints (32-46)
-            'RightThumb': 32,
-            'RightThumbMid': 33,
-            'RightThumbTip': 34,
-            'RightIndex': 35,
-            'RightIndexMid': 36,
-            'RightIndexTip': 37,
-            'RightMiddle': 38,
-            'RightMiddleMid': 39,
-            'RightMiddleTip': 40,
-            'RightRing': 41,
-            'RightRingMid': 42,
-            'RightRingTip': 43,
-            'RightPinky': 44,
-            'RightPinkyMid': 45,
-            'RightPinkyTip': 46,
-            
-            # Unused joints
             'RightHipJoint': -1,
             'RightFootEndSite': -1,
             'LeftHipJoint': -1,
             'LeftFootEndSite': -1,
             'LeftShoulder': -1,
+            # 'LeftHandEndSite': -1,
             'RightShoulder': -1,
+            # 'RightHandEndSite': -1,
             'LowerBack': -1,
             'Neck': -1,
+            
+            'LeftThumb': -1,
+            'LeftThumbMid': -1,
+            'LeftThumbTip': -1,
+            # 'LeftThumbTipEndSite': -1,
+            
+            
+            'LeftIndex': -1,
+            'LeftIndexMid': -1,
+            'LeftIndexTip': -1,
+            # 'LeftIndexTipEndSite': -1,
+            
+            'LeftMiddle': -1,
+            'LeftMiddleMid': -1,
+            'LeftMiddleTip': -1,
+            # 'LeftMiddleTipEndSite': -1,
+            
+            'LeftRing': -1,
+            'LeftRingMid': -1,
+            'LeftRingTip': -1,
+            # 'LeftRingTipEndSite': -1,
+            
+            'LeftPinky': -1,
+            'LeftPinkyMid': -1,
+            'LeftPinkyTip': -1,
+            # 'LeftPinkyTipEndSite': -1,
+            
+            'RightThumb': -1,
+            'RightThumbMid': -1,
+            'RightThumbTip': -1,
+            # 'RightThumbTipEndSite': -1,
+            
+            'RightIndex': -1,
+            'RightIndexMid': -1,
+            'RightIndexTip': -1,
+            # 'RightIndexTipEndSite': -1,
+            
+            'RightMiddle': -1,
+            'RightMiddleMid': -1,
+            'RightMiddleTip': -1,
+            # 'RightMiddleTipEndSite': -1,
+            
+            'RightRing': -1,
+            'RightRingMid': -1,
+            'RightRingTip': -1,
+            # 'RightRingTipEndSite': -1,
+            
+            'RightPinky': -1,
+            'RightPinkyMid': -1,
+            'RightPinkyTip': -1,
+            # 'RightPinkyTipEndSite': -1,
+            
         }
         self.index2keypoint = {v: k for k, v in self.keypoint2index.items()}
         self.keypoint_num = len(self.keypoint2index)
@@ -261,12 +278,6 @@ class CMUSkeleton(object):
             "RightPinkyTip": [-1, 0, -0.13]
     }
 
-        # Print debug info inside __init__
-        print("Expected joints in CMU skeleton:", len(self.keypoint2index))
-        active_joints = {k: v for k, v in self.keypoint2index.items() if v >= 0}
-        print("Active joints:", len(active_joints))
-        print("Active joint mapping:", active_joints)
-
     def get_initial_offset(self, poses_3d):
         # TODO: RANSAC
         bone_lens = {self.root: [0]}
@@ -395,85 +406,120 @@ class CMUSkeleton(object):
 
 
     def pose2euler(self, pose, header):
-        """Convert a single pose to Euler angles."""
-        channels = []
-        index = self.keypoint2index
-        
-        # First add root position
-        channels.extend(pose[0])  # Root position
-        
-        # Process each joint
-        for node in header.nodes:
+        channel = []
+        quats = {}
+        eulers = {}
+        stack = [header.root]
+        while stack:
+            node = stack.pop()
             joint = node.name
-            joint_idx = index[joint]
+            joint_idx = self.keypoint2index[joint]
             
-            # Skip joints that aren't in our pose data
-            if joint_idx == -1:
-                channels.extend([0, 0, 0])  # Add zero rotation for skipped joints
-                continue
+            if node.is_root:
+                self.counter += 1
+                MAX_X = 50
+                # MAX_X = 100
+                # MAX_X = 30
+                MAX_Y = 50
+                MIN_Y = 0
+                
+                OLD_MAX = 1
+                OLD_MIN = 0
+                                
+                x = ((self.root_positions[self.counter][0] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_X - -MAX_X) + -MAX_X
+                y = ((self.root_positions[self.counter][1] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_Y - MIN_Y) + MIN_Y
+                # z = ((self.root_positions[self.counter][2] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (50 - 0) + 0
+                pos = [x, y, 0]
+                channel.extend(pos)
+
+            index = self.keypoint2index
+            order = None
+            if joint == 'Hips':
+                x_dir = pose[index['LeftUpLeg']] - pose[index['RightUpLeg']]
+                y_dir = None
+                z_dir = pose[index['Spine']] - pose[joint_idx]
+                order = 'zyx'
+            elif joint in ['RightUpLeg', 'RightLeg']:
+                child_idx = self.keypoint2index[node.children[0].name]
+                x_dir = pose[index['Hips']] - pose[index['RightUpLeg']]
+                y_dir = None
+                z_dir = pose[joint_idx] - pose[child_idx]
+                order = 'zyx'
+            elif joint in ['LeftUpLeg', 'LeftLeg']:
+                child_idx = self.keypoint2index[node.children[0].name]
+                x_dir = pose[index['LeftUpLeg']] - pose[index['Hips']]
+                y_dir = None
+                z_dir = pose[joint_idx] - pose[child_idx]
+                order = 'zyx'
+            elif joint == 'Spine':
+                x_dir = pose[index['LeftUpLeg']] - pose[index['RightUpLeg']]
+                y_dir = None
+                z_dir = pose[index['Spine1']] - pose[joint_idx]
+                order = 'zyx'
+            elif joint == 'Spine1':
+                x_dir = pose[index['LeftArm']] - \
+                    pose[index['RightArm']]
+                y_dir = None
+                z_dir = pose[joint_idx] - pose[index['Spine']]
+                order = 'zyx'
+            elif joint == 'Neck1':
+                x_dir = None
+                y_dir = pose[index['Spine1']] - pose[joint_idx]
+                z_dir = pose[index['HeadEndSite']] - pose[index['Spine1']]
+                order = 'zxy'
+            elif joint == 'LeftArm':
+                x_dir = pose[index['LeftForeArm']] - pose[joint_idx]
+                y_dir = pose[index['LeftForeArm']] - pose[index['LeftHand']]
+                z_dir = None
+                order = 'xzy'
+            elif joint == 'LeftForeArm':
+                x_dir = pose[index['LeftHand']] - pose[joint_idx]
+                y_dir = pose[joint_idx] - pose[index['LeftArm']]
+                z_dir = None
+                order = 'xzy'
+            elif joint == 'RightArm':
+                x_dir = pose[joint_idx] - pose[index['RightForeArm']]
+                y_dir = pose[index['RightForeArm']] - pose[index['RightHand']]
+                z_dir = None
+                order = 'xzy'
+            elif joint == 'RightForeArm':
+                x_dir = pose[joint_idx] - pose[index['RightHand']]
+                y_dir = pose[joint_idx] - pose[index['RightArm']]
+                z_dir = None
+                order = 'xzy'
             
-            try:
-                # Handle different joint types
-                if joint == 'Hips':
-                    x_dir = pose[index['RightUpLeg']] - pose[index['LeftUpLeg']]
-                    y_dir = pose[index['Spine']] - pose[joint_idx]
-                    z_dir = np.cross(x_dir, y_dir)
-                    order = 'xyz'
-                
-                # Handle hand joints specifically
-                elif 'Hand' in joint or 'Thumb' in joint or 'Index' in joint or 'Middle' in joint or 'Ring' in joint or 'Pinky' in joint:
-                    # For hand joints, use parent-child relationship for direction
-                    parent_idx = index[self.parent[joint]]
-                    if parent_idx >= 0:
-                        # Calculate direction from parent to current joint
-                        z_dir = pose[joint_idx] - pose[parent_idx]
-                        # Create arbitrary but consistent x and y directions
-                        x_dir = np.array([1, 0, 0])
-                        y_dir = np.cross(z_dir, x_dir)
-                        x_dir = np.cross(y_dir, z_dir)
-                        order = 'xyz'
-                    else:
-                        # If no valid parent, use default orientation
-                        channels.extend([0, 0, 0])
-                        continue
-                
-                else:
-                    # Handle other body joints as before
-                    child_name = node.children[0].name if node.children else None
-                    child_idx = index.get(child_name, -1)
-                    if child_idx >= 0:
-                        y_dir = pose[child_idx] - pose[joint_idx]
-                    else:
-                        y_dir = pose[joint_idx] - pose[index[self.parent[joint]]]
-                    
-                    x_dir = np.array([1, 0, 0])  # Arbitrary but consistent
-                    z_dir = np.cross(x_dir, y_dir)
-                    x_dir = np.cross(y_dir, z_dir)
-                    order = 'xyz'
-                
-                # Normalize directions
-                x_dir = x_dir / np.linalg.norm(x_dir)
-                y_dir = y_dir / np.linalg.norm(y_dir)
-                z_dir = z_dir / np.linalg.norm(z_dir)
-                
-                # Calculate rotation
+            if order:
                 dcm = math3d.dcm_from_axis(x_dir, y_dir, z_dir, order)
-                channels.extend(math3d.euler_from_dcm(dcm, order))
-                
-            except Exception as e:
-                print(f"Warning: Error calculating rotation for joint {joint}, using zero rotation")
-                channels.extend([0, 0, 0])
-        
-        return channels
+                quats[joint] = math3d.dcm2quat(dcm)
+            else:
+                quats[joint] = quats[self.parent[joint]].copy()
+            
+            local_quat = quats[joint].copy()
+            if node.parent:
+                local_quat = math3d.quat_divide(
+                    q=quats[joint], r=quats[node.parent.name]
+                )
+            
+            euler = math3d.quat2euler(
+                q=local_quat, order=node.rotation_order
+            )
+            euler = np.rad2deg(euler)
+            eulers[joint] = euler
+            channel.extend(euler)
+
+            for child in node.children[::-1]:
+                if not child.is_end_site:
+                    stack.append(child)
+
+        return channel
 
 
-    def poses2bvh(self, poses_3d, output_file, fps, root_keypoints=None):
-        if root_keypoints is not None and root_keypoints.size > 0:  # Check if array exists and is not empty
+    def poses2bvh(self, poses_3d, header=None, output_file=None, fps=30, root_keypoints=None):
+        if root_keypoints:
             self.root_positions = root_keypoints
-        else:
-            self.root_positions = poses_3d[:, 0]  # Use first joint as root if no root_keypoints provided
         
-        header = self.get_bvh_header(poses_3d)
+        if not header:
+            header = self.get_bvh_header(poses_3d)
 
         channels = []
         for frame, pose in enumerate(poses_3d):
