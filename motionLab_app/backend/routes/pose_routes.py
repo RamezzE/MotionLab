@@ -49,7 +49,6 @@ def process_video_route():
         
         # Process the video
         print("Processing the video...")
-        # response = pose_controller.process_video(temp_video_path)
         success, bvh_filenames = pose_controller.multiple_human_segmentation(temp_video_path)
         
         # Create BVH files

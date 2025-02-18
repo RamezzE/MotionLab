@@ -11,13 +11,12 @@ class ProjectController:
         return Project.create(project_name, user_id)
     
     @staticmethod
-    def get_project_by_id(project_id):
-        return Project.get_project_by_id(project_id)
-    
-    @staticmethod
     def get_projects_by_user_id(user_id):
         try:
             projects = Project.get_projects_by_user_id(user_id)
+            if projects is None:
+                return {"success": False, "message": "No projects found"}
+            
             return {"success": True, "projects": [project.to_dict() for project in projects]}
         except Exception as e:
             return {"success": False, "message": str(e)}
@@ -43,8 +42,10 @@ class ProjectController:
             if str(project_dict["user_id"]) != str(user_id):
                 return {"success": False, "message": "Unauthorized"}
             
-            bvh_files = BVHController.get_bvhs_by_project_id(project_id)
-            bvh_dicts = [bvh.to_dict() for bvh in bvh_files]
+            bvh_dicts = BVHController.get_bvhs_by_project_id(project_id)
+            if bvh_dicts is None:
+                return {"success": False, "message": "No BVH files found"}
+            
             bvh_filenames = [bvh["path"] for bvh in bvh_dicts]
             return {"success": True, "filenames": bvh_filenames}
         except Exception as e:

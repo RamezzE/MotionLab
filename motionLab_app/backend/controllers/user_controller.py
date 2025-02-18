@@ -21,7 +21,10 @@ class UserController:
             }, 400
         
         user = User.create(first_name, last_name, email, password)
-        return {"success": True, "user": user.to_dict()}
+        if user:
+            return {"success": True, "user": user.to_dict()}, 201
+        
+        return {"success": False, "errors": "Error creating user"}, 500
     
     @staticmethod
     def authenticate_user(data):
@@ -37,8 +40,6 @@ class UserController:
             return {"success": True, "user": user.to_dict()}, 200
         
         return {"success": False, "errors": {"password": "Invalid Credentials"}}, 400
-    
-    
 
     # @staticmethod
     # def get_user_by_id(user_id):
