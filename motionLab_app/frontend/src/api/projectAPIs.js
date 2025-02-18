@@ -21,3 +21,14 @@ export const deleteProjectById = async (projectId, userId) => {
         return { success: false, data: error.message };
     }
 }
+
+export const getProjectBVHFilenames = async (projectId, userId) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/project/get-bvh-filenames?projectId=${projectId}&userId=${userId}`);
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error fetching BVH filenames:", error.message);
+        return { success: false, data: error.message };
+    }
+}

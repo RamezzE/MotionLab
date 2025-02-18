@@ -60,9 +60,8 @@ const UploadPage = () => {
 
     if (response && response.success) {
       console.log("Upload Response Data:", response);
-      navigate(`/bvh-viewer`, {
-        // state: { fileName: response.bvh_filename },
-        state: { fileNames_list: response.bvh_filenames },
+      navigate(`/project/${response.projectId}`, {
+        state: { filenames_list: response.bvh_filenames }
       });
     } else {
       console.error("Upload Error:", response);
@@ -71,7 +70,7 @@ const UploadPage = () => {
 
   return (
     <div className="flex sm:flex-row flex-col-reverse justify-between items-center gap-y-8 sm:gap-y-0">
-      <UploadVideoSection 
+      <UploadVideoSection
         handleUpload={handleUpload}
         handleFileChange={handleFileChange}
         progress={progress}
@@ -79,7 +78,7 @@ const UploadPage = () => {
         file={file}
       />
 
-      <UploadVideoSettingsSection 
+      <UploadVideoSettingsSection
         settings={settings}
         setSettings={setSettings}
         error={settingsError}

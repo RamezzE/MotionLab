@@ -2,28 +2,40 @@ import React, { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import BVHViewer from "../../../components/BVH/BVHViewer";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { getProjectBVHFilenames } from "../../../api/projectAPIs";
+import useUserStore from "../../../store/useUserStore";
 
 const BVHScene = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [bvhUrl, setBvhUrl] = useState(null);
   const [bvhUrlList, setBvhUrlList] = useState([]);
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 
   const location = useLocation();
+  const { projectId } = useParams();
+  const { user } = useUserStore();
 
   useEffect(() => {
     if (location.state) {
-      // setBvhUrl("http://127.0.0.1:5000/bvh/" + location.state.fileName);
       const updatedUrls = location.state.fileNames_list.map(
         (fileName) => `http://127.0.0.1:5000/bvh/${fileName}`
       );
       setBvhUrlList(updatedUrls);    }
     else {
-      setBvhUrl("https://raw.githubusercontent.com/CreativeInquiry/BVH-Examples/master/example-threejs/bvh/Jackson.bvh");
+      getProjectBVHFilenames(projectId, user.id).then((response) => {
+        if (response.success) {
+          const updatedUrls = response.filenames.map(
+            (fileName) => `http://127.0.0.1:5000/bvh/${fileName}`
+          );
+          setBvhUrlList(updatedUrls);
+        } else {
+          console.error("Error fetching BVH filenames:", response.data);
+        }
+      });
+      // setBvhUrl("https://raw.githubusercontent.com/CreativeInquiry/BVH-Examples/master/example-threejs/bvh/Jackson.bvh");
     }
   }, [location.state]);
 
@@ -66,7 +78,7 @@ const BVHScene = () => {
       </div>
 
       <div className="flex flex-col gap-y-4 w-full lg:w-1/3">
-        <h1 className="font-bold text-center text-white">Animation Controls</h1>
+        <h1 className="font-bold text-white text-center">Animation Controls</h1>
 
         {/* Play/Pause Button & Slider */}
         <div className="flex flex-col items-center gap-y-2 w-full">
@@ -91,7 +103,7 @@ const BVHScene = () => {
               onTouchEnd={() => handleDurationScroll(false)}
               className="w-full"
             />
-            <div className="flex justify-between mt-2 text-sm text-white">
+            <div className="flex justify-between mt-2 text-white text-sm">
               <span>{currentTime.toFixed(2)}s</span>
               <span>{duration.toFixed(2)}s</span>
             </div>
@@ -100,7 +112,7 @@ const BVHScene = () => {
 
         {/* Rotation Controls */}
         <div className="bg-gray-800 p-4 rounded-md">
-          <h2 className="font-semibold text-center text-white">Rotation Controls</h2>
+          <h2 className="font-semibold text-white text-center">Rotation Controls</h2>
 
           <label className="text-white">X Rotation: {rotation.x.toFixed(1)}°</label>
           <input

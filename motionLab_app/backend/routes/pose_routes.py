@@ -57,7 +57,7 @@ def process_video_route():
         BVHController.create_bvhs(bvh_filenames, project["id"])
         
         if success:
-            return jsonify({"success": True, "bvh_filenames": bvh_filenames}), 200
+            return jsonify({"success": True, "bvh_filenames": bvh_filenames, "projectId": project["id"]}), 200
         else:
             return jsonify({"success": False, "error": "Error processing video"}), 500
     except Exception as e:

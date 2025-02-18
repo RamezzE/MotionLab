@@ -72,7 +72,11 @@ const router = createBrowserRouter([
                 element: <Projects />,
               }
             ]
-          }
+          },
+          {
+            path: "project/:projectId",  // Dynamic route with projectId
+            element: <BVHScene /> 
+        }
         ],
       },
     ],

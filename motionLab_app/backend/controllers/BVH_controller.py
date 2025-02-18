@@ -33,3 +33,7 @@ class BVHController:
             return True
         except Exception as e:
             return False
+        
+    @staticmethod
+    def get_bvhs_by_project_id(project_id):
+        return BVH.get_by_project_id(project_id)

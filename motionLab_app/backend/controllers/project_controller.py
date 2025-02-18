@@ -33,3 +33,19 @@ class ProjectController:
             return {"success": True, "message": "Project deleted successfully"}
         except Exception as e:
             return {"success": False, "message": str(e)}
+        
+    @staticmethod
+    def get_bvh_filenames(project_id, user_id):
+        try:
+            project = Project.get_project_by_id(project_id)
+            project_dict = project.to_dict()
+
+            if str(project_dict["user_id"]) != str(user_id):
+                return {"success": False, "message": "Unauthorized"}
+            
+            bvh_files = BVHController.get_bvhs_by_project_id(project_id)
+            bvh_dicts = [bvh.to_dict() for bvh in bvh_files]
+            bvh_filenames = [bvh["path"] for bvh in bvh_dicts]
+            return {"success": True, "filenames": bvh_filenames}
+        except Exception as e:
+            return {"success": False, "message": str(e)}
