@@ -84,6 +84,12 @@ const Projects: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center space-y-4">
+            <div className="mb-8 text-center">
+                <h1 className="mb-2 font-bold text-white text-5xl">Your Projects</h1>
+                <p className="text-gray-300 text-lg">
+                    Here are the projects you have created.
+                </p>
+            </div>
             {projectList.map((project) => (
                 <Project
                     key={project.id}

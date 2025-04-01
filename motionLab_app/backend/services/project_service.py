@@ -32,6 +32,18 @@ class ProjectService:
             return None
         
     @staticmethod
+    def get_project_by_name_and_user_id(project_name, user_id):
+        try:
+            project = Project.get_project_by_name_and_user_id(project_name, user_id)
+            if project:
+                return project.to_dict()
+            
+            return None
+        except Exception as e:
+            print(f"Error in get_project_by_name_and_user_id: {e}")
+            return None
+        
+    @staticmethod
     def delete_project(project_id, user_id):
         try:
             if (Project.delete_project_by_id(project_id, user_id) and BVHService.delete_bvhs_by_project_id(project_id)):

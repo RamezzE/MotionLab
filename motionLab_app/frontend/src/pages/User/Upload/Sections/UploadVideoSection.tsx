@@ -1,3 +1,4 @@
+import FormButton from "@/components/UI/FormButton";
 import LoadingSpinner from "@components/UI/LoadingSpinner";
 
 import React from "react";
@@ -14,12 +15,6 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
 
   return (
     <div className="flex flex-col justify-center items-center px-8 w-full text-white">
-      <div className="mb-8 text-center">
-        <h1 className="mb-2 font-bold text-5xl">Upload Your MP4 File</h1>
-        <p className="text-gray-300 text-lg">
-          Upload your MP4 file to visualize 3D landmarks and animations.
-        </p>
-      </div>
 
       {!loading && (
 
@@ -46,10 +41,10 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
                     d="M3 16.5v1.25A2.25 2.25 0 005.25 20h13.5A2.25 2.25 0 0021 17.75V16.5M7.5 12l4.5 4.5m0 0l4.5-4.5m-4.5 4.5V3"
                   ></path>
                 </svg>
-                <p className="text-gray-300 text-sm">
+                {/* <p className="text-gray-300 text-sm">
                   Drag & drop your MP4 file here, or{" "}
                   <span className="text-purple-400">browse</span>
-                </p>
+                </p> */}
                 <p className="mt-2 text-gray-500 text-xs">Supported format: MP4</p>
               </>
             )}
@@ -101,20 +96,12 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
 
       {!loading && (
         <div className="flex space-x-4 mt-6">
-          <button
+          <FormButton
+            type="button"
+            label={loading ? "Uploading..." : "Upload and Visualize"}
+            loading={loading}
             onClick={handleUpload}
-            className="bg-purple-800 hover:bg-purple-600 disabled:opacity-50 px-6 py-3 rounded-md text-white transition duration-300"
-            disabled={loading}
-          >
-            {loading ? "Uploading..." : "Upload and Visualize"}
-          </button>
-          {/* <button
-            onClick={() => setFile(null)}
-            className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-md text-gray-300 transition duration-300"
-            disabled={loading}
-          >
-            Cancel
-          </button> */}
+          />
         </div>
       )}
 

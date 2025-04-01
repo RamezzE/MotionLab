@@ -58,3 +58,11 @@ class Project(db.Model):
         except Exception as e:
             print("Error getting projects by user id in get_projects_by_user_id / project_model.py:", e)
             return None
+        
+    @staticmethod
+    def get_project_by_name_and_user_id(project_name, user_id):
+        try:
+            return Project.query.filter_by(name=project_name, user_id=user_id).first()
+        except Exception as e:
+            print("Error getting project by name and user id in get_project_by_name_and_user_id / project_model.py:", e)
+            return None

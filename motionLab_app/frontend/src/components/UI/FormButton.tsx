@@ -3,23 +3,19 @@ import LoadingSpinner from "./LoadingSpinner"; // Adjust the path as needed
 
 interface FormButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     label: string;
-    onPress?: () => void;
     loading?: boolean;
 }
 
 const FormButton: FC<FormButtonProps> = ({
     label,
     className,
-    onPress,
     loading,
     onClick,
     ...props
 }) => {
     const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
         if (loading) return;
-        if (onPress) {
-            onPress();
-        }
+
         if (onClick) {
             onClick(e);
         }
