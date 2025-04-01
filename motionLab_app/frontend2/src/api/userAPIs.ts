@@ -1,13 +1,9 @@
 import axios from "axios";
+import { ApiResponse } from "@/types/apiTypes";
 
 const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
 
-interface ApiResponse<T> {
-    success: boolean;
-    data: T;
-}
-
-export const signup = async (userData: any): Promise<ApiResponse<any>> => {
+export const signup = async (userData: any) => {
     try {
         const response = await axios.post<ApiResponse<any>>(
             `${BASE_URL}/auth/signup`,
@@ -25,7 +21,7 @@ export const signup = async (userData: any): Promise<ApiResponse<any>> => {
     }
 };
 
-export const login = async (userData: any): Promise<ApiResponse<any>> => {
+export const login = async (userData: any) => {
     try {
         const response = await axios.post<ApiResponse<any>>(
             `${BASE_URL}/auth/login`,

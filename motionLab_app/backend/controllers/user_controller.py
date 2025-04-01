@@ -10,7 +10,7 @@ class UserController:
         if errors:
             return {"success": False, "errors": errors}, 400
         
-        return {"success": True, "user": user}, 201
+        return {"success": True, "data": user}, 201
     
     @staticmethod
     def login(request):
@@ -20,7 +20,7 @@ class UserController:
         if errors:
             return {"success": False, "errors": errors}, 400
         
-        return {"success": True, "user": user}, 200
+        return {"success": True, "data": user}, 200
     
     # @staticmethod
     # def get_user_by_id(user_id):

@@ -1,27 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { uploadVideo } from "../../../api/videoAPIs";
+
+import { uploadVideo } from "@/api/videoAPIs";
+import { validateProjectSettings } from "@/utils/validateProjectSettings";
+import useUserStore from "@/store/useUserStore";
+
 import UploadVideoSection from "./Sections/UploadVideoSection";
 import UploadVideoSettingsSection from "./Sections/UploadVideoSettingsSection";
-import { validateProjectSettings } from "../../../utils/validateProjectSettings";
-import useUserStore from "../../../store/useUserStore";
-
-interface ProjectSettings {
-  peopleCount: string;
-  outputFormat: string;
-  projectName: string;
-}
-
-interface UploadResponseData {
-  projectId: string;
-  bvh_filenames: string[];
-}
-
-interface UploadResponse {
-  success: boolean;
-  data: UploadResponseData;
-  error?: string;
-}
+import { ProjectSettings } from "@/types/types";
 
 const UploadPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -38,12 +24,7 @@ const UploadPage: React.FC = () => {
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const { user } = useUserStore();
 
-  // Extend the change event to ensure files is defined
-  interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
-    target: HTMLInputElement & { files: FileList };
-  }
-
-  const handleFileChange = (event: FileChangeEvent): void => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
@@ -77,7 +58,7 @@ const UploadPage: React.FC = () => {
       setLoading(true);
     }, 1500);
 
-    const response: UploadResponse = await uploadVideo(
+    const response = await uploadVideo(
       file,
       settings.projectName,
       user.id,

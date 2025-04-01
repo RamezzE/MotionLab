@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ApiResponse } from "@/types/apiTypes"; // Adjust the import path as needed
 
 const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
 
@@ -8,13 +9,6 @@ const axiosInstance = axios.create({
         "Content-Type": "application/json",
     },
 });
-
-// Define a generic interface for API responses
-export interface ApiResponse<T> {
-    success: boolean;
-    message?: string;
-    data: T;
-}
 
 // Replace `any` with the appropriate type if known
 
@@ -59,9 +53,14 @@ export const getProjectBVHFilenames = async (
             params: { projectId, userId },
         }
         );
+        console.log("Response from getProjectBVHFilenames:", response.data);
         return response.data;
     } catch (error: any) {
         console.error("Error fetching BVH filenames:", error.message);
-        return { success: false, data: error.message };
+        // get the error message from the response if available
+        const errorMessage = error.response?.data?.message || error.message;
+        console.error("Error message:", errorMessage);
+        return { success: false, data: errorMessage };
+        
     }
 };

@@ -4,3 +4,9 @@ export interface User {
     email: string;
     // Add other user properties as needed
 }
+
+export interface ProjectSettings {
+  peopleCount: string;
+  outputFormat: string;
+  projectName: string;
+}

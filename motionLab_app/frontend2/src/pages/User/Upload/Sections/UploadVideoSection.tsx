@@ -1,4 +1,4 @@
-import LoadingSpinner from "../../../../components/UI/LoadingSpinner";
+import LoadingSpinner from "@components/UI/LoadingSpinner";
 
 import React from "react";
 

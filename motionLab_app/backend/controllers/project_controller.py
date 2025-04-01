@@ -12,7 +12,7 @@ class ProjectController:
         
         projects = ProjectService.get_projects_by_user_id(user_id)
         if projects:
-            return jsonify({"success": True, "projects": projects}), 200
+            return jsonify({"success": True, "data": projects}), 200
         
         return jsonify({"success": False, "message": "No projects found"}), 404
         
@@ -46,6 +46,6 @@ class ProjectController:
         bvh_filenames, error_message = ProjectService.get_bvh_filenames(project_id, user_id)
         
         if bvh_filenames:
-            return jsonify({"success": True, "filenames": bvh_filenames}), 200
+            return jsonify({"success": True, "data": bvh_filenames}), 200
         
         return jsonify({"success": False, "message": error_message}), 400

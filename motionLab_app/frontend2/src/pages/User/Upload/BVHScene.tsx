@@ -1,30 +1,11 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import BVHViewer from "../../../components/BVH/BVHViewer";
 import { useLocation, useParams } from "react-router-dom";
-import { getProjectBVHFilenames } from "../../../api/projectAPIs";
-import useUserStore from "../../../store/useUserStore";
 
-interface Rotation {
-  x: number;
-  y: number;
-  z: number;
-}
-
-interface LocationState {
-  filenames_list: string[];
-}
-
-interface Params {
-  projectId: string;
-}
-
-interface GetBVHResponse {
-  success: boolean;
-  filenames: string[];
-  data?: any;
-}
+import BVHViewer from "@components/BVH/BVHViewer";
+import { getProjectBVHFilenames } from "@/api/projectAPIs";
+import useUserStore from "@/store/useUserStore";
 
 const BVHScene: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -32,15 +13,14 @@ const BVHScene: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
   const [bvhUrlList, setBvhUrlList] = useState<string[]>([]);
-  const [rotation, setRotation] = useState<Rotation>({ x: 0, y: 0, z: 0 });
 
   const location = useLocation();
-  const { projectId } = useParams<Params>();
+  const { projectId } = useParams();
   const { user } = useUserStore();
 
   useEffect(() => {
     if (location.state) {
-      const state = location.state as LocationState;
+      const state = location.state;
       const updatedUrls = state.filenames_list.map(
         (fileName: string) => `http://127.0.0.1:5000/bvh/${fileName}`
       );
@@ -48,9 +28,11 @@ const BVHScene: React.FC = () => {
     } else {
       if (!projectId || !user?.id) return;
 
-      getProjectBVHFilenames(projectId, user.id).then((response: GetBVHResponse) => {
+
+
+      getProjectBVHFilenames(projectId, user.id).then((response) => {
         if (response.success) {
-          const updatedUrls = response.filenames.map(
+          const updatedUrls = response.data.map(
             (fileName: string) => `http://127.0.0.1:5000/bvh/${fileName}`
           );
           setBvhUrlList(updatedUrls);
@@ -89,7 +71,6 @@ const BVHScene: React.FC = () => {
               onDurationSet={setDuration}
               onTimeUpdate={setCurrentTime}
               isScrolling={isScrolling}
-              rotation={rotation}
             />
           ))}
           <OrbitControls minDistance={10} maxDistance={300} />
@@ -129,55 +110,7 @@ const BVHScene: React.FC = () => {
           </div>
         </div>
 
-        {/* Rotation Controls */}
-        <div className="bg-gray-800 p-4 rounded-md">
-          <h2 className="font-semibold text-white text-center">Rotation Controls</h2>
 
-          <label className="text-white">
-            X Rotation: {rotation.x.toFixed(1)}°
-          </label>
-          <input
-            type="range"
-            min="-180"
-            max="180"
-            step="1"
-            value={rotation.x}
-            onChange={(e) =>
-              setRotation({ ...rotation, x: parseFloat(e.target.value) })
-            }
-            className="w-full"
-          />
-
-          <label className="text-white">
-            Y Rotation: {rotation.y.toFixed(1)}°
-          </label>
-          <input
-            type="range"
-            min="-180"
-            max="180"
-            step="1"
-            value={rotation.y}
-            onChange={(e) =>
-              setRotation({ ...rotation, y: parseFloat(e.target.value) })
-            }
-            className="w-full"
-          />
-
-          <label className="text-white">
-            Z Rotation: {rotation.z.toFixed(1)}°
-          </label>
-          <input
-            type="range"
-            min="-180"
-            max="180"
-            step="1"
-            value={rotation.z}
-            onChange={(e) =>
-              setRotation({ ...rotation, z: parseFloat(e.target.value) })
-            }
-            className="w-full"
-          />
-        </div>
       </div>
     </div>
   );

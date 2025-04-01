@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+
+// @ts-ignore
 import { BVHLoader } from "three/examples/jsm/loaders/BVHLoader";
 
 interface BVHViewerProps {
@@ -40,8 +42,9 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
             (result: BVHResult) => {
                 // Create Skeleton Helper
                 const skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0]);
-                // skeletonHelper.skeleton = result.skeleton;
                 
+                // @ts-ignore
+                skeletonHelper.skeleton = result.skeleton;
 
                 // Customize the SkeletonHelper material for thicker bones
                 skeletonHelper.material = new THREE.LineBasicMaterial({
@@ -67,7 +70,7 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
                 // Create Animation Mixer and clip action
                 const mixer = new THREE.AnimationMixer(skeletonHelper);
                 const action = mixer.clipAction(result.clip);
-                action.setLoop(THREE.LoopOnce); // Play the animation only once
+                action.setLoop(THREE.LoopOnce, 1); // Play the animation only once
                 action.clampWhenFinished = true; // Stop at the last frame when finished
                 action.setEffectiveWeight(1.0).play();
 

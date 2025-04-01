@@ -1,17 +1,20 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import FormField from "../../../components/UI/FormField";
-import useUserStore from "../../../store/useUserStore";
+import FormField from "@components/UI/FormField";
+import useUserStore from "@/store/useUserStore";
+
+import { LoginErrors } from "@/types/formTypes";
 
 const LoginPage = () => {
+  const { isAuthenticated, login } = useUserStore();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const { isAuthenticated, login } = useUserStore();
-
+  const [errors, setErrors] = useState<LoginErrors>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +26,21 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await login(formData);
+    const response = await login(formData);
+
+    if (response.success) {
+      setFormData({
+        email: "",
+        password: "",
+      })
+      setErrors({});
+      navigate("/");
+    }
+    else {
+      if (response.errors)
+        setErrors(response.errors);
+    }
+
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -57,6 +74,12 @@ const LoginPage = () => {
               extraStyles={`bg-gray-800`} label={""}
             />
 
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
+
+            {/* Password */}
+
             <FormField
               type="password"
               id="password"
@@ -65,6 +88,10 @@ const LoginPage = () => {
               onChange={(e) => handleInputChange(e)}
               extraStyles={`bg-gray-800`}
               label={""} />
+
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
 
           </div>
 

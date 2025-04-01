@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { getProjectsByUser, deleteProjectById } from "../../../../api/projectAPIs";
-import useUserStore from "../../../../store/useUserStore";
 import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react"; // Import trash icon
+
+import { getProjectsByUser, deleteProjectById } from "@/api/projectAPIs";
+import useUserStore from "@/store/useUserStore";
 
 // Define the shape of a project item as returned from the backend
 export interface ProjectItem {
@@ -72,9 +73,9 @@ const Projects: React.FC = () => {
         const fetchProjects = async () => {
             const response = await getProjectsByUser(user.id);
             if (response.success) {
-                setProjectList(response.projects);
+                setProjectList(response.data);
             } else {
-                console.error("Error fetching projects:", response.projects);
+                console.error("Error fetching projects:", response.message);
             }
         };
 

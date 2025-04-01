@@ -1,5 +1,5 @@
 import { useState } from "react";
-import FormField from "../../components/UI/FormField";
+import FormField from "@components/UI/FormField";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({

@@ -1,22 +1,22 @@
 import { createBrowserRouter } from "react-router-dom";
-import App from "../App";
+import App from "@/App";
 
-import NotFoundPage from "../pages/404";
+import NotFoundPage from "@/pages/404";
 
-import UserLayout from "../layouts/UserLayout";
-import LandingPage from "../pages/User/LandingPage";
+import UserLayout from "@/layouts/UserLayout";
+import LandingPage from "@/pages/User/LandingPage";
 
-import LoginPage from "../pages/User/Auth/Login";
-import SignUpPage from "../pages/User/Auth/SignUp";
+import LoginPage from "@/pages/User/Auth/Login";
+import SignUpPage from "@/pages/User/Auth/SignUp";
 
-import UploadPage from "../pages/User/Upload/Upload"
-import AboutPage from "../pages/User/About"
-import ContactPage from "../pages/User/Contact"
+import UploadPage from "@/pages/User/Upload/Upload"
+import AboutPage from "@/pages/User/About"
+import ContactPage from "@/pages/User/Contact"
 
-import FeaturesPage from "../pages/User/Features"
-import BVHScene from "../pages/User/Upload/BVHScene";
+import FeaturesPage from "@/pages/User/Features"
+import BVHScene from "@/pages/User/Upload/BVHScene";
 
-import Projects from "../pages/User/Profile/Projects/Projects";
+import Projects from "@/pages/User/Profile/Projects/Projects";
 
 const router = createBrowserRouter([
     {

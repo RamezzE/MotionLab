@@ -1,10 +1,14 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import FormField from "../../../components/UI/FormField";
-import useUserStore from "../../../store/useUserStore";
+import FormField from "@components/UI/FormField";
+import useUserStore from "@/store/useUserStore";
+
+import { SignupErrors } from "@/types/formTypes";
 
 const SignUpPage = () => {
+  const { isAuthenticated, signup } = useUserStore();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -13,7 +17,8 @@ const SignUpPage = () => {
     confirmPassword: "",
   });
 
-  const { isAuthenticated, signup } = useUserStore();
+  const [errors, setErrors] = useState<SignupErrors>({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +35,23 @@ const SignUpPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await signup(formData);
+    const response = await signup(formData);
+    if (!response.success) {
+      if (response.errors) {
+        setErrors(response.errors);
+      }
+    }
+    else {
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setErrors({});
+      navigate("/");
+    }
   };
 
   return (
@@ -59,6 +80,10 @@ const SignUpPage = () => {
                   onChange={handleInputChange}
                   extraStyles={`bg-gray-800`} label={""} />
 
+                  {errors.firstName && (
+                    <p className="text-red-500 text-sm">{errors.firstName}</p>
+                  )}
+
               </div>
 
               <div className="flex flex-col gap-y-2 text-start">
@@ -71,6 +96,10 @@ const SignUpPage = () => {
                   onChange={handleInputChange}
                   extraStyles={`bg-gray-800`} label={""} />
 
+                  {errors.lastName && (
+                    <p className="text-red-500 text-sm">{errors.lastName}</p>
+                  )}
+
               </div>
             </div>
             <FormField
@@ -81,6 +110,10 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               extraStyles={`bg-gray-800`} label={""} />
 
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
+
             <FormField
               type="password"
               id="password"
@@ -89,6 +122,10 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               extraStyles={`bg-gray-800`} label={""} />
 
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password}</p>
+              )}
+
             <FormField
               type="password"
               id="confirmPassword"
@@ -96,6 +133,10 @@ const SignUpPage = () => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               extraStyles={`bg-gray-800`} label={""} />
+
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+              )}
 
           </div>
 

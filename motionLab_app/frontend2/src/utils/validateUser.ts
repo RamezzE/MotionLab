@@ -1,12 +1,4 @@
-interface LoginFormData {
-    email: string;
-    password: string;
-}
-
-interface LoginErrors {
-    email?: string;
-    password?: string;
-}
+import { LoginErrors, LoginFormData, SignupErrors, SignupFormData } from "../types/formTypes";
 
 export const validateLogin = (formData: LoginFormData): LoginErrors => {
     let { email, password } = formData;
@@ -29,22 +21,6 @@ export const validateLogin = (formData: LoginFormData): LoginErrors => {
 
     return errors;
 };
-
-interface SignupFormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-}
-
-interface SignupErrors {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-}
 
 export const validateSignup = (formData: SignupFormData): SignupErrors => {
     let { firstName, lastName, email, password, confirmPassword } = formData;

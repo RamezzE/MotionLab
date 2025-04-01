@@ -3,15 +3,14 @@ import { Canvas } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { Link } from "react-router-dom";
 import * as THREE from "three";
-import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 
 // Model Component
 const Model: React.FC = () => {
   // Type the GLTF result; adjust additional properties as needed.
-  const { scene, animations } = useGLTF("/models/walking-man.glb") as GLTF;
+  const { scene, animations } = useGLTF("/models/walking-man.glb");
   const { actions } = useAnimations(animations, scene);
   const modelRef = useRef<THREE.Object3D>(null);
-  
+
   useEffect(() => {
     if (modelRef.current) {
       modelRef.current.position.x = -4;
@@ -35,7 +34,7 @@ interface FloorProps {
 const Floor: React.FC<FloorProps> = ({ position }) => {
   const floorRef = useRef<THREE.Object3D>(null);
   // Load the floor model; type as GLTF.
-  const { scene } = useGLTF("/models/purple-floor.glb") as GLTF;
+  const { scene } = useGLTF("/models/purple-floor.glb");
 
   useEffect(() => {
     if (floorRef.current) {

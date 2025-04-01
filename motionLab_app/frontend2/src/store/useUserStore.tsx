@@ -1,39 +1,23 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { login, signup } from "../api/userAPIs";
-import { validateLogin, validateSignup } from "../utils/validateUser";
-import { User } from "../../types";
 
-// Define the expected types for form data
-export interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { login, signup } from "@/api/userAPIs";
+import { validateLogin, validateSignup } from "@/utils/validateUser";
+import { User } from "@/types/types";
+import { LoginFormData, SignupFormData, LoginErrors } from "@/types/formTypes";
 
-export interface SignupFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
-// Define the API response structure (adjust types as needed)
-export interface UserAPIResponse {
+interface AuthResponse {
   success: boolean;
-  user?: any;
-  token?: string;
-  data?: any;
+  message?: string;
+  errors?: LoginErrors;
 }
 
-// Define the shape of the user store state
 interface UserStoreState {
   user: User | null;
   isAuthenticated: boolean;
-  token: string | null;
   expiry: number | null;
-  login: (formData: LoginFormData) => Promise<boolean>;
-  signup: (formData: SignupFormData) => Promise<boolean>;
+  login: (formData: LoginFormData) => Promise<AuthResponse>;
+  signup: (formData: SignupFormData) => Promise<AuthResponse>;
   logout: () => void;
   checkExpiry: () => void;
 }
@@ -45,54 +29,48 @@ const useUserStore = create<UserStoreState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
-      token: null,
       expiry: null,
 
-      login: async (formData: LoginFormData): Promise<boolean> => {
+      login: async (formData: LoginFormData): Promise<AuthResponse> => {
         const errors = validateLogin(formData);
-
+        console.log(errors);
         if (Object.keys(errors).length > 0) {
-          
-          return false;
+          return { success: false, errors: errors };
         }
 
-        const response: UserAPIResponse = await login(formData);
+        const response = await login(formData);
+        console.log(response);
 
-        if (response.success && response.user) {
+        if (response.success && response.data) {
           const expiry = Date.now() + ONE_WEEK; // Set expiration for 1 week
           set({
-            user: response.user,
+            user: response.data,
             isAuthenticated: true,
-            token: response.token || null,
             expiry,
           });
-          return true;
+          return { success: true };
         } else {
-          return false;
+          return { success: false, errors: response.errors };
         }
       },
 
-      signup: async (formData: SignupFormData): Promise<boolean> => {
+      signup: async (formData: SignupFormData): Promise<AuthResponse> => {
         const errors = validateSignup(formData);
-
         if (Object.keys(errors).length > 0) {
-          return false;
+          return { success: false, errors: errors };
         }
 
-        const response: UserAPIResponse = await signup(formData);
-
-        if (response.success && response.user) {
+        const response = await signup(formData);
+        if (response.success && response.data) {
           const expiry = Date.now() + ONE_WEEK;
           set({
-            user: response.user,
+            user: response.data,
             isAuthenticated: true,
-            token: response.token || null,
             expiry,
           });
-          return true;
+          return { success: true };
         } else {
-  
-          return false;
+          return { success: false, errors: response.errors };
         }
       },
 
@@ -100,8 +78,6 @@ const useUserStore = create<UserStoreState>()(
         set({
           user: null,
           isAuthenticated: false,
-          token: null,
-          error: {},
           expiry: null,
         });
       },
@@ -112,7 +88,6 @@ const useUserStore = create<UserStoreState>()(
           set({
             user: null,
             isAuthenticated: false,
-            token: null,
             expiry: null,
           });
         }
@@ -120,7 +95,18 @@ const useUserStore = create<UserStoreState>()(
     }),
     {
       name: "user-storage",
-      getStorage: () => localStorage,
+      storage: {
+        getItem: (name) => {
+          const item = localStorage.getItem(name);
+          return item ? JSON.parse(item) : null;
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name);
+        },
+      }, // Custom wrapper for localStorage
     }
   )
 );

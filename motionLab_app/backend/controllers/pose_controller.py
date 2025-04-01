@@ -85,33 +85,33 @@ class PoseController:
             user_id = request.form.get("userId")   
 
             if not video or not project_name or not user_id:
-                return jsonify({"success": False, "error": "Missing required fields"}), 400
+                return jsonify({"success": False, "message": "Missing required fields"}), 400
             
             # Check if user exists
             if not UserService.does_user_exist_by_id(user_id):
-                return jsonify({"success": False, "error": "User not found"}), 404
+                return jsonify({"success": False, "message": "User not found"}), 404
             
             temp_video_path, error_message = VideoService.handle_video_upload(video, request.files)
             if not temp_video_path:
-                return jsonify({"success": False, "error": error_message}), 400
+                return jsonify({"success": False, "message": error_message}), 400
             
             # Creating Project
             project = ProjectService.create_project({"projectName": project_name, "userId": user_id})
             if not project:
-                return jsonify({"success": False, "error": "Error creating project"}), 500
+                return jsonify({"success": False, "message": "Error creating project"}), 500
             
             # Segmenting and Processing Video
             bvh_filenames = self.segment_people_into_separate_videos(temp_video_path)
             
             # Error Handling
             if not bvh_filenames:
-                return jsonify({"success": False, "error": "Error processing video"}), 500
+                return jsonify({"success": False, "message": "Error processing video"}), 500
             
             # Creating BVH Files
             if BVHService.create_bvhs(bvh_filenames, project["id"]):
                 return jsonify({"success": True, "bvh_filenames": bvh_filenames, "projectId": project["id"]}), 200
             
-            return jsonify({"success": False, "error": "Error processing video"}), 500
+            return jsonify({"success": False, "message": "Error processing video"}), 500
         
         except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 500
+            return jsonify({"success": False, "message": str(e)}), 500
