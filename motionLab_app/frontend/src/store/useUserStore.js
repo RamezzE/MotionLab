@@ -11,7 +11,6 @@ const useUserStore = create(
       user: null,
       isAuthenticated: false,
       token: null,
-      error: {},
 
       login: async (formData) => {
         const errors = validateLogin(formData);
@@ -29,7 +28,6 @@ const useUserStore = create(
             user: response.user,
             isAuthenticated: true,
             token: response.token,
-            error: {},
             expiry, // Store expiry time
           });
           return true;
@@ -55,7 +53,6 @@ const useUserStore = create(
             user: response.user,
             isAuthenticated: true,
             token: response.token,
-            error: {},
             expiry, // Store expiry time
           });
           return true;
