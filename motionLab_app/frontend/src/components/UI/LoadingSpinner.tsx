@@ -10,7 +10,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     extraStyles = "",
 }) => {
     return (
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center">
             <svg
                 className={`text-purple-500 animate-spin ${extraStyles}`}
                 width={size}

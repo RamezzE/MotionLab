@@ -33,13 +33,12 @@ const useUserStore = create<UserStoreState>()(
 
       login: async (formData: LoginFormData): Promise<AuthResponse> => {
         const errors = validateLogin(formData);
-        console.log(errors);
+
         if (Object.keys(errors).length > 0) {
           return { success: false, errors: errors };
         }
 
         const response = await login(formData);
-        console.log(response);
 
         if (response.success && response.data) {
           const expiry = Date.now() + ONE_WEEK; // Set expiration for 1 week
@@ -50,7 +49,7 @@ const useUserStore = create<UserStoreState>()(
           });
           return { success: true };
         } else {
-          return { success: false, errors: response.errors };
+          return { success: false, errors: response.errors, message: response.message || "An error has occured" };
         }
       },
 
@@ -70,7 +69,7 @@ const useUserStore = create<UserStoreState>()(
           });
           return { success: true };
         } else {
-          return { success: false, errors: response.errors };
+          return { success: false, errors: response.errors, message: response.message || "An error has occured" };
         }
       },
 

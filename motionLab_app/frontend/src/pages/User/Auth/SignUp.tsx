@@ -5,6 +5,7 @@ import FormField from "@components/UI/FormField";
 import useUserStore from "@/store/useUserStore";
 
 import { SignupErrors } from "@/types/formTypes";
+import FormButton from "@/components/UI/FormButton";
 
 const SignUpPage = () => {
   const { isAuthenticated, signup } = useUserStore();
@@ -18,6 +19,8 @@ const SignUpPage = () => {
   });
 
   const [errors, setErrors] = useState<SignupErrors>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -33,24 +36,39 @@ const SignUpPage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      setLoading(true);
+      setErrorMessage(null);
+      setErrors({});
 
-    const response = await signup(formData);
-    if (!response.success) {
-      if (response.errors) {
-        setErrors(response.errors);
+      const response = await signup(formData);
+      if (!response.success) {
+        if (response.message) {
+          setErrorMessage(response.message);
+        }
+
+        if (response.errors) {
+          setErrors(response.errors);
+        }
+      }
+      else {
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+
+        navigate("/");
       }
     }
-    else {
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-      setErrors({});
-      navigate("/");
+    catch (error) {
+      console.error("Signup Error:", error);
+      setErrorMessage("An unexpected error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,9 +98,9 @@ const SignUpPage = () => {
                   onChange={handleInputChange}
                   extraStyles={`bg-gray-800`} label={""} />
 
-                  {errors.firstName && (
-                    <p className="text-red-500 text-sm">{errors.firstName}</p>
-                  )}
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm">{errors.firstName}</p>
+                )}
 
               </div>
 
@@ -96,9 +114,9 @@ const SignUpPage = () => {
                   onChange={handleInputChange}
                   extraStyles={`bg-gray-800`} label={""} />
 
-                  {errors.lastName && (
-                    <p className="text-red-500 text-sm">{errors.lastName}</p>
-                  )}
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm">{errors.lastName}</p>
+                )}
 
               </div>
             </div>
@@ -122,9 +140,9 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               extraStyles={`bg-gray-800`} label={""} />
 
-              {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password}</p>
-              )}
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
 
             <FormField
               type="password"
@@ -134,19 +152,21 @@ const SignUpPage = () => {
               onChange={handleInputChange}
               extraStyles={`bg-gray-800`} label={""} />
 
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-              )}
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+            )}
 
           </div>
 
-          {/* Signup Button */}
-          <button
+          <FormButton
             type="submit"
-            className="bg-purple-600 hover:bg-purple-700 px-8 py-2 rounded-md w-full text-white text-lg transition duration-300"
-          >
-            Sign Up
-          </button>
+            label="Sign Up"
+            loading={loading}
+          />
+
+          {errorMessage && (
+            <p className="text-red-500 text-sm">{errorMessage}</p>
+          )}
         </form>
 
         {/* Redirect to Login */}
