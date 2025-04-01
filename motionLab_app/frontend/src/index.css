@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 body {
     @apply bg-gradient-to-br from-gray-900 via-purple-800 to-gray-900;
