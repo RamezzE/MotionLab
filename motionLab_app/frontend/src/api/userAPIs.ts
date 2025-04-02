@@ -17,7 +17,7 @@ export const signup = async (userData: any) => {
         return response.data;
     } catch (error: any) {
         console.error("Signup API Error:", error.response?.data || error.message);
-        return { success: false, data: error.response?.data || error.message };
+        return error.response?.data;
     }
 };
 
@@ -34,7 +34,7 @@ export const login = async (userData: any) => {
         );
         return response.data;
     } catch (error: any) {
-        console.error("Login API Error:", error.response?.data || error.message);
-        return { success: false, data: error.response?.data || error.message };
+        console.error("Login API Error:", error.response.data);
+        return error.response.data;
     }
 };

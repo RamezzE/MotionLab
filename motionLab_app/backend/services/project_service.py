@@ -18,6 +18,20 @@ class ProjectService:
         except Exception as e:
             print(f"Error in create_project: {e}")
             return None
+        
+    @staticmethod
+    def update_project_status(project_id, is_processing):
+        try:
+            project = Project.get_project_by_id(project_id)
+            if project:
+                project.is_processing = is_processing
+                project.save()
+                return True
+            
+            return False
+        except Exception as e:
+            print(f"Error in update_project_status: {e}")
+            return False
     
     @staticmethod
     def get_projects_by_user_id(user_id):

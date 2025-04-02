@@ -4,12 +4,14 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    is_processing = db.Column(db.Boolean, default=False)
     creation_date = db.Column(db.DateTime, server_default=db.func.now())
     
     @classmethod
-    def create(cls, project_name, user_id):
+    def create(cls, project_name, user_id, is_processing=True):
+
         try:
-            project = cls(name=project_name, user_id=user_id, creation_date=db.func.now())
+            project = cls(name=project_name, user_id=user_id, is_processing=is_processing, creation_date=db.func.now())
             db.session.add(project)
             db.session.commit()
             return project
@@ -37,6 +39,7 @@ class Project(db.Model):
                 "id": self.id,
                 "name": self.name,
                 "user_id": self.user_id,
+                "is_processing": self.is_processing,
                 "creation_date": self.creation_date
             }
         except Exception as e:

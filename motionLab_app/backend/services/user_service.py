@@ -21,7 +21,7 @@ class UserService:
         if user:
             return user.to_dict(), None
         
-        return None, {"errors": "Error creating user"}
+        return None, {"message": "Error creating user"}
     
     @staticmethod
     def authenticate_user(data):
@@ -36,7 +36,7 @@ class UserService:
         if user and user.check_password(password):
             return user.to_dict(), None
         
-        return None, {"error": "Invalid credentials"}
+        return None, {"message": "Invalid credentials"}
     
     @staticmethod
     def does_user_exist_by_id(user_id):

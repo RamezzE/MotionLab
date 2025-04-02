@@ -94,7 +94,7 @@ class PoseController:
             # Check for duplicate project name
             existing_project = ProjectService.get_project_by_name_and_user_id(project_name, user_id)
             if existing_project:
-                return jsonify({"success": False, "message": "Project name already exists"}), 400
+                return jsonify({"success": False, "message": "Project name already exists"}), 200
             
             temp_video_path, error_message = VideoService.handle_video_upload(video, request.files)
             if not temp_video_path:
@@ -114,6 +114,7 @@ class PoseController:
             
             # Creating BVH Files
             if BVHService.create_bvhs(bvh_filenames, project["id"]):
+                ProjectService.update_project_status(project["id"], True)
                 return jsonify({"success": True, "data": {"bvh_filenames": bvh_filenames, "projectId": project["id"]}}), 200
             
             return jsonify({"success": False, "message": "Error processing video"}), 500

@@ -44,12 +44,13 @@ const SignUpPage = () => {
 
       const response = await signup(formData);
       if (!response.success) {
-        if (response.message) {
-          setErrorMessage(response.message);
-        }
+        
 
         if (response.errors) {
           setErrors(response.errors);
+        }
+        else if (response.message) {
+          setErrorMessage(response.message);
         }
       }
       else {

@@ -18,6 +18,8 @@ class UserController:
         user, errors = UserService.authenticate_user(data)
         
         if errors:
+            if "message" in errors:
+                return {"success": False, "message": f"{errors['message']}"}, 400
             return {"success": False, "errors": errors}, 400
         
         return {"success": True, "data": user}, 200

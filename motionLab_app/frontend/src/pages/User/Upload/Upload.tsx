@@ -51,15 +51,17 @@ const UploadPage: React.FC = () => {
       return false;
     }
 
-    if (!user || !user.id) {
+    if (!user || !user.id) { 
       setErrorMessage("User ID is not available. Please log in.");
+      navigate("/login");
       return;
     }
 
     // Delay loading indicator by 1.5 seconds
-    setTimeout(() => {
-      setLoading(true);
-    }, 1500);
+    // setTimeout(() => {
+    //   setLoading(true);
+    // }, 1500);
+    setLoading(true);
     try {
       const response = await uploadVideo(
         file,
@@ -70,22 +72,22 @@ const UploadPage: React.FC = () => {
         }
       );
 
-      setLoading(false);
-
       if (response && response.success) {
         navigate(`/project/${response.data.projectId}`, {
           state: { filenames_list: response.data.bvh_filenames },
         });
       } else {
         console.error("Upload Error:", response);
+        setErrorMessage(response.message || "An error occurred during the upload. Please try again.");
       }
     }
     catch (error) {
       console.error("Upload Error:", error);
-      setErrorMessage("An error occurred during the upload. Please try again.");
+      setErrorMessage(`${error}` || "An error occurred during the upload. Please try again.");
       setLoading(false);
     }
     finally {
+      setLoading(false);
       setProgress(0);
     }
   };

@@ -40,7 +40,7 @@ const useUserStore = create<UserStoreState>()(
 
         const response = await login(formData);
 
-        if (response.success && response.data) {
+        if (response.success && 'data' in response && response.data) {
           const expiry = Date.now() + ONE_WEEK; // Set expiration for 1 week
           set({
             user: response.data,
@@ -49,7 +49,10 @@ const useUserStore = create<UserStoreState>()(
           });
           return { success: true };
         } else {
-          return { success: false, errors: response.errors, message: response.message || "An error has occured" };
+          return {
+            success: response.success,
+            message: response.message || "An error has occurred"
+          };
         }
       },
 
@@ -60,6 +63,7 @@ const useUserStore = create<UserStoreState>()(
         }
 
         const response = await signup(formData);
+
         if (response.success && response.data) {
           const expiry = Date.now() + ONE_WEEK;
           set({

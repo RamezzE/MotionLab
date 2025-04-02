@@ -46,12 +46,14 @@ const LoginPage = () => {
         });
         navigate("/");
       } else {
-        if (response.message) {
-          setErrorMessage(response.message);
-        }
-        if (response.errors) {
+        console.log("Login Response:", response);
+        if (response.errors !== undefined) {
           setErrors(response.errors);
         }
+        else if (response.message) {
+          setErrorMessage(response.message);
+        }
+       
       }
     } catch (error) {
       console.error("Login Error:", error);
