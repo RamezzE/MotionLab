@@ -15,6 +15,22 @@ class ProjectController:
             return jsonify({"success": True, "data": projects}), 200
         
         return jsonify({"success": False, "message": "No projects found"}), 404
+    
+    @staticmethod
+    def get_project_by_id(request):
+        
+        project_id = request.args.get("projectId")
+        user_id = request.args.get("userId")
+        
+        if not project_id:
+            return jsonify({"success": False, "message": "Missing projectId parameter"}), 400
+        
+        project = ProjectService.get_project_by_id(project_id, user_id)
+        
+        if project:
+            return jsonify({"success": True, "data": project}), 200
+        
+        return jsonify({"success": False, "message": "Project not found"}), 404
         
     @staticmethod
     def delete_project(request):

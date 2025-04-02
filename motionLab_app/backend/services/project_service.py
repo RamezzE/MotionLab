@@ -61,6 +61,20 @@ class ProjectService:
             return None
         
     @staticmethod
+    def get_project_by_id(project_id, user_id):
+        try:
+            project = Project.get_project_by_id(project_id)
+            if project:
+                project_dict = project.to_dict()
+                if str(project_dict["user_id"]) == str(user_id):
+                    return project_dict
+            
+            return None
+        except Exception as e:
+            print(f"Error in get_project_by_id: {e}")
+            return None
+        
+    @staticmethod
     def delete_project(project_id, user_id):
         try:
             project = Project.get_project_by_id(project_id)

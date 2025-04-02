@@ -26,6 +26,21 @@ export const getProjectsByUser = async (
     }
 };
 
+export const getProjectById = async (
+    projectId: string,
+    userId: string
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.get(`/project/get-project`, {
+            params: { projectId, userId },
+        });
+        return response.data;
+    } catch (error: any) {
+        console.error("Error fetching project by ID:", error.message);
+        return { success: false, data: error.message };
+    }
+}
+
 export const deleteProjectById = async (
     projectId: string,
     userId: string
@@ -61,6 +76,6 @@ export const getProjectBVHFilenames = async (
         const errorMessage = error.response?.data?.message || error.message;
         console.error("Error message:", errorMessage);
         return { success: false, data: errorMessage };
-        
+
     }
 };

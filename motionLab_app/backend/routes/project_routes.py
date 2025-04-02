@@ -8,6 +8,10 @@ project_bp = Blueprint("project", __name__)
 def get_projects_route():
     return ProjectController.get_projects_by_user_id(request)
 
+@project_bp.route("/get-project", methods=["GET"])
+def get_project_route():
+    return ProjectController.get_project_by_id(request)
+
 @project_bp.route("/delete-project", methods=["DELETE"])
 def delete_project_route():
     return ProjectController.delete_project(request)
