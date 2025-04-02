@@ -2,15 +2,14 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Trash2, RefreshCcw } from "lucide-react";
 
-import { deleteProjectById } from "@/api/projectAPIs";
 import useUserStore from "@/store/useUserStore";
+import useProjectStore from "@/store/useProjectStore";
 
 interface ProjectProps {
     id: string;
     name: string;
     is_processing: boolean;
     creationDate: string;
-    removeProjectFromList: (id: string) => void;
 }
 
 const ProjectCard: React.FC<ProjectProps> = ({
@@ -18,23 +17,20 @@ const ProjectCard: React.FC<ProjectProps> = ({
     name,
     is_processing,
     creationDate,
-    removeProjectFromList,
 }) => {
+
+    const { user } = useUserStore();
+    const { deleteProject } = useProjectStore();
+
     const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         const confirmed = window.confirm("Are you sure you want to delete this project?");
         if (confirmed) {
-            const user = useUserStore.getState().user;
             if (!user?.id) {
                 console.error("User is not available or user ID is missing.");
                 return;
             }
-            const response = await deleteProjectById(id, user.id);
-            if (response.success) {
-                removeProjectFromList(id);
-            } else {
-                console.error("Error deleting project:", response);
-            }
+            await deleteProject(id, user.id);
         }
     };
 
@@ -69,7 +65,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
             {/* Project Content */}
             {is_processing ? (
                 <div
-                    className="block opacity-70 cursor-not-allowed"
+                    className="opacity-70"
                     title="Project is still processing"
                 >
                     <h2 className="font-bold text-xl">{name}</h2>

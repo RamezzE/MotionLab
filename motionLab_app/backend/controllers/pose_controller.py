@@ -114,7 +114,7 @@ class PoseController:
             
             # Creating BVH Files
             if BVHService.create_bvhs(bvh_filenames, project["id"]):
-                ProjectService.update_project_status(project["id"], True)
+                ProjectService.update_project_status(project_name, user_id, False)
                 return jsonify({"success": True, "data": {"bvh_filenames": bvh_filenames, "projectId": project["id"]}}), 200
             
             return jsonify({"success": False, "message": "Error processing video"}), 500

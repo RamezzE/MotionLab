@@ -1,5 +1,6 @@
 from models.project_model import Project
 from services.bvh_service import BVHService
+from database import db
 
 class ProjectService:
     
@@ -20,14 +21,16 @@ class ProjectService:
             return None
         
     @staticmethod
-    def update_project_status(project_id, is_processing):
+    def update_project_status(project_name, user_id, is_processing):
         try:
-            project = Project.get_project_by_id(project_id)
+            project = Project.get_project_by_name_and_user_id(project_name, user_id)
+            print(f"Project found: {project.to_dict() if project else 'None'}")
+            print(f"Updating project status to: {is_processing}")
             if project:
                 project.is_processing = is_processing
-                project.save()
+                db.session.add(project)  # Explicitly add to session
+                db.session.commit()
                 return True
-            
             return False
         except Exception as e:
             print(f"Error in update_project_status: {e}")
@@ -60,6 +63,17 @@ class ProjectService:
     @staticmethod
     def delete_project(project_id, user_id):
         try:
+            project = Project.get_project_by_id(project_id)
+            if not project:
+                return False, "Project not found"
+            
+            if str(project.user_id) != str(user_id):
+                return False, "Unauthorized access"
+            
+            # Check if the project is still processing
+            if project.is_processing:
+                return False, "Project is still processing"
+            
             if (Project.delete_project_by_id(project_id, user_id) and BVHService.delete_bvhs_by_project_id(project_id)):
                 return True, "Project deleted successfully"
             
