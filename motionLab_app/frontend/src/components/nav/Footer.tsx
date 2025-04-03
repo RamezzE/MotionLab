@@ -1,8 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer: React.FC = () => {
     return (
-        <footer className="py-6 text-gray-400">
+        <footer className="pb-6 text-gray-400">
             <div className="mx-auto px-4 text-center container">
                 {/* Main Content */}
                 <p className="mb-4 text-sm">
@@ -11,17 +12,17 @@ const Footer: React.FC = () => {
 
                 {/* Links Section */}
                 <div className="flex justify-center space-x-4 text-sm">
-                    <a href="#" className="hover:text-purple-500 transition">
+                    <Link to="/privacy-policy" className="hover:text-purple-500 transition">
                         Privacy Policy
-                    </a>
+                    </Link>
                     <span>|</span>
-                    <a href="#" className="hover:text-purple-500 transition">
+                    <Link to="/terms-of-service" className="hover:text-purple-500 transition">
                         Terms of Service
-                    </a>
+                    </Link>
                     <span>|</span>
-                    <a href="#" className="hover:text-purple-500 transition">
+                    <Link to="/contact" className="hover:text-purple-500 transition">
                         Contact Us
-                    </a>
+                    </Link>
                 </div>
             </div>
         </footer>

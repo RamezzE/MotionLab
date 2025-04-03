@@ -24,6 +24,16 @@ class UserController:
         
         return {"success": True, "data": user}, 200
     
+    @staticmethod
+    def send_password_reset_email(request):
+        data = request.get_json()
+        errors = UserService.send_password_reset_email(data)
+        
+        if errors:
+            return {"success": False, "message": f"{errors['message']}"}, 400
+        
+        return {"success": True, "message": "Password reset email sent."}, 200
+    
     # @staticmethod
     # def get_user_by_id(user_id):
     #     return User.get_by_id(user_id)

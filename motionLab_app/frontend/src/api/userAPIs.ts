@@ -38,3 +38,22 @@ export const login = async (userData: any) => {
         return error.response.data;
     }
 };
+
+export const requestPasswordReset = async (email: string) => {
+    try {
+        const response = await axios.post<ApiResponse<any>>(
+            `${BASE_URL}/auth/request-password-reset`,
+            { email },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        console.log("Request Password Reset Response:", response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error("Request Password Reset API Error:", error.response.data);
+        return error.response.data;
+    }
+}

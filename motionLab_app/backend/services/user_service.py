@@ -1,5 +1,10 @@
 from models.user_model import User
 from validators.user_validator import UserValidator
+from flask_mail import Message
+
+from extensions import mail, serializer
+
+import os
 
 class UserService:
     
@@ -41,6 +46,45 @@ class UserService:
     @staticmethod
     def does_user_exist_by_id(user_id):
         return User.get_by_id(user_id) is not None
+    
+    @staticmethod
+    def does_user_exist_by_email(email):
+        return User.get_by_email(email) is not None
+    
+    @staticmethod
+    def send_password_reset_email(data):
+        errors = UserValidator.validate_password_reset(data)
+        if errors:
+            return errors
+
+        email = data["email"]
+        user = User.get_by_email(email)
+        if not user:
+            return {"message": "User not found"}
+
+        # Generate a secure token for password reset
+        token = serializer.dumps(email, salt="password-reset-salt")
+        
+        reset_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/reset-password?token={token}"
+
+        print(f"Password reset URL: {reset_url}")
+
+        # Compose the email message
+        msg = Message("MotionLab Password Reset Request", recipients=[email])
+        msg.body = f"""Hi {user.first_name},
+
+To reset your password, visit the following link:
+{reset_url}
+
+If you did not make this request then simply ignore this email.
+"""
+        try:
+            mail.send(msg)
+            print("Password reset email sent successfully.")
+        except Exception as e:
+            return {"message": "Failed to send password reset email."}
+
+        return None  # No errors, email sent successfully
 
     # @staticmethod
     # def get_user_by_id(user_id):

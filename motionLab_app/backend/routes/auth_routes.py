@@ -11,3 +11,8 @@ def login_route():
 @auth_bp.route("/signup", methods=["POST"])
 def signup_route():
     return UserController.sign_up(request)
+
+@auth_bp.route("/request-password-reset", methods=["POST"])
+def send_password_reset_route():
+    return UserController.send_password_reset_email(request)
+
