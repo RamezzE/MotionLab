@@ -71,7 +71,7 @@ const NavBar: React.FC = () => {
                         </Link>
                         <button
                             onClick={logout}
-                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
                         >
                             Log Out
                         </button>
@@ -114,14 +114,14 @@ const NavBar: React.FC = () => {
                         <>
                             <Link
                                 to="/login"
-                                className="text-white hover:text-purple-400 transition duration-300"
+                                className="text-white hover:text-purple-400 transition duration-300 hover:cursor-pointer"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Log In
                             </Link>
                             <Link
                                 to="/signup"
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Join Now
@@ -142,7 +142,7 @@ const NavBar: React.FC = () => {
                                     logout();
                                     setIsOpen(false);
                                 }}
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
                             >
                                 Log Out
                             </button>
