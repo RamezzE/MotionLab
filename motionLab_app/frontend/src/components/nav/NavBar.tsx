@@ -1,19 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Menu, X, User, ChevronDown } from "lucide-react"; // Import icons
 import Logo from "/images/logo.png";
 
-import useUserStore from "@/store/useUserStore";
-import useProjectStore from "@/store/useProjectStore";
+import useUserStore from "../../store/useUserStore";
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState<boolean>(false);
     const { user, isAuthenticated, logout } = useUserStore();
-    const { clearProjects } = useProjectStore();
-
-    const navigate = useNavigate();
-
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isAdmin = user?.is_admin || false;
@@ -41,14 +36,6 @@ const NavBar: React.FC = () => {
         if (!user) return "";
         return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
     };
-    
-
-    const logoutFunc = () => {
-        logout();
-        clearProjects(); // Clear projects on logout
-        setIsOpen(false); // Close the menu if it's open
-        navigate("/"); // Redirect to home after logout
-    }
 
     return (
         <nav className="flex justify-between items-center bg-gray-700 bg-opacity-50 shadow-lg mx-auto mt-4 px-6 sm:px-7 py-3 rounded-3xl w-[90%] md:max-w-4xl text-white">
@@ -111,8 +98,8 @@ const NavBar: React.FC = () => {
                                     onClick={toggleProfileDropdown}
                                     className="flex items-center space-x-1 hover:text-purple-400 transition duration-300"
                                 >
-                                    <div className="flex justify-center items-center bg-gradient-to-r from-purple-500 to-purple-700 rounded-full w-8 h-8">
-                                        <span className="font-semibold text-white text-sm">{getUserInitials()}</span>
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 flex items-center justify-center">
+                                        <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
                                     </div>
                                     <ChevronDown size={16} />
                                 </button>
@@ -121,29 +108,29 @@ const NavBar: React.FC = () => {
                                     to="/profile/projects"
                                     className="hover:text-purple-400 transition duration-300"
                                 >
-                                    <div className="flex justify-center items-center bg-gradient-to-r from-purple-500 to-purple-700 rounded-full w-8 h-8">
-                                        <span className="font-semibold text-white text-sm">{getUserInitials()}</span>
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 flex items-center justify-center">
+                                        <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
                                     </div>
                                 </Link>
                             )}
 
                             {/* Admin Dropdown Menu */}
                             {isAdmin && profileDropdownOpen && (
-                                <div className="right-0 z-20 absolute bg-gray-800 shadow-lg mt-2 py-1 border border-gray-700 rounded-md w-48">
-                                    <div className="px-4 py-2 border-gray-700 border-b">
-                                        <p className="font-medium text-white text-sm">{user?.email}</p>
-                                        <p className="font-medium text-purple-400 text-xs">Administrator</p>
+                                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-20 border border-gray-700">
+                                    <div className="px-4 py-2 border-b border-gray-700">
+                                        <p className="text-sm text-white font-medium">{user?.email}</p>
+                                        <p className="text-xs text-purple-400 font-medium">Administrator</p>
                                     </div>
                                     <Link 
                                         to="/profile/projects" 
-                                        className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
+                                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
                                         onClick={() => setProfileDropdownOpen(false)}
                                     >
                                         Your Projects
                                     </Link>
                                     <Link 
                                         to="/admin/dashboard" 
-                                        className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
+                                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
                                         onClick={() => setProfileDropdownOpen(false)}
                                     >
                                         Admin Dashboard
@@ -152,8 +139,8 @@ const NavBar: React.FC = () => {
                             )}
                         </div>
                         <button
-                            onClick={logoutFunc}
-                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
+                            onClick={logout}
+                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
                         >
                             Log Out
                         </button>
@@ -203,7 +190,7 @@ const NavBar: React.FC = () => {
                             </Link>
                             <Link
                                 to="/signup"
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Join Now
@@ -229,8 +216,11 @@ const NavBar: React.FC = () => {
                                 </Link>
                             )}
                             <button
-                                onClick={logoutFunc}
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
+                                onClick={() => {
+                                    logout();
+                                    setIsOpen(false);
+                                }}
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
                             >
                                 Log Out
                             </button>

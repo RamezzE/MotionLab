@@ -10,10 +10,6 @@ import LandingPage from "@/pages/User/LandingPage";
 import LoginPage from "@/pages/User/Auth/Login";
 import SignUpPage from "@/pages/User/Auth/SignUp";
 
-import ForgetPasswordPage from "@/pages/User/Auth/ForgetPassword";
-import ResetPasswordPage from "@/pages/User/Auth/ResetPassword";
-import VerifyEmailPage from "@/pages/User/Auth/VerifyEmail";
-
 import UploadPage from "@/pages/User/Upload/Upload"
 import AboutPage from "@/pages/User/About"
 import ContactPage from "@/pages/User/Contact"
@@ -64,7 +60,6 @@ const router = createBrowserRouter([
                         path: "about",
                         element: <AboutPage />,
                     },
-                    
                     {
                         path: "contact",
                         element: <ContactPage />,
@@ -80,18 +75,6 @@ const router = createBrowserRouter([
                     {
                         path: "signup",
                         element: <SignUpPage />,
-                    },
-                    {
-                        path: "forget-password",
-                        element: <ForgetPasswordPage />,
-                    },
-                    {
-                        path: "reset-password",
-                        element: <ResetPasswordPage />,
-                    },
-                    {
-                        path: "verify-email",
-                        element: <VerifyEmailPage />,
                     },
                     {
                         path: "profile",
