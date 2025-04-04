@@ -21,9 +21,9 @@ class VideoService:
             return None, "Video file is too large. Maximum size is 150MB."
 
         # Saving Temp Video
-        temp_video_path = VideoService.save_temp_video(video)
+        temp_video_path, error_message = VideoService.save_temp_video(video)
         if not temp_video_path:
-            return None, "Error saving video"
+            return None, error_message
         
         return temp_video_path, None
     
@@ -40,11 +40,11 @@ class VideoService:
             clip.close()
             if duration > 1 * 60:  
                 os.remove(temp_video_path)
-                return None
+                return None, "Video duration exceeds 1 minute."
             return temp_video_path
         except Exception as e:
             print(f"Error in save_temp_video: {e}")
-            return None
+            return None, ""
 
     @staticmethod
     def validate_video_file(video, request_files):
