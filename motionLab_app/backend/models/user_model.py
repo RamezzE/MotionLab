@@ -6,6 +6,7 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
+    is_email_verified = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
     def set_password(self, password):
@@ -27,7 +28,7 @@ class User(db.Model):
     @classmethod
     def create(cls, first_name, last_name, email, password):
         try:
-            user = cls(first_name=first_name, last_name=last_name, email=email)
+            user = cls(first_name=first_name, last_name=last_name, email=email, is_email_verified=False)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -60,6 +61,8 @@ class User(db.Model):
                 self.last_name = updated_data["last_name"]
             if "email" in updated_data:
                 self.email = updated_data["email"]
+            if "is_email_verified" in updated_data:
+                self.is_email_verified = updated_data["is_email_verified"]
             if "password" in updated_data:
                 self.set_password(updated_data["password"])
             db.session.commit()

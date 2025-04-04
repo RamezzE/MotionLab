@@ -44,6 +44,17 @@ class UserService:
         return None, {"message": "Invalid credentials"}
     
     @staticmethod
+    def check_user_verification(user_id):
+        user = User.get_by_id(user_id)
+        if not user:
+            return {"message": "User not found"}
+        
+        if not user.is_email_verified:
+            return {"message": "User email not verified"}
+        
+        return None
+    
+    @staticmethod
     def does_user_exist_by_id(user_id):
         return User.get_by_id(user_id) is not None
     
@@ -109,5 +120,49 @@ If you did not make this request then simply ignore this email.
         
         data["password"] = data["newPassword"]
         user.update(data)
+        
+        return None
+    
+    @staticmethod
+    def send_verification_email(email):
+        # Generate a secure token for email verification
+        token = serializer.dumps(email, salt="email-verification-salt")
+        
+        verification_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/verify-email?token={token}"
+
+        print(f"Email verification URL: {verification_url}")
+        
+        if (not os.getenv("MAIL_USERNAME") or not os.getenv("MAIL_PASSWORD")):
+            print("Mail server not configured: No username or password found in environment variables.")
+            return {"message": "Mail server not configured"}
+
+        # Compose the email message
+        msg = Message("MotionLab Email Verification", recipients=[email])
+        msg.body = f"""Hi,
+To verify your email address, visit the following link:
+{verification_url}
+
+If you did not make this request then simply ignore this email.
+"""
+        try:
+            mail.send(msg)
+            print("Email verification sent successfully.")
+        except Exception as e:
+            return {"message": "Failed to send email verification."}
+
+        return None
+    
+    @staticmethod
+    def verify_email(token):
+        try:
+            email = serializer.loads(token, salt="email-verification-salt", max_age=3600)
+        except Exception as e:
+            return {"message": "Invalid or expired token"}
+        
+        user = User.get_by_email(email)
+        if not user:
+            return {"message": "User not found"}
+        
+        user.update({"is_email_verified": True})
         
         return None

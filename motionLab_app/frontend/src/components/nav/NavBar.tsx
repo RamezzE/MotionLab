@@ -7,7 +7,7 @@ import useUserStore from "../../store/useUserStore";
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const { isAuthenticated, logout } = useUserStore();
+    const { isLoggedIn, logout } = useUserStore();
 
     return (
         <nav className="flex justify-between items-center bg-gray-700 bg-opacity-50 shadow-lg mx-auto mt-4 px-6 sm:px-7 py-3 rounded-3xl w-[90%] md:max-w-4xl text-white">
@@ -47,7 +47,7 @@ const NavBar: React.FC = () => {
 
             {/* Desktop Auth Buttons & Profile Icon */}
             <div className="hidden md:flex items-center space-x-6 font-medium text-sm md:text-base">
-                {!isAuthenticated ? (
+                {!isLoggedIn ? (
                     <>
                         <Link to="/login" className="hover:text-purple-400 transition duration-300">
                             Log In
@@ -110,7 +110,7 @@ const NavBar: React.FC = () => {
                     >
                         Upload
                     </Link>
-                    {!isAuthenticated ? (
+                    {!isLoggedIn ? (
                         <>
                             <Link
                                 to="/login"

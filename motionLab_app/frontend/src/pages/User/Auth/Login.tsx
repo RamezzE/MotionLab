@@ -8,7 +8,7 @@ import useUserStore from "@/store/useUserStore";
 import { LoginErrors } from "@/types/formTypes";
 
 const LoginPage = () => {
-  const { isAuthenticated, login } = useUserStore();
+  const { isLoggedIn, login } = useUserStore();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -22,10 +22,10 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isLoggedIn) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {

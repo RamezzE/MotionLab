@@ -7,9 +7,9 @@ import FormButton from "@/components/UI/FormButton";
 import useUserStore from "@/store/useUserStore";
 
 const ForgotPasswordPage: React.FC = () => {
-    const { sendPasswordResetEmail, isAuthenticated } = useUserStore();
+    const { sendPasswordResetEmail, isLoggedIn } = useUserStore();
     const navigate = useNavigate();
-    if (isAuthenticated) {
+    if (isLoggedIn) {
         navigate("/"); // Redirect to home if already authenticated  
     }
 

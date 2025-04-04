@@ -74,3 +74,39 @@ export const resetPassword = async (token: string, newPassword: string) => {
         return error.response.data;
     }
 }
+
+export const sendVerificationEmail = async (email: string) => {
+    try {
+        const response = await axios.post<ApiResponse<any>>(
+            `${BASE_URL}/auth/send-verification-email`,
+            { email },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("Send Verification Email API Error:", error.response.data);
+        return error.response.data;
+    }
+}
+
+export const verifyEmail = async (token: string) => {
+    try {
+        const response = await axios.post<ApiResponse<any>>(
+            `${BASE_URL}/auth/verify-email`,
+            { token },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("Verify Email API Error:", error.response.data);
+        return error.response.data;
+    }
+}
