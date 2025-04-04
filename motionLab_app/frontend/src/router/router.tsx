@@ -8,9 +8,6 @@ import LandingPage from "@/pages/User/LandingPage";
 
 import LoginPage from "@/pages/User/Auth/Login";
 import SignUpPage from "@/pages/User/Auth/SignUp";
-import ForgetPasswordPage from "@/pages/User/Auth/ForgetPassword";
-import ResetPasswordPage from "@/pages/User/Auth/ResetPassword";
-import VerifyEmailPage from "@/pages/User/Auth/VerifyEmail";
 
 import UploadPage from "@/pages/User/Upload/Upload"
 import AboutPage from "@/pages/User/About"
@@ -20,6 +17,12 @@ import FeaturesPage from "@/pages/User/Features"
 import BVHScene from "@/pages/User/Upload/BVHScene";
 
 import Projects from "@/pages/User/Profile/Projects/Projects";
+import Dashboard from "@/pages/Admin/dashboard";
+import UserManagement from "@/pages/Admin/userManage";
+import ProjectsOverview from "@/pages/Admin/projects";
+import SystemMetrics from "@/pages/Admin/metrics";
+import LogsViewer from "@/pages/Admin/logs";
+import AdminLayout from "@/layouts/AdminLayout";
 
 const router = createBrowserRouter([
     {
@@ -67,18 +70,6 @@ const router = createBrowserRouter([
                         element: <SignUpPage />,
                     },
                     {
-                        path: "forget-password",
-                        element: <ForgetPasswordPage />,
-                    },
-                    {
-                        path: "reset-password",
-                        element: <ResetPasswordPage />,
-                    },
-                    {
-                        path: "verify-email",
-                        element: <VerifyEmailPage />,
-                    },
-                    {
                         path: "profile",
                         children: [
                             {
@@ -90,6 +81,32 @@ const router = createBrowserRouter([
                     {
                         path: "project/:projectId",  // Dynamic route with projectId
                         element: <BVHScene />
+                    }
+                ],
+            },
+            {
+                path: "admin",
+                element: <AdminLayout />,
+                children: [
+                    {
+                        path: "dashboard",
+                        element: <Dashboard />
+                    },
+                    {
+                        path: "userManage",
+                        element: <UserManagement />
+                    },
+                    {
+                        path: "projects",
+                        element: <ProjectsOverview />
+                    },
+                    {
+                        path: "metrics",
+                        element: <SystemMetrics />
+                    },
+                    {
+                        path: "logs",
+                        element: <LogsViewer />
                     }
                 ],
             },

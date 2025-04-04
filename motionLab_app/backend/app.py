@@ -5,8 +5,7 @@ from pathlib import Path
 from flask_cors import CORS
 
 from database import SQLALCHEMY_CONFIG, init_db, db
-from extensions import mail  # Import the mail instance
-from routes import auth_bp, pose_bp, project_bp  # Import the Blueprints
+from routes import auth_bp, pose_bp, project_bp, admin_bp  # Import the Blueprints
 
 def create_app():
     app = Flask(__name__)
@@ -22,23 +21,11 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(pose_bp, url_prefix="/pose")
     app.register_blueprint(project_bp, url_prefix="/project")
-    
-    if (os.getenv('MAIL_USERNAME') and os.getenv('MAIL_PASSWORD')):
-        print("Mail credentials found in environment variables.")
-        app.config.update(
-            MAIL_SERVER= os.getenv('MAIL_SERVER', 'smtp.gmail.com'),
-            MAIL_PORT=587,
-            MAIL_USE_TLS=True,
-            MAIL_USERNAME=os.getenv('MAIL_USERNAME'),
-            MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-            MAIL_DEFAULT_SENDER=os.getenv('MAIL_USERNAME'),
-        )
+    app.register_blueprint(admin_bp, url_prefix="/admin")
     
     return app
 
 app = create_app()
-
-mail.init_app(app)
 
 BVH_DIRECTORY = Path('BVHs')
 

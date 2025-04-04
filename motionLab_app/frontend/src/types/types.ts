@@ -2,7 +2,6 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    emailVerified: boolean;
     // Add other user properties as needed
 }
 

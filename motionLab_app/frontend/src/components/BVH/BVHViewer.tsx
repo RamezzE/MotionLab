@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React, { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -43,7 +44,7 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
                 // Create Skeleton Helper
                 const skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0]);
                 
-                // @ts-ignore
+                // @ts-expect-error
                 skeletonHelper.skeleton = result.skeleton;
 
                 // Customize the SkeletonHelper material for thicker bones

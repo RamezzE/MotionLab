@@ -8,7 +8,7 @@ import useUserStore from "@/store/useUserStore";
 import { LoginErrors } from "@/types/formTypes";
 
 const LoginPage = () => {
-  const { isLoggedIn, login } = useUserStore();
+  const { isAuthenticated, login } = useUserStore();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -22,10 +22,10 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isAuthenticated) {
       navigate("/");
     }
-  }, [isLoggedIn, navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
@@ -53,7 +53,7 @@ const LoginPage = () => {
         else if (response.message) {
           setErrorMessage(response.message);
         }
-
+       
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -122,26 +122,15 @@ const LoginPage = () => {
           )}
         </form>
 
-        <div className="flex flex-col gap-y-2 w-full text-center">
-          <p className="text-gray-400">
-            Don’t have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-purple-600 hover:underline transition duration-300"
-            >
-              Sign Up
-            </Link>
-          </p>
-          <p className="text-gray-400">
-            <Link
-              to="/forget-password"
-              className="hover:underline transition duration-300"
-            >
-              Forgot Password?
-            </Link>
-          </p>
-        </div>
-
+        <p className="text-gray-400">
+          Don’t have an account?{" "}
+          <Link
+            to="/signup"
+            className="text-purple-600 hover:underline transition duration-300"
+          >
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );

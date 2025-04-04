@@ -1,3 +1,4 @@
-from routes.pose_routes import pose_bp
-from routes.auth_routes import auth_bp
-from routes.project_routes import project_bp
+from .auth_routes import auth_bp
+from .pose_routes import pose_bp
+from .project_routes import project_bp
+from .admin_routes import admin_bp

@@ -8,7 +8,7 @@ import { SignupErrors } from "@/types/formTypes";
 import FormButton from "@/components/UI/FormButton";
 
 const SignUpPage = () => {
-  const { isLoggedIn, signup } = useUserStore();
+  const { isAuthenticated, signup } = useUserStore();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -25,10 +25,10 @@ const SignUpPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isAuthenticated) {
       navigate("/");
     }
-  }, [isLoggedIn]);
+  }, [isAuthenticated]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

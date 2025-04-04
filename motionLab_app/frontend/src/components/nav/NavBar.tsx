@@ -7,7 +7,7 @@ import useUserStore from "../../store/useUserStore";
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const { isLoggedIn, logout } = useUserStore();
+    const { isAuthenticated, logout } = useUserStore();
 
     return (
         <nav className="flex justify-between items-center bg-gray-700 bg-opacity-50 shadow-lg mx-auto mt-4 px-6 sm:px-7 py-3 rounded-3xl w-[90%] md:max-w-4xl text-white">
@@ -47,7 +47,7 @@ const NavBar: React.FC = () => {
 
             {/* Desktop Auth Buttons & Profile Icon */}
             <div className="hidden md:flex items-center space-x-6 font-medium text-sm md:text-base">
-                {!isLoggedIn ? (
+                {!isAuthenticated ? (
                     <>
                         <Link to="/login" className="hover:text-purple-400 transition duration-300">
                             Log In
@@ -71,7 +71,7 @@ const NavBar: React.FC = () => {
                         </Link>
                         <button
                             onClick={logout}
-                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
+                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
                         >
                             Log Out
                         </button>
@@ -110,18 +110,18 @@ const NavBar: React.FC = () => {
                     >
                         Upload
                     </Link>
-                    {!isLoggedIn ? (
+                    {!isAuthenticated ? (
                         <>
                             <Link
                                 to="/login"
-                                className="text-white hover:text-purple-400 transition duration-300 hover:cursor-pointer"
+                                className="text-white hover:text-purple-400 transition duration-300"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Log In
                             </Link>
                             <Link
                                 to="/signup"
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Join Now
@@ -142,7 +142,7 @@ const NavBar: React.FC = () => {
                                     logout();
                                     setIsOpen(false);
                                 }}
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
                             >
                                 Log Out
                             </button>

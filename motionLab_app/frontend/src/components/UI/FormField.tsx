@@ -8,7 +8,6 @@ interface FormFieldProps {
     value: string;
     onChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
     extraStyles?: string;
-    disabled?: boolean;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -19,7 +18,6 @@ const FormField: React.FC<FormFieldProps> = ({
     value,
     onChange,
     extraStyles = "",
-    disabled = false,
 }) => {
     return (
         <div>
@@ -35,7 +33,6 @@ const FormField: React.FC<FormFieldProps> = ({
                     value={value}
                     onChange={onChange}
                     className={`bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none ${extraStyles}`}
-                    disabled={disabled}
                 ></textarea>
             ) : (
                 <input
@@ -46,7 +43,6 @@ const FormField: React.FC<FormFieldProps> = ({
                     value={value}
                     onChange={onChange}
                     className={`bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none ${extraStyles}`}
-                    disabled={disabled}
                 />
             )}
         </div>
