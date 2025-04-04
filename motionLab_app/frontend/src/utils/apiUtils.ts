@@ -1,10 +1,23 @@
-/**
- * Utility functions for fetching real user and project data from the API
- */
 import axios from 'axios';
 
-const BASE_URL: string = "http://127.0.0.1:5000"; // Matches the Flask backend URL
+const BASE_URL: string = "http://127.0.0.1:5000";
 
+// Function to get the token from local storage
+const getAuthToken = (): string | null => {
+  try {
+    const userStorage = localStorage.getItem('user-storage');
+    if (userStorage) {
+      const userData = JSON.parse(userStorage);
+      return userData.state?.user?.token || null;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting auth token:', error);
+    return null;
+  }
+};
+
+// Create axios instance
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 5000,
@@ -12,6 +25,20 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json'
   }
 });
+
+// Add a request interceptor to include the token in headers
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Interface for API responses
 export interface ApiResponse<T> {
@@ -176,21 +203,3 @@ export const getRecentActivity = async (limit: number = 5): Promise<ApiResponse<
     };
   }
 };
-
-/**
- * Get processing queue from the API
- */
-export const getProcessingQueue = async (limit: number = 3): Promise<ApiResponse<QueuedProject[]>> => {
-  try {
-    const response = await axiosInstance.get(`/admin/projects/processing?limit=${limit}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching processing queue:", error);
-    // Return a formatted error response instead of throwing
-    return {
-      success: false,
-      message: "Failed to fetch processing queue from server",
-      data: undefined
-    };
-  }
-}; 

@@ -4,9 +4,39 @@ import { getAllSystemMetrics, getDashboardSystemMetrics } from "@/utils/systemMe
 
 const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
 
+// Function to get the token from local storage
+const getAuthToken = (): string | null => {
+    try {
+        const userStorage = localStorage.getItem('user-storage');
+        if (userStorage) {
+            const userData = JSON.parse(userStorage);
+            return userData.state?.user?.token || null;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting auth token:', error);
+        return null;
+    }
+};
+
+// Create axios instance with request interceptor to add the token
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
 });
+
+// Add a request interceptor to include the token in headers
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = getAuthToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 // Mock data for when the API calls fail
 const MOCK_DATA = {
@@ -159,7 +189,7 @@ export const getDashboardStats = async (): Promise<ApiResponse<DashboardStats>> 
             },
             message: "Using real-time system metrics" 
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching real-time dashboard metrics:", error);
         
         // If local metrics fail, try the API if mock data is not forced
@@ -167,7 +197,7 @@ export const getDashboardStats = async (): Promise<ApiResponse<DashboardStats>> 
             try {
                 const response: AxiosResponse<ApiResponse<DashboardStats>> = await axiosInstance.get("/admin/dashboard-stats");
                 return response.data;
-            } catch (apiError: any) {
+            } catch (apiError: unknown) {
                 console.error("Error fetching dashboard stats from API:", apiError);
                 // Fallback to mock data on error
                 return { 
@@ -200,7 +230,7 @@ export const getSystemMetrics = async (timeRange: string): Promise<ApiResponse<S
             data: localMetrics,
             message: "Using real-time system metrics" 
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching local system metrics:", error);
         
         // If local metrics fail, try the API if mock data is not forced
@@ -210,7 +240,7 @@ export const getSystemMetrics = async (timeRange: string): Promise<ApiResponse<S
                     `/admin/system-metrics?timeRange=${timeRange}`
                 );
                 return response.data;
-            } catch (apiError: any) {
+            } catch (apiError: unknown) {
                 console.error("Error fetching system metrics from API:", apiError);
                 // Fallback to mock data on error
                 return { 
@@ -246,7 +276,7 @@ export const getAllUsers = async (): Promise<ApiResponse<User[]>> => {
     try {
         const response: AxiosResponse<ApiResponse<User[]>> = await axiosInstance.get("/admin/users");
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching users:", error);
         // Fallback to mock data on error
         return { 
@@ -267,7 +297,16 @@ export const updateUser = async (userId: number, userData: Partial<User>): Promi
     if (USE_MOCK_DATA) {
         const user = MOCK_DATA.users.find(u => u.id === userId);
         if (!user) {
-            return { success: false, message: "User not found" };
+            // Creating an empty user object to satisfy the type constraint
+            const emptyUser: User = {
+                id: -1,
+                first_name: "",
+                last_name: "",
+                email: "",
+                projects: 0,
+                status: "inactive"
+            };
+            return { success: false, data: emptyUser, message: "User not found" };
         }
         
         const updatedUser = { ...user, ...userData };
@@ -284,10 +323,22 @@ export const updateUser = async (userId: number, userData: Partial<User>): Promi
             userData
         );
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error updating user:", error);
-        // Return error message
-        return { success: false, message: error.message };
+        // Return error message with an empty user object
+        const emptyUser: User = {
+            id: -1,
+            first_name: "",
+            last_name: "",
+            email: "",
+            projects: 0,
+            status: "inactive"
+        };
+        return { 
+            success: false, 
+            data: emptyUser, 
+            message: error instanceof Error ? error.message : "Unknown error" 
+        };
     }
 };
 
@@ -295,23 +346,28 @@ export const updateUser = async (userId: number, userData: Partial<User>): Promi
  * Deletes a user
  * @param userId - The user ID to delete
  */
-export const deleteUser = async (userId: number): Promise<ApiResponse<null>> => {
+export const deleteUser = async (userId: number): Promise<ApiResponse<{ deleted: boolean }>> => {
     // Use mock data if flag is set
     if (USE_MOCK_DATA) {
         return { 
             success: true, 
+            data: { deleted: true },
             message: "User deleted successfully (mock data - development mode)" 
         };
     }
     
     try {
-        const response: AxiosResponse<ApiResponse<null>> = await axiosInstance.delete(
+        const response: AxiosResponse<ApiResponse<{ deleted: boolean }>> = await axiosInstance.delete(
             `/admin/users/${userId}`
         );
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error deleting user:", error);
-        return { success: false, message: error.message };
+        return { 
+            success: false, 
+            data: { deleted: false }, 
+            message: error instanceof Error ? error.message : "Unknown error" 
+        };
     }
 };
 
@@ -331,7 +387,7 @@ export const getAllProjects = async (): Promise<ApiResponse<Project[]>> => {
     try {
         const response: AxiosResponse<ApiResponse<Project[]>> = await axiosInstance.get("/admin/projects");
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching projects:", error);
         // Fallback to mock data on error
         return { 
@@ -346,23 +402,27 @@ export const getAllProjects = async (): Promise<ApiResponse<Project[]>> => {
  * Deletes a project
  * @param projectId - The project ID to delete
  */
-export const deleteProject = async (projectId: number): Promise<ApiResponse<null>> => {
+export const deleteProject = async (projectId: number): Promise<ApiResponse<{ deleted: boolean }>> => {
     // Use mock data if flag is set
     if (USE_MOCK_DATA) {
         return { 
-            success: true, 
+            success: true,
+            data: { deleted: true },
             message: "Project deleted successfully (mock data - development mode)" 
         };
     }
     
     try {
-        const response: AxiosResponse<ApiResponse<null>> = await axiosInstance.delete(
+        const response: AxiosResponse<ApiResponse<{ deleted: boolean }>> = await axiosInstance.delete(
             `/admin/projects/${projectId}`
         );
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error deleting project:", error);
-        return { success: false, message: error.message };
+        if (error instanceof Error) {
+            return { success: false, data: { deleted: false }, message: error.message };
+        }
+        return { success: false, data: { deleted: false }, message: "An unknown error occurred" };
     }
 };
 
@@ -391,7 +451,7 @@ export const getLogs = async (
             `/admin/logs?logType=${logType}&logLevel=${logLevel}&limit=${limit}`
         );
         return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching logs:", error);
         // Fallback to mock data on error
         return { 

@@ -1,15 +1,9 @@
-/**
- * Utility functions for fetching real system metrics
- */
 
-// Store previous measurements to create realistic fluctuations
 let lastCpuMeasurement = -1;
 let lastMemoryMeasurement = -1;
 let lastDiskMeasurement = -1;
-let startTime = Date.now();
+const startTime = Date.now();
 
-// Function to get CPU usage estimation
-// Note: Browsers don't provide direct CPU usage, so this is an estimation
 export const getCpuUsage = async (): Promise<number> => {
   // Use a combination of computation benchmarking and random fluctuation
   const start = performance.now();
@@ -17,6 +11,7 @@ export const getCpuUsage = async (): Promise<number> => {
   // Run some computation to measure CPU responsiveness
   let result = 0;
   for (let i = 0; i < 1000000; i++) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     result += Math.random();
   }
   
@@ -57,8 +52,10 @@ export const getMemoryUsage = async (): Promise<number> => {
   // Try to use performance.memory if available (Chrome only)
   if (performance && 'memory' in performance) {
     try {
-      // @ts-ignore - TypeScript doesn't recognize memory property
-      const memoryInfo = performance.memory;
+      const memoryInfo = performance.memory as {
+        usedJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
       if (memoryInfo && memoryInfo.usedJSHeapSize && memoryInfo.jsHeapSizeLimit) {
         const percentUsed = (memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100;
         memoryUsage = Math.round(percentUsed);

@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "@/App";
 
 import NotFoundPage from "@/pages/404";
+import Unauthorized from "@/pages/Unauthorized";
 
 import UserLayout from "@/layouts/UserLayout";
 import LandingPage from "@/pages/User/LandingPage";
@@ -23,6 +24,7 @@ import ProjectsOverview from "@/pages/Admin/projects";
 import SystemMetrics from "@/pages/Admin/metrics";
 import LogsViewer from "@/pages/Admin/logs";
 import AdminLayout from "@/layouts/AdminLayout";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const router = createBrowserRouter([
     {
@@ -40,6 +42,10 @@ const router = createBrowserRouter([
                     {
                         path: "*",
                         element: <NotFoundPage />,
+                    },
+                    {
+                        path: "unauthorized",
+                        element: <Unauthorized />,
                     },
                     {
                         path: "upload",
@@ -86,27 +92,33 @@ const router = createBrowserRouter([
             },
             {
                 path: "admin",
-                element: <AdminLayout />,
+                element: <ProtectedRoute requireAdmin={true} />,
                 children: [
                     {
-                        path: "dashboard",
-                        element: <Dashboard />
-                    },
-                    {
-                        path: "userManage",
-                        element: <UserManagement />
-                    },
-                    {
-                        path: "projects",
-                        element: <ProjectsOverview />
-                    },
-                    {
-                        path: "metrics",
-                        element: <SystemMetrics />
-                    },
-                    {
-                        path: "logs",
-                        element: <LogsViewer />
+                        path: "",
+                        element: <AdminLayout />,
+                        children: [
+                            {
+                                path: "dashboard",
+                                element: <Dashboard />
+                            },
+                            {
+                                path: "userManage",
+                                element: <UserManagement />
+                            },
+                            {
+                                path: "projects",
+                                element: <ProjectsOverview />
+                            },
+                            {
+                                path: "metrics",
+                                element: <SystemMetrics />
+                            },
+                            {
+                                path: "logs",
+                                element: <LogsViewer />
+                            }
+                        ],
                     }
                 ],
             },

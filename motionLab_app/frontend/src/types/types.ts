@@ -1,8 +1,10 @@
 export interface User {
-    id: string;
-    name: string;
+    id: number;
+    first_name: string;
+    last_name: string;
     email: string;
-    // Add other user properties as needed
+    is_admin: boolean;
+    token?: string;
 }
 
 export interface Project {

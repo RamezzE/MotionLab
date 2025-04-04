@@ -2,6 +2,8 @@ from flask import jsonify
 from models.user_model import User
 from models.project_model import Project
 from services.admin_service import AdminService
+from services.bvh_service import BVHService
+from database import db
 
 import datetime
 import os
@@ -223,11 +225,23 @@ class AdminController:
     @staticmethod
     def delete_project(project_id):
         try:
-            result = Project.delete_project_by_id(project_id, None)
-            if not result:
-                return jsonify({"success": False, "message": "Failed to delete project"}), 400
+            # Convert project_id to integer
+            project_id = int(project_id)
+
+            project = Project.get_project_by_id(project_id)
+            if not project:
+                return jsonify({"success": False, "message": "Project not found"}), 404
+
+            # Admin bypass - directly delete the project without user ID check
+            db.session.delete(project)
+            db.session.commit()
+
+            # Also delete associated BVH files
+            BVHService.delete_bvhs_by_project_id(project_id)
 
             return jsonify({"success": True, "message": "Project deleted successfully"}), 200
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid project ID format"}), 400
         except Exception as e:
             return jsonify({"success": False, "message": str(e)}), 500
 
