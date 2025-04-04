@@ -4,13 +4,28 @@ from utils import VideoUtils, PoseUtils, BVHUtils
 import mediapipe as mp 
 
 class PoseProcessingService:
-    def __init__(self, config_file='utils/video_pose.yaml', checkpoint_file='utils/best_58.58.pth'):
+    def __init__(self, config_file=None, checkpoint_file=None):
         """Initializes the service with the pose model and estimator."""
         
         # 2D Pose detector initialization
         self.mp_pose = mp.solutions.pose
         self.mp_pose_model = self.mp_pose.Pose()
         
+        # Set default paths relative to the current file location
+        if config_file is None:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            config_file = os.path.join(current_dir, '..', 'utils', 'video_pose.yaml')
+        
+        if checkpoint_file is None:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            checkpoint_file = os.path.join(current_dir, '..', 'utils', 'best_58.58.pth')
+            
+        # Ensure paths exist
+        if not os.path.exists(config_file):
+            raise FileNotFoundError(f"Config file not found at: {config_file}")
+        if not os.path.exists(checkpoint_file):
+            raise FileNotFoundError(f"Checkpoint file not found at: {checkpoint_file}")
+            
         self.estimator_3d = PoseUtils.initialize_3D_pose_estimator(config_file, checkpoint_file)
 
     def convert_video_to_bvh(self, temp_video_path):        

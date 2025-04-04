@@ -94,6 +94,10 @@ class UserService:
         if not user:
             return {"message": "User not found"}
         
+        # Skip email verification check for admin users
+        if user.is_admin:
+            return None
+        
         if not user.is_email_verified:
             return {"message": "User email not verified"}
         
