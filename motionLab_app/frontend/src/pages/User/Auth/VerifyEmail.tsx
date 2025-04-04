@@ -6,14 +6,20 @@ import FormField from "@/components/UI/FormField";
 import FormButton from "@/components/UI/FormButton";
 
 const VerifyEmailPage: React.FC = () => {
-    const { verifyEmail, sendVerificationEmail, user, isLoggedIn } = useUserStore();
+    const { verifyEmail, sendVerificationEmail, user, isAuthenticated } = useUserStore();
     const navigate = useNavigate();
 
-    
+
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
 
-    
+    useEffect(() => {
+        if (!isAuthenticated || !user || user.emailVerified) {
+            navigate("/login");
+        }
+    }, []);
+
+
     // States for the verification flow (token present)
     const [verifyLoading, setVerifyLoading] = useState(true);
     const [verifyMessage, setVerifyMessage] = useState<string | null>(null);
@@ -105,10 +111,6 @@ const VerifyEmailPage: React.FC = () => {
                 </div>
             </div>
         );
-    }
-
-    if (!isLoggedIn || !user || user.emailVerified) {
-        navigate("/login");
     }
 
     // If no token, render the "Request Verification Email" form.

@@ -1,13 +1,25 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, User } from "lucide-react"; // Import icons
+
 import Logo from "/images/logo.png";
 
-import useUserStore from "../../store/useUserStore";
+import useUserStore from "@/store/useUserStore";
+import useProjectStore from "@/store/useProjectStore";
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const { isAuthenticated, logout } = useUserStore();
+    const { clearProjects } = useProjectStore();
+
+    const navigate = useNavigate();
+
+    const logoutFunc = () => {
+        logout();
+        clearProjects(); // Clear projects on logout
+        setIsOpen(false); // Close the menu if it's open
+        navigate("/"); // Redirect to home after logout
+    }
 
     return (
         <nav className="flex justify-between items-center bg-gray-700 bg-opacity-50 shadow-lg mx-auto mt-4 px-6 sm:px-7 py-3 rounded-3xl w-[90%] md:max-w-4xl text-white">
@@ -70,8 +82,8 @@ const NavBar: React.FC = () => {
                             <User size={24} />
                         </Link>
                         <button
-                            onClick={logout}
-                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                            onClick={logoutFunc}
+                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
                         >
                             Log Out
                         </button>
@@ -121,7 +133,7 @@ const NavBar: React.FC = () => {
                             </Link>
                             <Link
                                 to="/signup"
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Join Now
@@ -138,11 +150,8 @@ const NavBar: React.FC = () => {
                                 <span>Profile</span>
                             </Link>
                             <button
-                                onClick={() => {
-                                    logout();
-                                    setIsOpen(false);
-                                }}
-                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
+                                onClick={logoutFunc}
+                                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
                             >
                                 Log Out
                             </button>

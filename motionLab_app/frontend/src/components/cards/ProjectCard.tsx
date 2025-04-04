@@ -35,7 +35,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
                 return;
             }
             setLoading(true);
-            await deleteProject(id, user.id);
+            await deleteProject(id, user.id.toString());
             setLoading(false);
         }
     };
@@ -43,7 +43,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
     const handleRefresh = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         setLoading(true);
-        await fetchProjectById(id, user?.id || "");
+        await fetchProjectById(id, user?.id.toString() || "");
         setLoading(false);
     };
 

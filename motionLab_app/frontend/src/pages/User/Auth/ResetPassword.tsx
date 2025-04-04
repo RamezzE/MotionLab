@@ -6,14 +6,16 @@ import FormButton from "@/components/UI/FormButton";
 import useUserStore from "@/store/useUserStore";
 
 const ResetPasswordPage: React.FC = () => {
-    const { resetPassword, isLoggedIn } = useUserStore(); // Ensure you have this function in your user store
+    const { resetPassword, isAuthenticated } = useUserStore(); // Ensure you have this function in your user store
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
     const navigate = useNavigate();
 
-    if (isLoggedIn) {
-        navigate("/"); // Redirect to home if already authenticated
-    }
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/"); // Redirect to home if already authenticated
+        }
+    }, [isAuthenticated, navigate]);
 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");

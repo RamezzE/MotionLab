@@ -54,3 +54,35 @@ class UserValidator:
             errors["confirmPassword"] = "Passwords do not match"
 
         return errors
+    
+    @staticmethod
+    def validate_password_reset(data):
+        """Validates password reset data (email)"""
+        errors = {}
+
+        email = data.get("email", "").strip()
+
+        if not email:
+            errors["email"] = "Email is required"
+        elif not re.match(r"^\S+@\S+\.\S+$", email):
+            errors["email"] = "Invalid email format"
+
+        return errors
+    
+    @staticmethod   
+    def validate_reset_password(data):
+        """Validates reset password data (token, new password, confirm password)"""
+        errors = {}
+
+        token = data.get("token", "").strip()
+        new_password = data.get("newPassword", "").strip()
+
+        if not token:
+            errors["token"] = "Token is required"
+
+        if not new_password:
+            errors["newPassword"] = "New Password is required"
+        elif len(new_password) < 8:
+            errors["newPassword"] = "New Password must be at least 8 characters"
+
+        return errors

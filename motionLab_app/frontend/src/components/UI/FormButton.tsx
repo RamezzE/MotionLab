@@ -27,7 +27,7 @@ const FormButton: FC<FormButtonProps> = ({
             onClick={handleClick}
             disabled={loading || props.disabled}
             className={`bg-purple-600 hover:bg-purple-700 px-8 py-2 rounded-md w-full text-white text-lg transition duration-300 ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                } ${className || ""}`}
+                } ${className}`}
         >
             {loading ? (
                 <div className="flex justify-center items-center w-full">

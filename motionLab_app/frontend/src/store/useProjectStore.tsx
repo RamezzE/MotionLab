@@ -18,6 +18,7 @@ interface ProjectStoreState {
     deleteProject: (projectId: string, userId: string) => Promise<boolean>;
     getBVHFilenames: (projectId: string, userId: string) => Promise<ApiResponse<any>>;
     clearError: () => void;
+    clearProjects: () => void;
 }
 
 const useProjectStore = create<ProjectStoreState>()(
@@ -77,6 +78,12 @@ const useProjectStore = create<ProjectStoreState>()(
             },
 
             clearError: () => set({ error: null }),
+
+            clearProjects: () => {
+                set({ projects: [] });
+
+                localStorage.removeItem("projects"); // Clear projects from local storage
+            },
         }),
         {
             name: "project-storage",

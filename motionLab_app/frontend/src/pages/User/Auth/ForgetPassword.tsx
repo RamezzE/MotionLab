@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import FormField from "@components/UI/FormField";
@@ -7,11 +7,14 @@ import FormButton from "@/components/UI/FormButton";
 import useUserStore from "@/store/useUserStore";
 
 const ForgotPasswordPage: React.FC = () => {
-    const { sendPasswordResetEmail, isLoggedIn } = useUserStore();
+    const { sendPasswordResetEmail, isAuthenticated } = useUserStore();
     const navigate = useNavigate();
-    if (isLoggedIn) {
-        navigate("/"); // Redirect to home if already authenticated  
-    }
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/"); // Redirect to home if already authenticated  
+        }
+    }, [isAuthenticated, navigate]);
 
     const [email, setEmail] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);

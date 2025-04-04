@@ -91,6 +91,11 @@ class PoseController:
             if not UserService.does_user_exist_by_id(user_id):
                 return jsonify({"success": False, "message": "User not found"}), 404
             
+            # Check if User is verified
+            errors = UserService.check_user_verification(user_id)
+            if errors:
+                return jsonify({"success": False, "message": errors["message"]}), 403
+            
             # Check for duplicate project name
             existing_project = ProjectService.get_project_by_name_and_user_id(project_name, user_id)
             if existing_project:

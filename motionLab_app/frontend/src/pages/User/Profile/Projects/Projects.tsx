@@ -17,7 +17,7 @@ const Projects: React.FC = () => {
 
         const fetchProjects = async () => {
             setLoading(true);
-            await fetchProjectsStoreFunc(user.id);
+            await fetchProjectsStoreFunc(user.id.toString());
             setLoading(false);
         };
 
