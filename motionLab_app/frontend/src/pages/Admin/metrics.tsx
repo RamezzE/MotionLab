@@ -2,51 +2,160 @@ import React, { useState, useEffect } from "react";
 import { getSystemMetrics } from "@/api/adminAPIs";
 import { SystemMetrics as SystemMetricsType } from "@/api/adminAPIs";
 
-// Chart component for visualizing data
-const Chart = ({ type, data, labels, height = "h-64" }: { type: string; data: number[]; labels?: string[]; height?: string }) => {
+// Enhanced Chart component for visualizing data
+const Chart = ({ 
+  data, 
+  labels, 
+  height = "h-64",
+  color = "purple" 
+}: { 
+  data: number[];
+  labels?: string[];
+  height?: string;
+  color?: "purple" | "blue" | "green" | "red" | "yellow" 
+}) => {
+    // State for tooltip
+    const [tooltip, setTooltip] = useState<{ show: boolean, index: number, value: number }>({
+        show: false,
+        index: 0,
+        value: 0
+    });
+    
+    // State to track which bar is being hovered
+    const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+    
     // Calculate the max value to normalize the bars
     const maxValue = Math.max(...data, 1); // Ensure we don't divide by zero
+    const colorMap = {
+        purple: "bg-purple-500 hover:bg-purple-600",
+        blue: "bg-blue-500 hover:bg-blue-600",
+        green: "bg-green-500 hover:bg-green-600",
+        red: "bg-red-500 hover:bg-red-600",
+        yellow: "bg-yellow-500 hover:bg-yellow-600"
+    };
+    
+    const colorClass = colorMap[color];
+    
+    // Handle mouse enter for data point
+    const handleMouseEnter = (index: number, value: number) => {
+        setTooltip({
+            show: true,
+            index,
+            value
+        });
+        setHoveredPoint(index);
+    };
+    
+    // Handle mouse leave for data point
+    const handleMouseLeave = () => {
+        setTooltip(prev => ({ ...prev, show: false }));
+        setHoveredPoint(null);
+    };
     
     return (
-        <div className={`${height} bg-gray-700 rounded-lg p-4`}>
-            <div className="flex justify-between mb-2">
-                <h4 className="text-white">{type} Chart</h4>
+        <div className={`${height} bg-gray-800 rounded-lg p-4 shadow-lg overflow-hidden relative`}>
+            <div className="flex justify-between mb-4">
+                <h4 className="text-white font-medium">Chart</h4>
                 <span className="text-gray-400 text-sm">{data.length} data points</span>
             </div>
             
-            {type === "line" ? (
-                <div className="relative h-full">
-                    <div className="absolute bottom-0 left-0 right-0 h-[calc(100%-30px)] flex items-end">
-                        {data.map((value, index) => {
-                            const height = (value / maxValue) * 100;
-                            return (
-                                <div key={index} className="flex-1 mx-0.5 flex flex-col items-center">
-                                    <div 
-                                        className="w-full bg-purple-500 rounded-sm" 
-                                        style={{ height: `${height}%` }}
-                                    ></div>
-                                    {labels && <span className="text-xs text-gray-400 mt-1 truncate w-full text-center">{labels[index]}</span>}
-                                </div>
-                            );
-                        })}
+            {/* Tooltip */}
+            {tooltip.show && (
+                <div className="absolute z-20 bg-gray-900/90 backdrop-blur-sm text-white text-xs p-2 rounded shadow-lg pointer-events-none border border-gray-700"
+                    style={{ 
+                        top: '10px',
+                        right: '10px'
+                    }}
+                >
+                    <div className="font-bold text-sm mb-1" style={{
+                        color: color === "purple" ? "#c4b5fd" : 
+                               color === "blue" ? "#93c5fd" : 
+                               color === "green" ? "#6ee7b7" : 
+                               color === "red" ? "#fca5a5" : "#fde68a"
+                    }}>
+                        {labels ? labels[tooltip.index] : `Point ${tooltip.index + 1}`}
                     </div>
+                    <div>Value: <span className="font-semibold">{tooltip.value}%</span></div>
                 </div>
-            ) : (
-                <div className="flex h-full items-end justify-around">
+            )}
+            
+            {/* Grid lines for better readability */}
+            <div className="relative h-[calc(100%-40px)]">
+                {/* Horizontal grid lines */}
+                <div className="absolute inset-0 flex flex-col justify-between">
+                    {[0, 50, 100].map((percent) => (
+                        <div key={percent} className="w-full h-px bg-gray-700 opacity-50">
+                            <span className="absolute -left-1 -translate-y-1/2 text-xs text-gray-500">{percent}%</span>
+                        </div>
+                    ))}
+                </div>
+                
+                {/* Bar chart */}
+                <div className="absolute inset-0 flex items-end px-1">
                     {data.map((value, index) => {
-                        const height = (value / maxValue) * 100;
+                        const heightPercent = (value / maxValue) * 100;
+                        const isHovered = hoveredPoint === index;
+                        
                         return (
-                            <div key={index} className="w-8 flex flex-col items-center">
+                            <div 
+                                key={index} 
+                                className="flex-1 flex flex-col items-center justify-end h-full"
+                                title={`${labels ? labels[index] : index}: ${value}%`}
+                                onMouseEnter={() => handleMouseEnter(index, value)}
+                                onMouseLeave={handleMouseLeave}
+                            >
                                 <div 
-                                    className="w-full bg-blue-500 rounded-t-sm" 
-                                    style={{ height: `${height}%` }}
+                                    className={`${colorClass} rounded-t-md transition-all duration-300`}
+                                    style={{ 
+                                        height: `${heightPercent}%`,
+                                        minHeight: value > 0 ? '4px' : '0', // Ensure even small values are visible
+                                        width: isHovered ? '80%' : '60%',
+                                        maxWidth: '24px',
+                                        transition: 'all 0.2s ease'
+                                    }}
                                 ></div>
-                                <span className="text-xs text-gray-400 mt-1">{labels ? labels[index] : index + 1}</span>
                             </div>
                         );
                     })}
                 </div>
-            )}
+            </div>
+            
+            {/* X-axis labels */}
+            <div className="mt-2 flex justify-between overflow-hidden">
+                {labels && labels.length > 0 && (
+                    <>
+                        {/* Show first label */}
+                        <span className="text-xs text-gray-400 truncate">{labels[0]}</span>
+                        
+                        {/* Show middle labels based on available space */}
+                        {labels.length > 8 ? (
+                            // For many points, show a subset of labels
+                            <>
+                                {[0.25, 0.5, 0.75].map((fraction) => {
+                                    const index = Math.floor(labels.length * fraction);
+                                    return (
+                                        <span key={index} className="text-xs text-gray-400 truncate">
+                                            {labels[index]}
+                                        </span>
+                                    );
+                                })}
+                            </>
+                        ) : (
+                            // For fewer points, show more labels
+                            <>
+                                {labels.slice(1, -1).map((label, index) => (
+                                    <span key={index} className="text-xs text-gray-400 truncate">
+                                        {label}
+                                    </span>
+                                ))}
+                            </>
+                        )}
+                        
+                        {/* Show last label */}
+                        <span className="text-xs text-gray-400 truncate">{labels[labels.length - 1]}</span>
+                    </>
+                )}
+            </div>
         </div>
     );
 };
@@ -57,11 +166,33 @@ const SystemMetricsPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [metrics, setMetrics] = useState<SystemMetricsType | null>(null);
     const [usingMockData, setUsingMockData] = useState(false);
+    const [usingRealTimeMetrics, setUsingRealTimeMetrics] = useState(false);
+    const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+    const [autoRefresh, setAutoRefresh] = useState(false);
 
-    // Fetch metrics when time range changes
+    // Fetch metrics when time range changes or manual refresh
     useEffect(() => {
         fetchMetrics();
-    }, [timeRange]);
+
+        // Set up auto-refresh if enabled
+        if (autoRefresh) {
+            const interval = setInterval(() => {
+                fetchMetrics();
+            }, 5000); // Refresh every 5 seconds
+            setRefreshInterval(interval);
+        } else if (refreshInterval) {
+            // Clear interval if auto-refresh is disabled
+            clearInterval(refreshInterval);
+            setRefreshInterval(null);
+        }
+
+        // Cleanup function
+        return () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        };
+    }, [timeRange, autoRefresh]);
 
     const fetchMetrics = async () => {
         setLoading(true);
@@ -70,11 +201,16 @@ const SystemMetricsPage = () => {
             const response = await getSystemMetrics(timeRange);
             if (response.success && response.data) {
                 setMetrics(response.data);
-                // Check if the response message indicates mock data
-                if (response.message && (response.message.includes("mock") || response.message.includes("development"))) {
+                // Check response message to determine data source
+                if (response.message && response.message.includes("real-time")) {
+                    setUsingRealTimeMetrics(true);
+                    setUsingMockData(false);
+                } else if (response.message && (response.message.includes("mock") || response.message.includes("development"))) {
                     setUsingMockData(true);
+                    setUsingRealTimeMetrics(false);
                 } else {
                     setUsingMockData(false);
+                    setUsingRealTimeMetrics(false);
                 }
             } else {
                 setError(response.message || "Failed to fetch system metrics");
@@ -89,6 +225,10 @@ const SystemMetricsPage = () => {
 
     const handleTimeRangeChange = (range: string) => {
         setTimeRange(range);
+    };
+
+    const toggleAutoRefresh = () => {
+        setAutoRefresh(!autoRefresh);
     };
 
     if (loading) {
@@ -129,18 +269,50 @@ const SystemMetricsPage = () => {
 
     return (
         <div className="p-6">
-            <h1 className="text-3xl font-bold mb-6 text-white">System Metrics</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-white">System Metrics</h1>
+                <div className="flex space-x-3">
+                    <button 
+                        onClick={fetchMetrics}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+                    >
+                        Refresh
+                    </button>
+                    <button 
+                        onClick={toggleAutoRefresh}
+                        className={`px-4 py-2 rounded-md transition ${
+                            autoRefresh 
+                                ? "bg-green-600 text-white hover:bg-green-700" 
+                                : "bg-gray-700 text-white hover:bg-gray-600"
+                        }`}
+                    >
+                        {autoRefresh ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
+                    </button>
+                </div>
+            </div>
+            
+            {usingRealTimeMetrics && (
+                <div className="bg-green-600 text-white p-3 rounded-lg mb-4 flex justify-between items-center">
+                    <div>
+                        <span className="font-bold">Real-Time Metrics</span> - Using metrics from the local system
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <span className={`inline-block w-2 h-2 rounded-full ${autoRefresh ? "animate-pulse bg-white" : "bg-gray-300"}`}></span>
+                        <span className="text-sm">{autoRefresh ? "Live" : "Static"}</span>
+                    </div>
+                </div>
+            )}
             
             {usingMockData && (
                 <div className="bg-amber-600 text-white p-3 rounded-lg mb-4 flex justify-between items-center">
                     <div>
-                        <span className="font-bold">Development Mode</span> - Using mock data. Backend API not available.
+                        <span className="font-bold">Development Mode</span> - Using mock data. System metrics not available.
                     </div>
                     <button 
                         onClick={fetchMetrics}
                         className="px-3 py-1 bg-white text-amber-600 rounded hover:bg-gray-100"
                     >
-                        Retry API
+                        Try Again
                     </button>
                 </div>
             )}
@@ -225,22 +397,42 @@ const SystemMetricsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-gray-800 rounded-lg shadow-lg p-6">
                     <h3 className="text-white text-lg font-semibold mb-4">CPU Usage Over Time</h3>
-                    <Chart type="line" data={metrics.cpu} labels={metrics.labels} />
+                    <Chart 
+                        data={metrics.cpu} 
+                        labels={metrics.labels} 
+                        color="blue"
+                        height="h-64"
+                    />
                 </div>
                 <div className="bg-gray-800 rounded-lg shadow-lg p-6">
                     <h3 className="text-white text-lg font-semibold mb-4">Memory Usage Over Time</h3>
-                    <Chart type="line" data={metrics.memory} labels={metrics.labels} />
+                    <Chart 
+                        data={metrics.memory} 
+                        labels={metrics.labels} 
+                        color="green"
+                        height="h-64"
+                    />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-800 rounded-lg shadow-lg p-6">
                     <h3 className="text-white text-lg font-semibold mb-4">Processing History</h3>
-                    <Chart type="bar" data={metrics.processingHistory} labels={metrics.labels} />
+                    <Chart 
+                        data={metrics.processingHistory} 
+                        labels={metrics.labels} 
+                        color="purple"
+                        height="h-64"
+                    />
                 </div>
                 <div className="bg-gray-800 rounded-lg shadow-lg p-6">
                     <h3 className="text-white text-lg font-semibold mb-4">Error Rate</h3>
-                    <Chart type="line" data={metrics.errorRate} labels={metrics.labels} />
+                    <Chart 
+                        data={metrics.errorRate} 
+                        labels={metrics.labels} 
+                        color="red"
+                        height="h-64"
+                    />
                 </div>
             </div>
         </div>

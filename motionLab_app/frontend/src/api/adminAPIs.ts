@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { ApiResponse } from "@/types/apiTypes";
+import { getAllSystemMetrics, getDashboardSystemMetrics } from "@/utils/systemMetrics";
 
 const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
 
@@ -130,26 +131,59 @@ const USE_MOCK_DATA = false;
  * Fetches dashboard statistics
  */
 export const getDashboardStats = async (): Promise<ApiResponse<DashboardStats>> => {
-    // Use mock data if flag is set
-    if (USE_MOCK_DATA) {
-        return { 
-            success: true, 
-            data: MOCK_DATA.dashboardStats,
-            message: "Using mock data (development mode)"
-        };
-    }
-    
     try {
-        const response: AxiosResponse<ApiResponse<DashboardStats>> = await axiosInstance.get("/admin/dashboard-stats");
-        return response.data;
-    } catch (error: any) {
-        console.error("Error fetching dashboard stats:", error);
-        // Fallback to mock data on error
+        // First try to get real system metrics for the dashboard
+        const realTimeMetrics = await getDashboardSystemMetrics();
+        
+        // Combine real-time metrics with mock data for user/project stats
+        // since those would come from the database in a real app
         return { 
             success: true, 
-            data: MOCK_DATA.dashboardStats,
-            message: "Using mock data (API unavailable)" 
+            data: {
+                // These would normally be from the database
+                totalUsers: MOCK_DATA.dashboardStats.totalUsers,
+                activeUsers: MOCK_DATA.dashboardStats.activeUsers,
+                totalProjects: MOCK_DATA.dashboardStats.totalProjects,
+                processingProjects: MOCK_DATA.dashboardStats.processingProjects,
+                completedProjects: MOCK_DATA.dashboardStats.completedProjects,
+                failedProjects: MOCK_DATA.dashboardStats.failedProjects,
+                
+                // Use real-time metrics for system stats
+                serverLoad: realTimeMetrics.serverLoad,
+                memoryUsage: realTimeMetrics.memoryUsage,
+                diskUsage: realTimeMetrics.diskUsage,
+                uptime: realTimeMetrics.uptime,
+                avgProcessingTime: realTimeMetrics.avgProcessingTime,
+                dailyUploads: realTimeMetrics.dailyUploads,
+                storageUsed: realTimeMetrics.storageUsed
+            },
+            message: "Using real-time system metrics" 
         };
+    } catch (error: any) {
+        console.error("Error fetching real-time dashboard metrics:", error);
+        
+        // If local metrics fail, try the API if mock data is not forced
+        if (!USE_MOCK_DATA) {
+            try {
+                const response: AxiosResponse<ApiResponse<DashboardStats>> = await axiosInstance.get("/admin/dashboard-stats");
+                return response.data;
+            } catch (apiError: any) {
+                console.error("Error fetching dashboard stats from API:", apiError);
+                // Fallback to mock data on error
+                return { 
+                    success: true, 
+                    data: MOCK_DATA.dashboardStats,
+                    message: "Using mock data (API unavailable)" 
+                };
+            }
+        } else {
+            // Use mock data if flag is set or as fallback
+            return { 
+                success: true, 
+                data: MOCK_DATA.dashboardStats,
+                message: "Using mock data (real-time metrics unavailable)" 
+            };
+        }
     }
 };
 
@@ -158,28 +192,41 @@ export const getDashboardStats = async (): Promise<ApiResponse<DashboardStats>> 
  * @param timeRange - The time range for metrics: day, week, or month
  */
 export const getSystemMetrics = async (timeRange: string): Promise<ApiResponse<SystemMetrics>> => {
-    // Use mock data if flag is set
-    if (USE_MOCK_DATA) {
-        return { 
-            success: true, 
-            data: MOCK_DATA.getSystemMetrics(timeRange),
-            message: "Using mock data (development mode)"
-        };
-    }
-    
     try {
-        const response: AxiosResponse<ApiResponse<SystemMetrics>> = await axiosInstance.get(
-            `/admin/system-metrics?timeRange=${timeRange}`
-        );
-        return response.data;
-    } catch (error: any) {
-        console.error("Error fetching system metrics:", error);
-        // Fallback to mock data on error
+        // First try to get real system metrics from the local machine
+        const localMetrics = await getAllSystemMetrics(timeRange);
         return { 
             success: true, 
-            data: MOCK_DATA.getSystemMetrics(timeRange),
-            message: "Using mock data (API unavailable)" 
+            data: localMetrics,
+            message: "Using real-time system metrics" 
         };
+    } catch (error: any) {
+        console.error("Error fetching local system metrics:", error);
+        
+        // If local metrics fail, try the API if mock data is not forced
+        if (!USE_MOCK_DATA) {
+            try {
+                const response: AxiosResponse<ApiResponse<SystemMetrics>> = await axiosInstance.get(
+                    `/admin/system-metrics?timeRange=${timeRange}`
+                );
+                return response.data;
+            } catch (apiError: any) {
+                console.error("Error fetching system metrics from API:", apiError);
+                // Fallback to mock data on error
+                return { 
+                    success: true, 
+                    data: MOCK_DATA.getSystemMetrics(timeRange),
+                    message: "Using mock data (API unavailable)" 
+                };
+            }
+        } else {
+            // Use mock data as fallback
+            return { 
+                success: true, 
+                data: MOCK_DATA.getSystemMetrics(timeRange),
+                message: "Using mock data (real-time metrics unavailable)" 
+            };
+        }
     }
 };
 
