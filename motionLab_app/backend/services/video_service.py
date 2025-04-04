@@ -1,5 +1,7 @@
 import tempfile
 from utils import VideoUtils
+import os
+from moviepy import VideoFileClip
 
 class VideoService:
     
@@ -10,7 +12,14 @@ class VideoService:
         is_valid, error_message = VideoService.validate_video_file(video, request_files)
         if not is_valid:
             return None, error_message
-            
+
+        max_size = 150 * 1024 * 1024 # 150MB
+        video.seek(0, os.SEEK_END)
+        file_size = video.tell()
+        video.seek(0)  # Reset the pointer
+        if file_size > max_size:
+            return None, "Video file is too large. Maximum size is 150MB."
+
         # Saving Temp Video
         temp_video_path = VideoService.save_temp_video(video)
         if not temp_video_path:
@@ -26,6 +35,12 @@ class VideoService:
             temp_video.write(video.read())
             temp_video_path = temp_video.name
             temp_video.close()
+            clip = VideoFileClip(temp_video_path)
+            duration = clip.duration  # in seconds
+            clip.close()
+            if duration > 1 * 60:  
+                os.remove(temp_video_path)
+                return None
             return temp_video_path
         except Exception as e:
             print(f"Error in save_temp_video: {e}")
@@ -40,7 +55,7 @@ class VideoService:
             return False, "Unsupported video format"
 
         return True, None
-    
+
     @staticmethod
     def get_video_frame_count(video_path):
         """Returns the total number of frames in the video."""
