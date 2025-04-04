@@ -50,10 +50,27 @@ export const requestPasswordReset = async (email: string) => {
                 },
             }
         );
-        console.log("Request Password Reset Response:", response.data);
         return response.data;
     } catch (error: any) {
         console.error("Request Password Reset API Error:", error.response.data);
+        return error.response.data;
+    }
+}
+
+export const resetPassword = async (token: string, newPassword: string) => {
+    try {
+        const response = await axios.post<ApiResponse<any>>(
+            `${BASE_URL}/auth/reset-password`,
+            { token, newPassword },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("Reset Password API Error:", error.response.data);
         return error.response.data;
     }
 }

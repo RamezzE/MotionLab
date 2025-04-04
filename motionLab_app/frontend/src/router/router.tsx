@@ -9,6 +9,7 @@ import LandingPage from "@/pages/User/LandingPage";
 import LoginPage from "@/pages/User/Auth/Login";
 import SignUpPage from "@/pages/User/Auth/SignUp";
 import ForgetPasswordPage from "@/pages/User/Auth/ForgetPassword";
+import ResetPasswordPage from "@/pages/User/Auth/ResetPassword";
 
 import UploadPage from "@/pages/User/Upload/Upload"
 import AboutPage from "@/pages/User/About"
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
                     {
                         path: "forget-password",
                         element: <ForgetPasswordPage />,
+                    },
+                    {
+                        path: "reset-password",
+                        element: <ResetPasswordPage />,
                     },
                     {
                         path: "profile",

@@ -88,3 +88,5 @@ class User(db.Model):
         except Exception as e:
             print("Error converting user to dict in to_dict / user_model.py:", e)
             return None
+        
+    

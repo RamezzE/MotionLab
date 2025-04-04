@@ -16,3 +16,6 @@ def signup_route():
 def send_password_reset_route():
     return UserController.send_password_reset_email(request)
 
+@auth_bp.route("/reset-password", methods=["POST"])
+def reset_password_route():
+    return UserController.reset_password(request)

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { login, signup, requestPasswordReset } from "@/api/userAPIs";
+import { login, signup, requestPasswordReset, resetPassword } from "@/api/userAPIs";
 import { validateLogin, validateSignup } from "@/utils/validateUser";
 import { User } from "@/types/types";
 import { LoginFormData, SignupFormData, LoginErrors } from "@/types/formTypes";
@@ -21,6 +21,7 @@ interface UserStoreState {
   logout: () => void;
   checkExpiry: () => void;
   sendPasswordResetEmail: (email: string) => Promise<AuthResponse>;
+  resetPassword: (token: string, newPassword: string) => Promise<AuthResponse>;
 }
 
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
@@ -108,6 +109,19 @@ const useUserStore = create<UserStoreState>()(
 
         } catch (error) {
           console.error("Error sending password reset email:", error);
+          return { success: false, message: "An unexpected error occurred. Please try again later." };
+        }
+      },
+      resetPassword: async (token: string, newPassword: string): Promise<AuthResponse> => {
+        try {
+          const response = await resetPassword(token, newPassword);
+          if (response.success) {
+            return { success: true, message: "Your password has been reset successfully." };
+          } else {
+            return { success: false, message: response.message || "Error resetting password." };
+          }
+        } catch (error) {
+          console.error("Error resetting password:", error);
           return { success: false, message: "An unexpected error occurred. Please try again later." };
         }
       }

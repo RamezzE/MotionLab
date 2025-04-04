@@ -68,6 +68,10 @@ class UserService:
         reset_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/reset-password?token={token}"
 
         print(f"Password reset URL: {reset_url}")
+        
+        if (not os.getenv("MAIL_USERNAME") or not os.getenv("MAIL_PASSWORD")):
+            print("Mail server not configured: No username or password found in environment variables.")
+            return {"message": "Mail server not configured"}
 
         # Compose the email message
         msg = Message("MotionLab Password Reset Request", recipients=[email])
@@ -85,38 +89,25 @@ If you did not make this request then simply ignore this email.
             return {"message": "Failed to send password reset email."}
 
         return None  # No errors, email sent successfully
-
-    # @staticmethod
-    # def get_user_by_id(user_id):
-    #     return User.get_by_id(user_id)
-
-    # @staticmethod
-    # def get_user_by_email(email):
-    #     return User.get_by_email(email)
-
-    # @staticmethod
-    # def get_all_users():
-    #     return User.query.all()
-
-
-
-    # @staticmethod
-    # def update_user(user_id, updated_data):
-    #     user = User.get_by_id(user_id)
-    #     if not user:
-    #         return None
+    
+    @staticmethod
+    def reset_password(data):
+        errors = UserValidator.validate_reset_password(data)
+        if errors:
+            return errors
         
-    #     if "email" in updated_data and User.get_by_email(updated_data["email"]):
-    #         return {"error": "Email already in use"}, 400
+        token = data["token"]
         
-    #     user.update(updated_data)
-    #     return user
-
-    # @staticmethod
-    # def delete_user(user_id):
-    #     user = User.get_by_id(user_id)
-    #     if not user:
-    #         return False
+        try:
+            email = serializer.loads(token, salt="password-reset-salt", max_age=3600)
+        except Exception as e:
+            return {"message": "Invalid or expired token"}
         
-    #     user.delete()
-    #     return True
+        user = User.get_by_email(email)
+        if not user:
+            return {"message": "User not found"}
+        
+        data["password"] = data["newPassword"]
+        user.update(data)
+        
+        return None
