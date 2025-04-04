@@ -117,6 +117,7 @@ class PoseController:
 
             # Error Handling
             if not bvh_filenames:
+                ProjectService.delete_project(project["id"])
                 return jsonify({"success": False, "message": "Error processing video"}), 500
             
             # Creating BVH Files
@@ -124,6 +125,7 @@ class PoseController:
                 ProjectService.update_project_status(project_name, user_id, False)
                 return jsonify({"success": True, "data": {"bvh_filenames": bvh_filenames, "projectId": project["id"]}}), 200
             
+            ProjectService.delete_project(project["id"])
             return jsonify({"success": False, "message": "Error processing video"}), 500
         
         except Exception as e:
