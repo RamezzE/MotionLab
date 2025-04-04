@@ -41,10 +41,10 @@ class VideoService:
             if duration > 1 * 60:  
                 os.remove(temp_video_path)
                 return None, "Video duration exceeds 1 minute."
-            return temp_video_path
+            return temp_video_path, ""
         except Exception as e:
             print(f"Error in save_temp_video: {e}")
-            return None, ""
+            return None, "Failed to save video file."
 
     @staticmethod
     def validate_video_file(video, request_files):

@@ -39,34 +39,36 @@ const UploadPage: React.FC = () => {
   const handleUpload = async (): Promise<void | boolean> => {
     setErrorMessage(null);
     setSettingsError(null);
-
-    // Check if file exists
-    if (!file) {
-      setErrorMessage("Please select a file to upload");
-      return;
-    }
-
-    // Validate project settings
-    const settingsValidation = validateProjectSettings(settings);
-    if (!settingsValidation.success) {
-      setSettingsError(settingsValidation.error);
-      return false;
-    }
-
-    // Check if user is logged in.
-    if (!user || !user.id) {
-      setErrorMessage("User ID is not available. Please log in.");
-      navigate("/login");
-      return;
-    }
-    // Check if user's email is verified (skip for admin users).
-    if (!user.emailVerified && !user.is_admin) {
-      setErrorMessage("Please verify your email before uploading.");
-      return;
-    }
-
     setLoading(true);
+
     try {
+      // Check if file exists
+      if (!file) {
+        setErrorMessage("Please select a file to upload");
+        return;
+      }
+
+      // Validate project settings
+      const settingsValidation = validateProjectSettings(settings);
+      if (!settingsValidation.success) {
+        setSettingsError(settingsValidation.error);
+        return false;
+      }
+
+      // Check if user is logged in.
+      if (!user || !user.id) {
+        setErrorMessage("User ID is not available. Please log in.");
+        navigate("/login");
+        return;
+      }
+
+      // Check if user's email is verified (skip for admin users).
+      if (!user.emailVerified && !user.is_admin) {
+        setErrorMessage("Please verify your email before uploading.");
+        return;
+      }
+
+      // Attempt to upload video
       const response = await uploadVideo(
         file,
         settings.projectName,
@@ -82,17 +84,20 @@ const UploadPage: React.FC = () => {
         });
       } else {
         console.error("Upload Error:", response);
-        setErrorMessage(response.message || "An error occurred during the upload. Please try again.");
+        setErrorMessage(
+          response.message || "An error occurred during the upload. Please try again."
+        );
       }
     } catch (error) {
-      console.error("Upload Error:", error);
-      setErrorMessage(`${error}` || "An error occurred during the upload. Please try again.");
-      setLoading(false);
+      console.error("Error:", error);
+      setErrorMessage("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
       setProgress(0);
     }
   };
+
+
 
   // If the user is not logged in, show a message and button to login.
   if (!user) {
