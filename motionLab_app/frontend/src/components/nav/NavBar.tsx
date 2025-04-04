@@ -1,13 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User } from "lucide-react"; // Import icons
+import { Menu, X, User, ChevronDown } from "lucide-react"; // Import icons
 import Logo from "/images/logo.png";
 
 import useUserStore from "../../store/useUserStore";
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const { isAuthenticated, logout } = useUserStore();
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState<boolean>(false);
+    const { user, isAuthenticated, logout } = useUserStore();
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const isAdmin = user?.is_admin || false;
+    
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setProfileDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [dropdownRef]);
+
+    const toggleProfileDropdown = () => {
+        setProfileDropdownOpen(!profileDropdownOpen);
+    };
+
+    // Get user initials for avatar display
+    const getUserInitials = () => {
+        if (!user) return "";
+        return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
+    };
 
     return (
         <nav className="flex justify-between items-center bg-gray-700 bg-opacity-50 shadow-lg mx-auto mt-4 px-6 sm:px-7 py-3 rounded-3xl w-[90%] md:max-w-4xl text-white">
@@ -63,12 +91,53 @@ const NavBar: React.FC = () => {
                     </>
                 ) : (
                     <>
-                        <Link
-                            to="/profile/projects"
-                            className="hover:text-purple-400 transition duration-300"
-                        >
-                            <User size={24} />
-                        </Link>
+                        {/* Profile Icon with Dropdown for Admin Users */}
+                        <div className="relative" ref={dropdownRef}>
+                            {isAdmin ? (
+                                <button
+                                    onClick={toggleProfileDropdown}
+                                    className="flex items-center space-x-1 hover:text-purple-400 transition duration-300"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 flex items-center justify-center">
+                                        <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
+                                    </div>
+                                    <ChevronDown size={16} />
+                                </button>
+                            ) : (
+                                <Link
+                                    to="/profile/projects"
+                                    className="hover:text-purple-400 transition duration-300"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 flex items-center justify-center">
+                                        <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
+                                    </div>
+                                </Link>
+                            )}
+
+                            {/* Admin Dropdown Menu */}
+                            {isAdmin && profileDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-20 border border-gray-700">
+                                    <div className="px-4 py-2 border-b border-gray-700">
+                                        <p className="text-sm text-white font-medium">{user?.email}</p>
+                                        <p className="text-xs text-purple-400 font-medium">Administrator</p>
+                                    </div>
+                                    <Link 
+                                        to="/profile/projects" 
+                                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                                        onClick={() => setProfileDropdownOpen(false)}
+                                    >
+                                        Your Projects
+                                    </Link>
+                                    <Link 
+                                        to="/admin/dashboard" 
+                                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                                        onClick={() => setProfileDropdownOpen(false)}
+                                    >
+                                        Admin Dashboard
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                         <button
                             onClick={logout}
                             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300"
@@ -135,8 +204,17 @@ const NavBar: React.FC = () => {
                                 onClick={() => setIsOpen(false)}
                             >
                                 <User size={24} />
-                                <span>Profile</span>
+                                <span>Your Projects</span>
                             </Link>
+                            {isAdmin && (
+                                <Link
+                                    to="/admin/dashboard"
+                                    className="flex items-center space-x-2 text-white hover:text-purple-400 transition duration-300"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    <span>Admin Dashboard</span>
+                                </Link>
+                            )}
                             <button
                                 onClick={() => {
                                     logout();

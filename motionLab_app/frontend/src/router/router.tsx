@@ -23,6 +23,7 @@ import UserManagement from "@/pages/Admin/userManage";
 import ProjectsOverview from "@/pages/Admin/projects";
 import SystemMetrics from "@/pages/Admin/metrics";
 import LogsViewer from "@/pages/Admin/logs";
+import AdminProfile from "@/pages/Admin/profile";
 import AdminLayout from "@/layouts/AdminLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
                             {
                                 path: "logs",
                                 element: <LogsViewer />
+                            },
+                            {
+                                path: "profile",
+                                element: <AdminProfile />
                             }
                         ],
                     }
