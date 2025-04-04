@@ -9,6 +9,7 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    is_email_verified = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         try:
@@ -30,7 +31,7 @@ class User(db.Model):
     def create(cls, first_name, last_name, email, password, is_admin=False):
         try:
             user = cls(first_name=first_name, last_name=last_name,
-                       email=email, is_admin=is_admin)
+                       email=email, is_admin=is_admin, is_email_verified=False)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -67,6 +68,8 @@ class User(db.Model):
                 self.set_password(updated_data["password"])
             if "is_admin" in updated_data:
                 self.is_admin = updated_data["is_admin"]
+            if "is_email_verified" in updated_data:
+                self.is_email_verified = updated_data["is_email_verified"]
             db.session.commit()
             return self
         except Exception as e:
