@@ -17,7 +17,12 @@ const VerifyEmailPage: React.FC = () => {
         if (!isAuthenticated || !user || user.emailVerified) {
             navigate("/login");
         }
-    }, []);
+        
+        // Admin users don't need to verify their email
+        if (user && user.is_admin) {
+            navigate("/");
+        }
+    }, [isAuthenticated, user, navigate]);
 
 
     // States for the verification flow (token present)

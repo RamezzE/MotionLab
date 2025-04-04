@@ -59,8 +59,8 @@ const UploadPage: React.FC = () => {
       navigate("/login");
       return;
     }
-    // Check if user's email is verified.
-    if (!user.emailVerified) {
+    // Check if user's email is verified (skip for admin users).
+    if (!user.emailVerified && !user.is_admin) {
       setErrorMessage("Please verify your email before uploading.");
       return;
     }
@@ -112,8 +112,8 @@ const UploadPage: React.FC = () => {
     );
   }
 
-  // If user is logged in but email is not verified, show verification prompt.
-  if (user && !user.emailVerified) {
+  // If user is logged in but email is not verified (and not an admin), show verification prompt.
+  if (user && !user.emailVerified && !user.is_admin) {
     return (
       <div className="flex flex-col items-center gap-y-4 px-4 w-full min-h-[40vh] text-white">
         <h1 className="font-bold text-5xl">Upload Your MP4 File</h1>

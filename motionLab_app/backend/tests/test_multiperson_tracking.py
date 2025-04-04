@@ -153,9 +153,19 @@ class MultiPersonTrackingTest(unittest.TestCase):
                     # Get dimensions
                     img_width, img_height = frame.shape[1], frame.shape[0]
                     
+                    # Find the path to bytetrack.yaml
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    bytetrack_path = os.path.join(current_dir, '..', 'utils', 'bytetrack.yaml')
+                    
+                    # Check if the file exists
+                    if not os.path.exists(bytetrack_path):
+                        print(f"Warning: ByteTrack config not found at {bytetrack_path}")
+                        # Fallback to relative path
+                        bytetrack_path = "utils/bytetrack.yaml"
+                    
                     # Detect and crop people using the same method as in the segmentation service
                     cropped_people = ObjectDetectionUtils.detect_and_crop_people(
-                        yolo_model, frame, "utils/bytetrack.yaml", img_width, img_height
+                        yolo_model, frame, bytetrack_path, img_width, img_height
                     )
                     
                     # Create visualization
