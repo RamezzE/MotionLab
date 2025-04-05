@@ -14,7 +14,7 @@ const VerifyEmailPage: React.FC = () => {
     const token = searchParams.get("token");
 
     useEffect(() => {
-        if (!isAuthenticated || !user || user.emailVerified) {
+        if (!isAuthenticated || !user || user.is_email_verified) {
             navigate("/login");
         }
         
