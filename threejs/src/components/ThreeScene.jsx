@@ -14,7 +14,15 @@ const ThreeScene = () => {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeeeeee);
+    scene.background = new THREE.Color(0x2f2f2f); // Dark grey
+ 
+
+    // const BG = new THREE.TextureLoader();
+    // BG.load('textures/g.jpg' , function(texture)
+    //             {
+    //             scene.background = texture;  
+    //             });
+
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     camera.position.set(0, 2, 5);
@@ -31,7 +39,7 @@ const ThreeScene = () => {
     scene.add(dirLight);
 
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('/textures/streett.jpg');
+    const texture = textureLoader.load('/textures/a.jpg');
 
 
     // Ground (optional)
