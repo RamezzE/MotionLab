@@ -78,10 +78,10 @@ const ThreeScene = () => {
     // Load FBX model
     const fbxLoader = new FBXLoader();
     fbxLoader.load(
-    '/models/2dto3d.fbx', // Update the path to your FBX file
+    '/models/cottage_fbx.fbx', // Update the path to your FBX file
     (object) => {
         object.position.set(0, 0, 0); // Adjust position if needed
-        object.scale.set(0.1, 0.1, 0.1); // Adjust scale as needed
+        object.scale.set(0.005, 0.005, 0.005); // Adjust scale as needed
         scene.add(object);
     },
     undefined,
