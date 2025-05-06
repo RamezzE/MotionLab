@@ -11,13 +11,12 @@ export default function AvatarCreatorComponent() {
     quickStart: true,
     language: 'en',
     bodyType: 'fullbody',
-
+  
     hideWatermark: true,
     hideMenu: true,
     hideExport: true,
     hideSwitchCamera: true,
-
-    // Custom UI config (optional)
+  
     uiConfig: JSON.stringify({
       displayMode: "fullscreen",
       enableHideUi: true,
@@ -27,9 +26,11 @@ export default function AvatarCreatorComponent() {
       fullBodyToggleVisibility: false,
       defaultToFullBody: true,
       privacyPolicyButtonVisibility: false,
+      // New flag: hide everything once avatar is auto-generated
+      autoDownloadOnAvatar: true, // Not official, but behaves like auto-export
     }),
   };
-
+  
   const subdomain = 'motion-i2jrhr';
   const iframeSrc = `https://${subdomain}.readyplayer.me/avatar?${new URLSearchParams(config).toString()}`;
 
