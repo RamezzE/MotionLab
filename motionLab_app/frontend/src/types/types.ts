@@ -5,7 +5,7 @@ export interface User {
   email: string;
   is_admin: boolean;
   token?: string;
-  emailVerified: boolean;
+  is_email_verified: boolean;
 }
 
 export interface Project {

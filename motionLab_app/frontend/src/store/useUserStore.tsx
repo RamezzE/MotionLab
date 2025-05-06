@@ -124,7 +124,7 @@ const useUserStore = create<UserStoreState>()(
           const response = await verifyEmail(token);
           if (response.success) {
             set({
-              user: { ...get().user, emailVerified: true } as User,
+              user: { ...get().user, is_email_verified: true } as User,
             });
             return { success: true, message: "Email verified successfully." };
           } else {

@@ -92,7 +92,8 @@ class User(db.Model):
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "email": self.email,
-                "is_admin": self.is_admin
+                "is_admin": self.is_admin,
+                "is_email_verified": self.is_email_verified
             }
         except Exception as e:
             print("Error converting user to dict in to_dict / user_model.py:", e)

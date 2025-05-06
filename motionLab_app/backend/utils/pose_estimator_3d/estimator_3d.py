@@ -9,36 +9,86 @@ import yaml
 from easydict import EasyDict
 from pathlib import Path
 import cv2
+import os
 
 class Estimator3D(object):
     """Base class of 3D human pose estimator."""
 
     def __init__(self, config_file, checkpoint_file):
-        # Ensure the config_file is a string path
-        config_file = str(Path(config_file).resolve())
-        
-        with open(config_file, 'r') as f:
-            print(f'=> Read 3D estimator config from {config_file}.')
-            self.cfg = EasyDict(yaml.load(f, Loader=yaml.Loader))
-            pprint.pprint(self.cfg)
-        
-        # Convert checkpoint file to string path and load model
-        checkpoint_file = str(Path(checkpoint_file).resolve())
-        self.model = create_model(self.cfg, checkpoint_file)
-        
-        self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu'
-        )
-        print(f'=> Use device {self.device}.')
-        self.model.to(self.device)
+        try:
+            # Ensure files exist
+            if not os.path.exists(config_file):
+                # Try to resolve from different locations
+                # First try relative to the script (estimator_3d.py) location
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                backend_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
+                
+                # Try a few different paths
+                potential_paths = [
+                    os.path.join(backend_dir, 'utils', os.path.basename(config_file)),
+                    os.path.join(backend_dir, os.path.basename(config_file)),
+                    os.path.join(script_dir, os.path.basename(config_file)),
+                    os.path.join(os.getcwd(), 'utils', os.path.basename(config_file))
+                ]
+                
+                for path in potential_paths:
+                    if os.path.exists(path):
+                        config_file = path
+                        print(f"Found config file at: {config_file}")
+                        break
+                        
+            if not os.path.exists(checkpoint_file):
+                # Similar logic for checkpoint file
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                backend_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
+                
+                potential_paths = [
+                    os.path.join(backend_dir, 'utils', os.path.basename(checkpoint_file)),
+                    os.path.join(backend_dir, os.path.basename(checkpoint_file)),
+                    os.path.join(script_dir, os.path.basename(checkpoint_file)),
+                    os.path.join(os.getcwd(), 'utils', os.path.basename(checkpoint_file))
+                ]
+                
+                for path in potential_paths:
+                    if os.path.exists(path):
+                        checkpoint_file = path
+                        print(f"Found checkpoint file at: {checkpoint_file}")
+                        break
+                        
+            # Check if files exist after all attempts
+            if not os.path.exists(config_file):
+                raise FileNotFoundError(f"Config file not found: {config_file}")
+            if not os.path.exists(checkpoint_file):
+                raise FileNotFoundError(f"Checkpoint file not found: {checkpoint_file}")
+            
+            # Ensure the config_file is a string path
+            config_file = str(Path(config_file).resolve())
+            
+            print(f'Opening config file from: {config_file}')
+            with open(config_file, 'r') as f:
+                print(f'=> Read 3D estimator config from {config_file}.')
+                self.cfg = EasyDict(yaml.load(f, Loader=yaml.Loader))
+                pprint.pprint(self.cfg)
+            
+            # Convert checkpoint file to string path and load model
+            checkpoint_file = str(Path(checkpoint_file).resolve())
+            self.model = create_model(self.cfg, checkpoint_file)
+            
+            self.device = torch.device(
+                'cuda' if torch.cuda.is_available() else 'cpu'
+            )
+            print(f'=> Use device {self.device}.')
+            self.model.to(self.device)
 
-        # Initialize MediaPipe Hands
-        self.mp_hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
-            max_num_hands=2,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
-        )
+            # Initialize MediaPipe Hands
+            self.mp_hands = mp.solutions.hands.Hands(
+                static_image_mode=False,
+                max_num_hands=2,
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5
+            )
+        except Exception as e:
+            raise RuntimeError(f"Error initializing 3D estimator: {e}")
 
     def estimate(self, poses_2d, image_width, image_height):
         # pylint: disable=no-member

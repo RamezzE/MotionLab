@@ -10,6 +10,16 @@ class SegmentationService:
         self.yolo_model_path = yolo_model_path
         self.output_folder = output_folder
         pathlib.Path(self.output_folder).mkdir(parents=True, exist_ok=True)  # Ensure output folder exists
+        
+        # Determine the path to the bytetrack.yaml file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.bytetrack_path = os.path.join(current_dir, '..', 'utils', 'bytetrack.yaml')
+        
+        # Check if the bytetrack file exists
+        if not os.path.exists(self.bytetrack_path):
+            print(f"Warning: ByteTrack config not found at {self.bytetrack_path}")
+            # Fallback to relative path if needed
+            self.bytetrack_path = "utils/bytetrack.yaml"
 
     def segment_video(self, video_path):
         """Segments multiple humans from a video and returns segmented video paths."""
@@ -30,7 +40,7 @@ class SegmentationService:
                     break
                 
                 cropped_people = ObjectDetectionUtils.detect_and_crop_people(
-                    self.yolo_model, frame, "utils/bytetrack.yaml", img_width, img_height
+                    self.yolo_model, frame, self.bytetrack_path, img_width, img_height
                 )
                 VideoUtils.write_cropped_people(
                     writers, cropped_people, self.output_folder, fps, (img_width, img_height), output_video_paths

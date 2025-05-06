@@ -14,10 +14,15 @@ const VerifyEmailPage: React.FC = () => {
     const token = searchParams.get("token");
 
     useEffect(() => {
-        if (!isAuthenticated || !user || user.emailVerified) {
+        if (!isAuthenticated || !user || user.is_email_verified) {
             navigate("/login");
         }
-    }, []);
+        
+        // Admin users don't need to verify their email
+        if (user && user.is_admin) {
+            navigate("/");
+        }
+    }, [isAuthenticated, user, navigate]);
 
 
     // States for the verification flow (token present)

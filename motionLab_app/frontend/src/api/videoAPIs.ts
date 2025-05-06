@@ -55,6 +55,6 @@ export const uploadVideo = async (
         return response.data;
     } catch (error: any) {
         console.error("Error uploading video:", error);
-        return { success: false, data: error.message };
+        return error.response.data;
     }
 };

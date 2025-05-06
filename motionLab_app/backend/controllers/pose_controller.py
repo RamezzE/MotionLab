@@ -101,20 +101,23 @@ class PoseController:
             if existing_project:
                 return jsonify({"success": False, "message": "Project name already exists"}), 200
             
+            print("Handling video upload...")
+            
             temp_video_path, error_message = VideoService.handle_video_upload(video, request.files)
             if not temp_video_path:
                 return jsonify({"success": False, "message": error_message}), 400
-            
+
             # Creating Project
             project = ProjectService.create_project({"projectName": project_name, "userId": user_id})
             if not project:
                 return jsonify({"success": False, "message": "Error creating project"}), 500
-            
+
             # Segmenting and Processing Video
             bvh_filenames = self.segment_people_into_separate_videos(temp_video_path)
-            
+
             # Error Handling
             if not bvh_filenames:
+                ProjectService.delete_project(project["id"])
                 return jsonify({"success": False, "message": "Error processing video"}), 500
             
             # Creating BVH Files
@@ -122,7 +125,9 @@ class PoseController:
                 ProjectService.update_project_status(project_name, user_id, False)
                 return jsonify({"success": True, "data": {"bvh_filenames": bvh_filenames, "projectId": project["id"]}}), 200
             
+            ProjectService.delete_project(project["id"])
             return jsonify({"success": False, "message": "Error processing video"}), 500
         
         except Exception as e:
+            print(f"Error in process_request: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
