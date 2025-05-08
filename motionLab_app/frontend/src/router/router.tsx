@@ -31,6 +31,10 @@ import AdminProfile from "@/pages/Admin/profile";
 import AdminLayout from "@/layouts/AdminLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
+
+import AvatarCreation from "@/pages/User/Character/AvatarCreation";
+import CharactersPage from "@/pages/User/Profile/Characters";
+
 const router = createBrowserRouter([
     {
         path: "/",
@@ -64,7 +68,7 @@ const router = createBrowserRouter([
                         path: "about",
                         element: <AboutPage />,
                     },
-                    
+
                     {
                         path: "contact",
                         element: <ContactPage />,
@@ -99,12 +103,29 @@ const router = createBrowserRouter([
                             {
                                 path: "projects",
                                 element: <Projects />,
+                            },
+                            {
+                                path: "characters",
+                                element: <CharactersPage />,
                             }
                         ]
                     },
                     {
                         path: "project/:projectId",  // Dynamic route with projectId
                         element: <BVHScene />
+                    },
+                    {
+                        path: "avatar",
+                        children: [
+                            {
+                                path: "create",
+                                element: <AvatarCreation />,
+                            },
+                            {
+                                path: "edit/:avatarId",
+                                element: <AvatarCreation />,
+                            },
+                        ]
                     }
                 ],
             },

@@ -17,7 +17,7 @@ const NavBar: React.FC = () => {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isAdmin = user?.is_admin || false;
-    
+
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -41,7 +41,7 @@ const NavBar: React.FC = () => {
         if (!user) return "";
         return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
     };
-    
+
 
     const logoutFunc = () => {
         logout();
@@ -134,15 +134,22 @@ const NavBar: React.FC = () => {
                                         <p className="font-medium text-white text-sm">{user?.email}</p>
                                         <p className="font-medium text-purple-400 text-xs">Administrator</p>
                                     </div>
-                                    <Link 
-                                        to="/profile/projects" 
+                                    <Link
+                                        to="/profile/projects"
                                         className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
                                         onClick={() => setProfileDropdownOpen(false)}
                                     >
                                         Your Projects
                                     </Link>
-                                    <Link 
-                                        to="/admin/dashboard" 
+                                    <Link
+                                        to="/profile/characters"
+                                        className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
+                                        onClick={() => setProfileDropdownOpen(false)}
+                                    >
+                                        Your Characters
+                                    </Link>
+                                    <Link
+                                        to="/admin/dashboard"
                                         className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
                                         onClick={() => setProfileDropdownOpen(false)}
                                     >
@@ -218,6 +225,14 @@ const NavBar: React.FC = () => {
                             >
                                 <User size={24} />
                                 <span>Your Projects</span>
+                            </Link>
+                            <Link
+                                to="/profile/characters"
+                                className="flex items-center space-x-2 text-white hover:text-purple-400 transition duration-300"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <User size={24} />
+                                <span>Your Characters</span>
                             </Link>
                             {isAdmin && (
                                 <Link

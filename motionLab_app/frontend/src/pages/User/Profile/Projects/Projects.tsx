@@ -41,15 +41,19 @@ const Projects: React.FC = () => {
                     Here are the projects you have created.
                 </p>
             </div>
-            {projects.map((project) => (
-                <ProjectCard
-                    key={project.id}
-                    id={project.id}
-                    name={project.name}
-                    is_processing={project.is_processing}
-                    creationDate={project.creation_date}
-                />
-            ))}
+
+            <div className="flex flex-row flex-wrap justify-center items-center gap-4 w-full">
+
+                {projects.map((project) => (
+                    <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        name={project.name}
+                        is_processing={project.is_processing}
+                        creationDate={project.creation_date}
+                    />
+                ))}
+            </div>
 
             {projects.length === 0 && (
                 <div className="bg-gray-800 shadow-lg p-6 border border-purple-600 rounded-lg w-full max-w-md text-white">
