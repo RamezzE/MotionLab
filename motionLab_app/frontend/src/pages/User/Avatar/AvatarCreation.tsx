@@ -53,10 +53,12 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
         setLoading(true);
         try {
             const response = await createAvatar(
-                "Avatar Name", // Replace with actual avatar name or use a state variable
+                "Avatar 2", // Replace with actual avatar name or use a state variable
                 String(user.id), // Ensure user ID is available and converted to string
                 event.data.url,
             );
+
+            console.log('Avatar creation response:', response);
 
             if (response.success) {
                 console.log('Avatar uploaded successfully:', response.data);

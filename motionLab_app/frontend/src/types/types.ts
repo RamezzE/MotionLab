@@ -19,7 +19,7 @@ export interface Avatar {
   id: string;
   name: string;
   creation_date: string;
-  url: string;
+  filename: string;
   user_id?: string;
 }
 

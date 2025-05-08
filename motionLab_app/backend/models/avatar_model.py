@@ -17,18 +17,18 @@ class Avatar(db.Model):
             
             return avatar
         except Exception as e:
-            print("Error creating BVH in create / bvh_model.py:", e)
+            print("Error creating Avatar in create / avatar_model.py:", e)
             return None
     
     def to_dict(self):
         try:
             return {
                 "id": self.id,
-                "url": self.path,
+                "filename": self.path,
                 "name": self.name,
                 "user_id": self.user_id,
                 "creation_date": self.creation_date
             }
         except Exception as e:
-            print("Error converting BVH to dict in to_dict / bvh_model.py:", e)
+            print("Error converting Avatar to dict in to_dict / avatar_model.py:", e)
             return None

@@ -31,3 +31,15 @@ export const createAvatar = async (
         return { success: false, data: error.message }; // Return error message in case of failure
     }
 };
+
+export const getAvatarsByUser = async (userId: string): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.get(`/avatars`, {
+            params: { userId }, // Sending userId as a query parameter
+        });
+        return response.data;
+    } catch (error: any) {
+        console.error("Error fetching avatars:", error.message);
+        return { success: false, data: error.message };
+    }
+};

@@ -5,12 +5,14 @@ import Logo from "/images/logo.png";
 
 import useUserStore from "@/store/useUserStore";
 import useProjectStore from "@/store/useProjectStore";
+import useAvatarStore from "@/store/useAvatarStore";
 
 const NavBar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState<boolean>(false);
     const { user, isAuthenticated, logout } = useUserStore();
     const { clearProjects } = useProjectStore();
+    const { clearAvatars } = useAvatarStore();
 
     const navigate = useNavigate();
 
@@ -42,10 +44,10 @@ const NavBar: React.FC = () => {
         return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
     };
 
-
     const logoutFunc = () => {
         logout();
         clearProjects(); // Clear projects on logout
+        clearAvatars();
         setIsOpen(false); // Close the menu if it's open
         navigate("/"); // Redirect to home after logout
     }
@@ -104,35 +106,26 @@ const NavBar: React.FC = () => {
                     </>
                 ) : (
                     <>
-                        {/* Profile Icon with Dropdown for Admin Users */}
+                        {/* Profile Icon with Dropdown */}
                         <div className="relative" ref={dropdownRef}>
-                            {isAdmin ? (
-                                <button
-                                    onClick={toggleProfileDropdown}
-                                    className="flex items-center space-x-1 hover:text-purple-400 transition duration-300"
-                                >
-                                    <div className="flex justify-center items-center bg-gradient-to-r from-purple-500 to-purple-700 rounded-full w-8 h-8">
-                                        <span className="font-semibold text-white text-sm">{getUserInitials()}</span>
-                                    </div>
-                                    <ChevronDown size={16} />
-                                </button>
-                            ) : (
-                                <Link
-                                    to="/profile/projects"
-                                    className="hover:text-purple-400 transition duration-300"
-                                >
-                                    <div className="flex justify-center items-center bg-gradient-to-r from-purple-500 to-purple-700 rounded-full w-8 h-8">
-                                        <span className="font-semibold text-white text-sm">{getUserInitials()}</span>
-                                    </div>
-                                </Link>
-                            )}
+                            <button
+                                onClick={toggleProfileDropdown}
+                                className="flex items-center space-x-1 hover:text-purple-400 transition duration-300"
+                            >
+                                <div className="flex justify-center items-center bg-gradient-to-r from-purple-500 to-purple-700 rounded-full w-8 h-8">
+                                    <span className="font-semibold text-white text-sm">{getUserInitials()}</span>
+                                </div>
+                                <ChevronDown size={16} />
+                            </button>
 
-                            {/* Admin Dropdown Menu */}
-                            {isAdmin && profileDropdownOpen && (
+                            {/* Profile Dropdown Menu */}
+                            {profileDropdownOpen && (
                                 <div className="right-0 z-20 absolute bg-gray-800 shadow-lg mt-2 py-1 border border-gray-700 rounded-md w-48">
                                     <div className="px-4 py-2 border-gray-700 border-b">
                                         <p className="font-medium text-white text-sm">{user?.email}</p>
-                                        <p className="font-medium text-purple-400 text-xs">Administrator</p>
+                                        <p className="font-medium text-purple-400 text-xs">
+                                            {isAdmin ? 'Administrator' : 'User'}
+                                        </p>
                                     </div>
                                     <Link
                                         to="/profile/projects"
@@ -142,22 +135,25 @@ const NavBar: React.FC = () => {
                                         Your Projects
                                     </Link>
                                     <Link
-                                        to="/profile/characters"
+                                        to="/profile/avatars"
                                         className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
                                         onClick={() => setProfileDropdownOpen(false)}
                                     >
-                                        Your Characters
+                                        Your Avatars
                                     </Link>
-                                    <Link
-                                        to="/admin/dashboard"
-                                        className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
-                                        onClick={() => setProfileDropdownOpen(false)}
-                                    >
-                                        Admin Dashboard
-                                    </Link>
+                                    {isAdmin && (
+                                        <Link
+                                            to="/admin/dashboard"
+                                            className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
+                                            onClick={() => setProfileDropdownOpen(false)}
+                                        >
+                                            Admin Dashboard
+                                        </Link>
+                                    )}
                                 </div>
                             )}
                         </div>
+
                         <button
                             onClick={logoutFunc}
                             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-center transition duration-300 hover:cursor-pointer"
@@ -227,12 +223,12 @@ const NavBar: React.FC = () => {
                                 <span>Your Projects</span>
                             </Link>
                             <Link
-                                to="/profile/characters"
+                                to="/profile/avatars"
                                 className="flex items-center space-x-2 text-white hover:text-purple-400 transition duration-300"
                                 onClick={() => setIsOpen(false)}
                             >
                                 <User size={24} />
-                                <span>Your Characters</span>
+                                <span>Your Avatars</span>
                             </Link>
                             {isAdmin && (
                                 <Link

@@ -21,7 +21,6 @@ import ContactPage from "@/pages/User/Contact"
 import FeaturesPage from "@/pages/User/Features"
 import BVHScene from "@/pages/User/Upload/BVHScene";
 
-import Projects from "@/pages/User/Profile/Projects/Projects";
 import Dashboard from "@/pages/Admin/dashboard";
 import UserManagement from "@/pages/Admin/userManage";
 import ProjectsOverview from "@/pages/Admin/projects";
@@ -31,9 +30,9 @@ import AdminProfile from "@/pages/Admin/profile";
 import AdminLayout from "@/layouts/AdminLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-
-import AvatarCreation from "@/pages/User/Character/AvatarCreation";
-import CharactersPage from "@/pages/User/Profile/Characters";
+import AvatarCreation from "@/pages/User/Avatar/AvatarCreation";
+import AvatarsPage from "@/pages/User/Profile/Avatars";
+import ProjectsPage from "@/pages/User/Profile/Projects";
 
 const router = createBrowserRouter([
     {
@@ -102,11 +101,11 @@ const router = createBrowserRouter([
                         children: [
                             {
                                 path: "projects",
-                                element: <Projects />,
+                                element: <ProjectsPage />,
                             },
                             {
-                                path: "characters",
-                                element: <CharactersPage />,
+                                path: "avatars",
+                                element: <AvatarsPage />,
                             }
                         ]
                     },
