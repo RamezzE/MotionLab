@@ -15,6 +15,14 @@ export interface Project {
   creation_date: string;
 }
 
+export interface Avatar {
+  id: string;
+  name: string;
+  creation_date: string;
+  url: string;
+  user_id?: string;
+}
+
 export interface ProjectSettings {
   peopleCount: string;
   outputFormat: string;

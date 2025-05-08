@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
 import useUserStore from "@/store/useUserStore";
 import AvatarCreatorWrapper from "@/components/Avatar/AvatarCreator";
 
+import useAvatarStore from "@/store/useAvatarStore";
+
 interface AvatarCreationProps {
     avatarId?: string;  // Optional prop for editing an existing avatar
 }
@@ -17,6 +19,7 @@ const config: AvatarCreatorConfig = {
 
 const AvatarCreation: React.FC<AvatarCreationProps> = () => {
     const { user } = useUserStore();
+    const { createAvatar } = useAvatarStore();
     const navigate = useNavigate();
     const { avatarId } = useParams(); // Get the avatarId from the URL parameters
     const [loading, setLoading] = useState(false);
@@ -41,17 +44,27 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
         setAvatarUrl(event.data.url);
         console.log('Avatar exported:', event.data);
 
+        if (!user) {
+            console.error('User is not logged in. Cannot upload avatar.');
+            return;
+        }
+
+
         setLoading(true);
         try {
-            const response = await fetch(event.data.url);
-            const blob = await response.blob();
-            const formData = new FormData();
-            formData.append('avatar', blob, 'avatar.glb');
+            const response = await createAvatar(
+                "Avatar Name", // Replace with actual avatar name or use a state variable
+                String(user.id), // Ensure user ID is available and converted to string
+                event.data.url,
+            );
 
-            // Upload the avatar to your server or handle it as needed
-            // Example: await uploadAvatarToServer(formData);
-
-            console.log('Avatar uploaded successfully!');
+            if (response.success) {
+                console.log('Avatar uploaded successfully:', response.data);
+                navigate("/user/characters"); // Redirect to the characters page after successful upload
+            } else {
+                console.error('Error uploading avatar:', response.message || 'Unknown error');
+            }
+            
         } catch (error) {
             console.error('Error uploading avatar:', error);
         } finally {

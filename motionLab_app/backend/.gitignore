@@ -11,3 +11,4 @@ mediapipe_skeleton.py
 *.bvh
 *.pt
 *.mp4
+*.glb

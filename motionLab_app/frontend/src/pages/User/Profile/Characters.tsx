@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
-
 import useUserStore from "@/store/useUserStore";
 // import useProjectStore from "@/store/useProjectStore";
-
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import AvatarViewer from "@/components/Avatar/AvatarViewer";
-
 import { useNavigate } from "react-router-dom";
 
 const CharactersPage: React.FC = () => {
-
     const navigate = useNavigate();
     const { user } = useUserStore();
     // const { projects, fetchProjects: fetchProjectsStoreFunc } = useProjectStore();
+
     const characters = [
         {
             id: 1,
@@ -45,6 +42,7 @@ const CharactersPage: React.FC = () => {
             creation_date: "2023-10-03",
         }
     ];
+
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -65,16 +63,23 @@ const CharactersPage: React.FC = () => {
                 <LoadingSpinner size={125} />
             </div>
         );
-
     }
 
     return (
         <div className="flex flex-col items-center gap-y-4">
             <div className="mb-8 text-center">
                 <h1 className="mb-2 font-bold text-white text-5xl">Your Characters</h1>
-                <p className="text-gray-300 text-lg">
-                    Here are the characters you have created.
-                </p>
+                <p className="text-gray-300 text-lg">Here are the characters you have created.</p>
+            </div>
+
+            {/* Create Your Avatar Button */}
+            <div className="mb-6">
+                <button
+                    onClick={() => navigate("/avatar/create")}
+                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-md text-white transition"
+                >
+                    Create your Avatar
+                </button>
             </div>
 
             <div className="flex flex-row flex-wrap justify-center items-center gap-4 w-full">
@@ -82,15 +87,10 @@ const CharactersPage: React.FC = () => {
                     <AvatarViewer
                         key={character.id}
                         characterName={character.name}
-                        // is_processing={character.is_processing}
                         createdDate={character.creation_date}
                         modelSrc={"https://models.readyplayer.me/681d1b48eb427a0b72c4b2ce.glb"}
-                        // modelSrc={"https://models.readyplayer.me/681d1320eb427a0b72c3d0bd.glb"}
                         displayMode="list"
-                        onEdit={() => {
-                            // console.log("Edit character");
-                            navigate(`/avatar/edit/${character.id}`);
-                        }}
+                        onEdit={() => navigate(`/avatar/edit/${character.id}`)}
                         onDelete={() => console.log("Delete character")}
                     />
                 ))}

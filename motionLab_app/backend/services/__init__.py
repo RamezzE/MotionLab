@@ -4,3 +4,4 @@ from services.video_service import VideoService
 from services.user_service import UserService
 from services.project_service import ProjectService
 from services.bvh_service import BVHService
+from services.avatar_service import AvatarService
