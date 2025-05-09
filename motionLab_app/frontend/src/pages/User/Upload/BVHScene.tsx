@@ -13,6 +13,7 @@ import { getProjectBVHFilenames } from "@/api/projectAPIs";
 import useUserStore from "@/store/useUserStore";
 
 import { serverURL } from "@/api/config";
+import { Eye, EyeOff } from "lucide-react";
 
 const BVHScene: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -21,10 +22,20 @@ const BVHScene: React.FC = () => {
   const [isScrolling, setIsScrolling] = useState<boolean>(false);
   const [bvhUrlList, setBvhUrlList] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [bvhVisibility, setBvhVisibility] = useState<boolean[]>([]);
 
   const location = useLocation();
   const { projectId } = useParams();
   const { user } = useUserStore();
+
+  const toggleVisibility = (index: number) => {
+    setBvhVisibility((prev) => {
+      const newState = [...prev];
+      newState[index] = !newState[index];
+      return newState;
+    });
+  };
+
 
   useEffect(() => {
     try {
@@ -35,6 +46,7 @@ const BVHScene: React.FC = () => {
           (fileName: string) => `${serverURL}/bvh/${fileName}`
         );
         setBvhUrlList(updatedUrls);
+        setBvhVisibility(new Array(updatedUrls.length).fill(true));
       } else {
         if (!projectId || !user?.id) return;
 
@@ -126,23 +138,43 @@ const BVHScene: React.FC = () => {
         <Canvas camera={{ position: [0, 100, 200], fov: 60 }}>
           {/* <ambientLight intensity={0.8} /> */}
           {/* <directionalLight position={[10, 10, 10]} intensity={1} /> */}
-          {bvhUrlList.map((url, index) => (
-            <BVHViewer
-              key={index}
-              bvhUrl={url}
-              isPlaying={isPlaying}
-              currentTime={currentTime}
-              onDurationSet={setDuration}
-              onTimeUpdate={setCurrentTime}
-              isScrolling={isScrolling}
-            />
-          ))}
+          {bvhUrlList.map((url, index) =>
+            bvhVisibility[index] ? (
+              <BVHViewer
+                key={index}
+                bvhUrl={url}
+                isPlaying={isPlaying}
+                currentTime={currentTime}
+                onDurationSet={setDuration}
+                onTimeUpdate={setCurrentTime}
+                isScrolling={isScrolling}
+              />
+            ) : null
+          )}
+
           <OrbitControls minDistance={10} maxDistance={300} />
         </Canvas>
       </div>
 
       <div className="flex flex-col gap-y-4 w-full lg:w-1/3">
+        <h1 className="font-bold text-white text-center">Visibility Controls</h1>
+
+        <div className="flex flex-wrap justify-center gap-2">
+          {bvhUrlList.map((_, index) => (
+            <div
+              key={index}
+              className={`flex items-center gap-1  px-2 py-1 border border-purple-600 rounded-md text-white ${bvhVisibility[index] ? "bg-black/50" : "bg-gray-600 text-white/50"}`}
+            >
+              BVH {index + 1}
+              <button onClick={() => toggleVisibility(index)} className="hover:text-purple-600 cursor-pointer">
+                {bvhVisibility[index] ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
+            </div>
+          ))}
+        </div>
         <h1 className="font-bold text-white text-center">Animation Controls</h1>
+
+
 
         {/* Play/Pause Button & Slider */}
         <div className="flex flex-col items-center gap-y-4 w-full">
