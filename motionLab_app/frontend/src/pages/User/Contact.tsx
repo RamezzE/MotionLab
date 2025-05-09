@@ -1,5 +1,6 @@
 import { useState } from "react";
 import FormField from "@components/UI/FormField";
+import FormButton from "@/components/UI/FormButton";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ const ContactPage = () => {
         </p>
       </div>
 
-      <form className="space-y-6 shadow-sm rounded-lg w-full max-w-3xl">
+      <form className="flex flex-col gap-y-6 rounded-lg w-full max-w-3xl">
         <FormField
           label="Name"
           id="name"
@@ -60,12 +61,15 @@ const ContactPage = () => {
         />
 
         <div className="text-center">
-          <button
-            type="submit"
-            className="bg-purple-600 hover:bg-purple-700 shadow-md px-8 py-3 rounded-md text-white transition duration-300"
-          >
-            Send Message
-          </button>
+          <FormButton
+            label="Send Message"
+            onClick={() => { }}
+            loading={false}
+            theme="default"
+            fullWidth={false}
+            textSize="lg"
+          />
+
         </div>
       </form>
     </div>

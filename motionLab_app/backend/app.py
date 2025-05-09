@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 from extensions import mail
 from database import SQLALCHEMY_CONFIG, init_db, db
-from routes import auth_bp, pose_bp, project_bp, admin_bp  # Import the Blueprints
+from routes import auth_bp, pose_bp, project_bp, admin_bp, avatar_bp  # Import the Blueprints
 
 def create_app():
     app = Flask(__name__)
@@ -23,6 +23,7 @@ def create_app():
     app.register_blueprint(pose_bp, url_prefix="/pose")
     app.register_blueprint(project_bp, url_prefix="/project")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(avatar_bp, url_prefix="/avatar")
     
     if (os.getenv('MAIL_USERNAME') and os.getenv('MAIL_PASSWORD')):
         print("Mail credentials found in environment variables.")
@@ -53,6 +54,20 @@ def serve_bvh_file(filename):
 
         # Send the file from the BVHs directory
         return send_from_directory(BVH_DIRECTORY, filename, as_attachment=True)
+    except Exception as e:
+        return {"error": str(e)}, 500
+    
+@app.route('/avatars/<path:filename>', methods=['GET'])
+def serve_avatar_file(filename):
+    try:
+        # Ensure the file exists in the avatars directory
+        file_path = Path('avatars') / filename
+        if not file_path.is_file():
+            app.logger.error(f"File not found: {file_path}")
+            abort(404, description="File not found")
+
+        # Send the file from the avatars directory
+        return send_from_directory('avatars', filename, as_attachment=True)
     except Exception as e:
         return {"error": str(e)}, 500
 

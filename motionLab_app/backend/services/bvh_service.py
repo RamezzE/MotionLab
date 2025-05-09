@@ -4,18 +4,6 @@ import os
 class BVHService:
     
     @staticmethod
-    def create_bvh(data):
-        name = data["name"]
-        path = data["path"]
-        project_id = data["projectId"]
-        
-        bvh = BVH.create(name, path, project_id)
-        if not bvh:
-            return None
-        
-        return bvh.to_dict()
-    
-    @staticmethod
     def create_bvhs(filenames, project_id):
         try:
             for filename in filenames:

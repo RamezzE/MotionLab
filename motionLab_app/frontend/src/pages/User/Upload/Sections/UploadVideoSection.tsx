@@ -101,6 +101,7 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
             label={loading ? "Uploading..." : "Upload and Visualize"}
             loading={loading}
             onClick={handleUpload}
+            // theme="dark"
           />
         </div>
       )}

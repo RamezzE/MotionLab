@@ -32,6 +32,9 @@ const useProjectStore = create<ProjectStoreState>()(
                 if (response.success && response.data) {
                     // Assuming response.data is an array of Project objects
                     set({ projects: response.data });
+                    
+                    // Update local storage after fetching the projects
+                    localStorage.setItem("projects", JSON.stringify(response.data));
                 } else {
                     set({
                         error:
@@ -41,6 +44,7 @@ const useProjectStore = create<ProjectStoreState>()(
                     });
                 }
             },
+            
 
             fetchProjectById: async (projectId: string, userId: string): Promise<void> => {
                 const response = await getProjectById(projectId, userId);

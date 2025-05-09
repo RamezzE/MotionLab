@@ -12,6 +12,8 @@ import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import { getProjectBVHFilenames } from "@/api/projectAPIs";
 import useUserStore from "@/store/useUserStore";
 
+import { serverURL } from "@/api/config";
+
 const BVHScene: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [duration, setDuration] = useState<number>(0);
@@ -30,7 +32,7 @@ const BVHScene: React.FC = () => {
       if (location.state) {
         const state = location.state;
         const updatedUrls = state.filenames_list.map(
-          (fileName: string) => `http://127.0.0.1:5000/bvh/${fileName}`
+          (fileName: string) => `${serverURL}/bvh/${fileName}`
         );
         setBvhUrlList(updatedUrls);
       } else {
@@ -39,7 +41,7 @@ const BVHScene: React.FC = () => {
         getProjectBVHFilenames(projectId, user.id.toString()).then((response) => {
           if (response.success) {
             const updatedUrls = response.data.map(
-              (fileName: string) => `http://127.0.0.1:5000/bvh/${fileName}`
+              (fileName: string) => `${serverURL}/bvh/${fileName}`
             );
             setBvhUrlList(updatedUrls);
           } else {
@@ -122,8 +124,8 @@ const BVHScene: React.FC = () => {
     <div className="flex lg:flex-row flex-col gap-x-4 gap-y-8 lg:gap-x-4 p-4 w-full h-min">
       <div className="border-4 border-black rounded-md w-full lg:w-2/3 h-[70vh] sm:h-[60vh]">
         <Canvas camera={{ position: [0, 100, 200], fov: 60 }}>
-          <ambientLight intensity={0.8} />
-          <directionalLight position={[10, 10, 10]} intensity={1} />
+          {/* <ambientLight intensity={0.8} /> */}
+          {/* <directionalLight position={[10, 10, 10]} intensity={1} /> */}
           {bvhUrlList.map((url, index) => (
             <BVHViewer
               key={index}

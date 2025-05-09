@@ -21,7 +21,6 @@ import ContactPage from "@/pages/User/Contact"
 import FeaturesPage from "@/pages/User/Features"
 import BVHScene from "@/pages/User/Upload/BVHScene";
 
-import Projects from "@/pages/User/Profile/Projects/Projects";
 import Dashboard from "@/pages/Admin/dashboard";
 import UserManagement from "@/pages/Admin/userManage";
 import ProjectsOverview from "@/pages/Admin/projects";
@@ -30,6 +29,11 @@ import LogsViewer from "@/pages/Admin/logs";
 import AdminProfile from "@/pages/Admin/profile";
 import AdminLayout from "@/layouts/AdminLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+import AvatarCreation from "@/pages/User/Avatar/AvatarCreationPage";
+import AvatarsPage from "@/pages/User/Profile/Avatars";
+import ProjectsPage from "@/pages/User/Profile/Projects";
+import AvatarViewerPage from "@/pages/User/Avatar/AvatarViewerPage";
 
 const router = createBrowserRouter([
     {
@@ -49,6 +53,31 @@ const router = createBrowserRouter([
                         element: <NotFoundPage />,
                     },
                     {
+                        path: "auth",
+                        children: [
+                            {
+                                path: "verify-email",
+                                element: <VerifyEmailPage />,
+                            },
+                            {
+                                path: "login",
+                                element: <LoginPage />,
+                            },
+                            {
+                                path: "signup",
+                                element: <SignUpPage />,
+                            },
+                            {
+                                path: "forget-password",
+                                element: <ForgetPasswordPage />,
+                            },
+                            {
+                                path: "reset-password",
+                                element: <ResetPasswordPage />,
+                            },
+                        ]
+                    },
+                    {
                         path: "unauthorized",
                         element: <Unauthorized />,
                     },
@@ -64,7 +93,7 @@ const router = createBrowserRouter([
                         path: "about",
                         element: <AboutPage />,
                     },
-                    
+
                     {
                         path: "contact",
                         element: <ContactPage />,
@@ -74,37 +103,38 @@ const router = createBrowserRouter([
                         element: <FeaturesPage />,
                     },
                     {
-                        path: "login",
-                        element: <LoginPage />,
-                    },
-                    {
-                        path: "signup",
-                        element: <SignUpPage />,
-                    },
-                    {
-                        path: "forget-password",
-                        element: <ForgetPasswordPage />,
-                    },
-                    {
-                        path: "reset-password",
-                        element: <ResetPasswordPage />,
-                    },
-                    {
-                        path: "verify-email",
-                        element: <VerifyEmailPage />,
-                    },
-                    {
                         path: "profile",
                         children: [
                             {
                                 path: "projects",
-                                element: <Projects />,
+                                element: <ProjectsPage />,
+                            },
+                            {
+                                path: "avatars",
+                                element: <AvatarsPage />,
                             }
                         ]
                     },
                     {
                         path: "project/:projectId",  // Dynamic route with projectId
                         element: <BVHScene />
+                    },
+                    {
+                        path: "avatar",
+                        children: [
+                            {
+                                path: "create",
+                                element: <AvatarCreation />,
+                            },
+                            {
+                                path: "edit/:avatarId",
+                                element: <AvatarCreation />,
+                            },
+                            {
+                                path: "view/:avatarId",
+                                element: <AvatarViewerPage />,
+                            }
+                        ]
                     }
                 ],
             },

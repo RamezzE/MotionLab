@@ -50,7 +50,7 @@ const ResetPasswordPage: React.FC = () => {
                 setSuccessMessage(response.message || "Your password has been reset successfully.");
                 // Optionally redirect to login after a delay
                 setTimeout(() => {
-                    navigate("/login");
+                    navigate("/auth/login");
                 }, 2000);
             } else {
                 setErrorMessage(response.message || "Error resetting password.");
@@ -120,11 +120,11 @@ const ResetPasswordPage: React.FC = () => {
                 </form>
 
                 <div className="flex flex-col gap-y-2 w-full text-center">
-                    <p className="text-gray-400">
+                    <p className="text-gray-300">
                         Remembered your password?{" "}
                         <Link
-                            to="/login"
-                            className="text-purple-600 hover:underline transition duration-300"
+                            to="/auth/login"
+                            className="text-blue-500 hover:underline transition duration-300"
                         >
                             Login
                         </Link>

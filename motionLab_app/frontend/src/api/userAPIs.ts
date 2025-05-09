@@ -1,12 +1,18 @@
 import axios from "axios";
 import { ApiResponse } from "@/types/apiTypes";
+import { serverURL } from "./config";
 
-const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
+const axiosInstance = axios.create({
+    baseURL: serverURL + '/auth',
+    headers: {
+        "Content-Type": "application/json",
+    },
+});
 
 export const signup = async (userData: any) => {
     try {
-        const response = await axios.post<ApiResponse<any>>(
-            `${BASE_URL}/auth/signup`,
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/signup`,
             { ...userData },
             {
                 headers: {
@@ -23,8 +29,8 @@ export const signup = async (userData: any) => {
 
 export const login = async (userData: any) => {
     try {
-        const response = await axios.post<ApiResponse<any>>(
-            `${BASE_URL}/auth/login`,
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/login`,
             { ...userData },
             {
                 headers: {
@@ -41,8 +47,8 @@ export const login = async (userData: any) => {
 
 export const requestPasswordReset = async (email: string) => {
     try {
-        const response = await axios.post<ApiResponse<any>>(
-            `${BASE_URL}/auth/request-password-reset`,
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/request-password-reset`,
             { email },
             {
                 headers: {
@@ -59,8 +65,8 @@ export const requestPasswordReset = async (email: string) => {
 
 export const resetPassword = async (token: string, newPassword: string) => {
     try {
-        const response = await axios.post<ApiResponse<any>>(
-            `${BASE_URL}/auth/reset-password`,
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/reset-password`,
             { token, newPassword },
             {
                 headers: {
@@ -77,8 +83,8 @@ export const resetPassword = async (token: string, newPassword: string) => {
 
 export const sendVerificationEmail = async (email: string) => {
     try {
-        const response = await axios.post<ApiResponse<any>>(
-            `${BASE_URL}/auth/send-verification-email`,
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/send-verification-email`,
             { email },
             {
                 headers: {
@@ -95,8 +101,8 @@ export const sendVerificationEmail = async (email: string) => {
 
 export const verifyEmail = async (token: string) => {
     try {
-        const response = await axios.post<ApiResponse<any>>(
-            `${BASE_URL}/auth/verify-email`,
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/verify-email`,
             { token },
             {
                 headers: {
