@@ -13,11 +13,11 @@ class BvhNode(object):
         self.name = name
         self.offset = offset
         self.rotation_order = rotation_order
-        self.children = children
+        self.children = children if children is not None else []
         self.parent = parent
         self.is_root = is_root
         self.is_end_site = is_end_site
-    
+   
 
 class BvhHeader(object):
     def __init__(self, root, nodes):
@@ -41,9 +41,11 @@ def write_header(writer, node, level):
     indent = ' ' * 4 * (level + 1)
     writer.write(
         f'{indent}OFFSET '
-        f'{node.offset[0]} {node.offset[1]} {node.offset[2]}\n'
+        f'{node.offset[0]:.5f} {node.offset[1]:.5f} {node.offset[2]:.5f}\n'
     )
-    if channel_num:
+    
+    # Only write CHANNELS if not an End Site and has channels
+    if channel_num and not node.is_end_site:
         channel_line = f'{indent}CHANNELS {channel_num} '
         if node.is_root:
             channel_line += f'Xposition Yposition Zposition '
@@ -53,12 +55,12 @@ def write_header(writer, node, level):
         ])
         writer.write(channel_line + '\n')
     
+    # Write children
     for child in node.children:
         write_header(writer, child, level + 1)
     
     indent = ' ' * 4 * level
     writer.write(f'{indent}{"}"}\n')
-
 
 def write_bvh(output_file, header, channels, frame_rate=30):
     output_file = Path(output_file)
