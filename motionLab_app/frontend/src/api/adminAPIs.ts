@@ -1,8 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { ApiResponse } from "@/types/apiTypes";
 import { getAllSystemMetrics, getDashboardSystemMetrics } from "@/utils/systemMetrics";
-
-const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
+import { serverURL } from "./config";
 
 // Function to get the token from local storage
 const getAuthToken = (): string | null => {
@@ -21,7 +20,7 @@ const getAuthToken = (): string | null => {
 
 // Create axios instance with request interceptor to add the token
 const axiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: serverURL + '/admin',
 });
 
 // Add a request interceptor to include the token in headers
@@ -195,7 +194,7 @@ export const getDashboardStats = async (): Promise<ApiResponse<DashboardStats>> 
         // If local metrics fail, try the API if mock data is not forced
         if (!USE_MOCK_DATA) {
             try {
-                const response: AxiosResponse<ApiResponse<DashboardStats>> = await axiosInstance.get("/admin/dashboard-stats");
+                const response: AxiosResponse<ApiResponse<DashboardStats>> = await axiosInstance.get("/dashboard-stats");
                 return response.data;
             } catch (apiError: unknown) {
                 console.error("Error fetching dashboard stats from API:", apiError);
@@ -237,7 +236,7 @@ export const getSystemMetrics = async (timeRange: string): Promise<ApiResponse<S
         if (!USE_MOCK_DATA) {
             try {
                 const response: AxiosResponse<ApiResponse<SystemMetrics>> = await axiosInstance.get(
-                    `/admin/system-metrics?timeRange=${timeRange}`
+                    `/system-metrics?timeRange=${timeRange}`
                 );
                 return response.data;
             } catch (apiError: unknown) {
@@ -274,7 +273,7 @@ export const getAllUsers = async (): Promise<ApiResponse<User[]>> => {
     }
     
     try {
-        const response: AxiosResponse<ApiResponse<User[]>> = await axiosInstance.get("/admin/users");
+        const response: AxiosResponse<ApiResponse<User[]>> = await axiosInstance.get("/users");
         return response.data;
     } catch (error: unknown) {
         console.error("Error fetching users:", error);
@@ -319,7 +318,7 @@ export const updateUser = async (userId: number, userData: Partial<User>): Promi
     
     try {
         const response: AxiosResponse<ApiResponse<User>> = await axiosInstance.put(
-            `/admin/users/${userId}`,
+            `/users/${userId}`,
             userData
         );
         return response.data;
@@ -358,7 +357,7 @@ export const deleteUser = async (userId: number): Promise<ApiResponse<{ deleted:
     
     try {
         const response: AxiosResponse<ApiResponse<{ deleted: boolean }>> = await axiosInstance.delete(
-            `/admin/users/${userId}`
+            `/users/${userId}`
         );
         return response.data;
     } catch (error: unknown) {
@@ -385,7 +384,7 @@ export const getAllProjects = async (): Promise<ApiResponse<Project[]>> => {
     }
     
     try {
-        const response: AxiosResponse<ApiResponse<Project[]>> = await axiosInstance.get("/admin/projects");
+        const response: AxiosResponse<ApiResponse<Project[]>> = await axiosInstance.get("/projects");
         return response.data;
     } catch (error: unknown) {
         console.error("Error fetching projects:", error);
@@ -414,7 +413,7 @@ export const deleteProject = async (projectId: number): Promise<ApiResponse<{ de
     
     try {
         const response: AxiosResponse<ApiResponse<{ deleted: boolean }>> = await axiosInstance.delete(
-            `/admin/projects/${projectId}`
+            `/projects/${projectId}`
         );
         return response.data;
     } catch (error: unknown) {
@@ -448,7 +447,7 @@ export const getLogs = async (
     
     try {
         const response: AxiosResponse<ApiResponse<Log[]>> = await axiosInstance.get(
-            `/admin/logs?logType=${logType}&logLevel=${logLevel}&limit=${limit}`
+            `/logs?logType=${logType}&logLevel=${logLevel}&limit=${limit}`
         );
         return response.data;
     } catch (error: unknown) {

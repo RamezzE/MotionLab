@@ -91,7 +91,6 @@ const LoginPage = () => {
               placeholder="Email Address"
               value={formData.email}
               onChange={handleInputChange}
-              extraStyles="bg-gray-800"
               label=""
             />
             {errors.email && (
@@ -103,7 +102,6 @@ const LoginPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleInputChange}
-              extraStyles="bg-gray-800"
               label=""
             />
             {errors.password && (
@@ -123,11 +121,11 @@ const LoginPage = () => {
         </form>
 
         <div className="flex flex-col gap-y-2 w-full text-center">
-          <p className="text-gray-400">
+          <p className="text-gray-300">
             Don’t have an account?{" "}
             <Link
-              to="/signup"
-              className="text-purple-600 hover:underline transition duration-300"
+              to="/auth/signup"
+              className="text-blue-500 hover:underline transition duration-300"
             >
               Sign Up
             </Link>

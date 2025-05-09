@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createAvatar, getAvatarsByUser, getAvatarByIdAndUserId } from "@/api/avatarAPIs";
+import { createAvatar, getAvatarsByUser, getAvatarByIdAndUserId, deleteAvatarByIdAndUserId } from "@/api/avatarAPIs";
 import { Avatar } from "@/types/types";
 import { ApiResponse } from "@/types/apiTypes";
 
@@ -10,6 +10,7 @@ interface AvatarStoreState {
     fetchAvatars: (userId: string) => Promise<void>;
     getAvatarByIdAndUserId: (avatarId: string, userId: string) => Promise<ApiResponse<any>>;
     createAvatar: (avatarName: string, userId: string, downloadUrl: string) => Promise<ApiResponse<any>>;
+    deleteAvatarByIdAndUserId: (avatarId: string, userId: string) => Promise<ApiResponse<any>>;
     clearAvatars: () => void;
 }
 
@@ -75,6 +76,30 @@ const useAvatarStore = create<AvatarStoreState>()(
                             typeof response.data === "string"
                                 ? response.data
                                 : "Error creating avatar",
+                    });
+                }
+
+                return response;
+            },
+
+            deleteAvatarByIdAndUserId: async (
+                avatarId: string,
+                userId: string
+            ): Promise<ApiResponse<any>> => {
+                const response = await deleteAvatarByIdAndUserId(avatarId, userId);
+                console.log("Deleted avatar:", response);
+
+                if (response.success) {
+                    // Remove the deleted avatar from the state
+                    set((state) => ({
+                        avatars: state.avatars.filter((avatar) => avatar.id !== avatarId),
+                    }));
+                } else {
+                    set({
+                        error:
+                            typeof response.data === "string"
+                                ? response.data
+                                : "Error deleting avatar",
                     });
                 }
 

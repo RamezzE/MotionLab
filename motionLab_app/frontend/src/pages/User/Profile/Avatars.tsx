@@ -4,13 +4,15 @@ import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import AvatarViewer from "@/components/Avatar/AvatarViewer";
 import { useNavigate } from "react-router-dom";
 import useAvatarStore from "@/store/useAvatarStore";
+import { serverURL } from "@/api/config";
+import FormButton from "@/components/UI/FormButton";
 
 const AvatarsPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useUserStore();
-    const { avatars, fetchAvatars: fetchAvatarsStore } = useAvatarStore();
+    const { avatars, fetchAvatars: fetchAvatarsStore, deleteAvatarByIdAndUserId } = useAvatarStore();
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user || !user.id) return;
@@ -18,11 +20,26 @@ const AvatarsPage: React.FC = () => {
         const fetchAvatars = async () => {
             setLoading(true);
             await fetchAvatarsStore(user.id.toString());
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
         };
 
         fetchAvatars();
     }, [user]);
+
+    const handleAvatarDelete = async (avatarId: string) => {
+        if (!user || !user.id) return;
+
+        const confirmed = window.confirm("Are you sure you want to delete this avatar?");
+        if (confirmed) {
+            setLoading(true);
+            await deleteAvatarByIdAndUserId(avatarId, user.id.toString());
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
+        }
+    }
 
     if (loading) {
         return (
@@ -33,21 +50,19 @@ const AvatarsPage: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col items-center gap-y-4">
-            <div className="mb-8 text-center">
+        <div className="flex flex-col items-center gap-y-8">
+            <div className="text-center">
                 <h1 className="mb-2 font-bold text-white text-5xl">Your Avatars</h1>
                 <p className="text-gray-300 text-lg">Here are the avatars you have created.</p>
             </div>
 
-            {/* Create Your Avatar Button */}
-            <div className="mb-6">
-                <button
-                    onClick={() => navigate("/avatar/create")}
-                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-md text-white transition"
-                >
-                    Create your Avatar
-                </button>
-            </div>
+            <FormButton
+                label="Create New Avatar"
+                onClick={() => navigate("/avatar/create")}
+                loading={loading}
+                // theme="dark"
+                fullWidth={false}
+            />
 
             <div className="flex flex-row flex-wrap justify-center items-center gap-4 w-full">
                 {avatars.map((character) => (
@@ -55,11 +70,11 @@ const AvatarsPage: React.FC = () => {
                         key={character.id}
                         characterName={character.name}
                         createdDate={character.creation_date}
-                        modelSrc={"http://127.0.1:5000/avatars/" + character.filename}
+                        modelSrc={`${serverURL}/avatars/` + character.filename}
                         // modelSrc={"https://models.readyplayer.me/681d1b48eb427a0b72c4b2ce.glb"}
                         displayMode="list"
                         onPress={() => navigate(`/avatar/view/${character.id}`)}
-                        onDelete={() => console.log("Delete character")}
+                        onDelete={() => handleAvatarDelete(character.id)}
                     />
                 ))}
             </div>

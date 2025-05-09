@@ -83,7 +83,7 @@ const LandingPage: React.FC = () => {
         </p>
         <div className="flex justify-center space-x-6">
           <Link
-            to="/signup"
+            to="/auth/signup"
             className="bg-purple-800 hover:bg-purple-600 shadow-md shadow-slate-900 hover:shadow-none px-8 py-4 rounded-md text-white text-lg transition duration-300"
           >
             Join Now

@@ -9,6 +9,9 @@ import UploadVideoSection from "./Sections/UploadVideoSection";
 import UploadVideoSettingsSection from "./Sections/UploadVideoSettingsSection";
 
 import { ProjectSettings } from "@/types/types";
+import LoadingSpinner from "@/components/UI/LoadingSpinner";
+import LoginGuard from "@/components/auth/LoginGuard";
+import VerifyEmailGuard from "@/components/auth/VerifyEmailGuard";
 
 const UploadPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -37,9 +40,9 @@ const UploadPage: React.FC = () => {
   };
 
   const handleUpload = async (): Promise<void | boolean> => {
+    setLoading(true);
     setErrorMessage(null);
     setSettingsError(null);
-    setLoading(true);
 
     try {
       // Check if file exists
@@ -58,7 +61,7 @@ const UploadPage: React.FC = () => {
       // Check if user is logged in.
       if (!user || !user.id) {
         setErrorMessage("User ID is not available. Please log in.");
-        navigate("/login");
+        navigate("/auth/login");
         return;
       }
 
@@ -102,39 +105,18 @@ const UploadPage: React.FC = () => {
   // If the user is not logged in, show a message and button to login.
   if (!user) {
     return (
-      <div className="flex flex-col items-center gap-y-4 px-4 w-full min-h-[40vh] text-white">
-        <h1 className="font-bold text-5xl">Upload Your MP4 File</h1>
-        <p className="text-gray-300 text-lg">
-          You must be logged in to upload a video.
-        </p>
-        <button
-          className="bg-purple-600 hover:bg-purple-700 mt-4 px-6 py-3 rounded-md text-white transition"
-          onClick={() => navigate("/login")}
-        >
-          Login
-        </button>
-      </div>
+      <LoginGuard
+        title="Upload Your MP4 File"
+      />
     );
   }
 
   // If user is logged in but email is not verified (and not an admin), show verification prompt.
   if (user && !user.is_email_verified && !user.is_admin) {
     return (
-      <div className="flex flex-col items-center gap-y-4 px-4 w-full min-h-[40vh] text-white">
-        <h1 className="font-bold text-5xl">Upload Your MP4 File</h1>
-        <p className="text-gray-300 text-lg">
-          Your email address has not been verified.
-        </p>
-        <p className="text-gray-300 text-lg">
-          Please verify your email before uploading your video.
-        </p>
-        <button
-          className="bg-purple-600 hover:bg-purple-700 mt-4 px-6 py-3 rounded-md text-white transition"
-          onClick={() => navigate("/verify-email")}
-        >
-          Verify Email
-        </button>
-      </div>
+      <VerifyEmailGuard
+        title="Upload Your MP4 File"
+      />
     );
   }
 
@@ -148,19 +130,32 @@ const UploadPage: React.FC = () => {
         </p>
       </div>
       <div className="flex sm:flex-row flex-col-reverse justify-between items-start gap-y-8 sm:gap-y-0 px-4 w-full max-w-4xl h-full text-white">
-        <UploadVideoSection
-          handleUpload={handleUpload}
-          handleFileChange={handleFileChange}
-          progress={progress}
-          loading={loading}
-          file={file}
-        />
+        {
+          loading ? (
+            <div className="flex flex-col justify-center items-center w-full min-h-[40vh]">
+              <LoadingSpinner size={125} />
+              <p className="mt-6 font-bold text-gray-300 text-base text-center">
+                Processing your video...
+              </p>
+            </div>
+          ) : (
+            <UploadVideoSection
+              handleUpload={handleUpload}
+              handleFileChange={handleFileChange}
+              progress={progress}
+              loading={loading}
+              file={file}
+            />
+          )}
+
         <UploadVideoSettingsSection
           settings={settings}
           setSettings={setSettings}
           error={settingsError}
           loading={loading}
         />
+
+
       </div>
       {errorMessage && (
         <p className="mt-6 text-red-500 text-sm">{errorMessage}</p>

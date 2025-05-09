@@ -6,6 +6,7 @@ import AvatarCreatorWrapper from "@/components/Avatar/AvatarCreator";
 
 import useAvatarStore from "@/store/useAvatarStore";
 import AvatarNameModal from "@/components/Avatar/AvatarNameModal"; // Import the modal component
+import LoginGuard from '@/components/auth/LoginGuard';
 
 interface AvatarCreationProps {
     avatarId?: string;  // Optional prop for editing an existing avatar
@@ -27,6 +28,7 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [avatarName, setAvatarName] = useState<string>(''); // New state for avatar name input
     const [nameInputVisible, setNameInputVisible] = useState<boolean>(false); // Flag to show input field
+    const [error, setError] = useState<string | null>(null); // State to store error messages
 
     // Modify config based on avatarId
     const updatedConfig = {
@@ -58,14 +60,14 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
 
     const handleCreateAvatar = async () => {
         if (!avatarName) {
-            console.error('Avatar name is required');
+            setError('Avatar name is required');
             return;
         }
 
         setLoading(true);
 
         if (!user) {
-            console.error('User is not logged in. Cannot upload avatar.');
+            setError('User is not logged in. Cannot upload avatar.');
             setLoading(false);
             return;
         }
@@ -83,6 +85,7 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
                 console.log('Avatar uploaded successfully:', response.data);
                 navigate("/profile/avatars");
             } else {
+                setError(response.message || 'Unknown error occurred during avatar upload');
                 console.error('Error uploading avatar:', response.message || 'Unknown error');
             }
 
@@ -96,22 +99,15 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
     const closeModal = () => {
         setNameInputVisible(false); // Close the modal
         setAvatarUrl(''); // Clear the avatar URL when closing the modal
+        setAvatarName(''); // Clear the avatar name input
+        setError(null); // Clear any error messages
     }
 
     if (!user) {
         return (
-            <div className="flex flex-col items-center gap-y-4 px-4 w-full min-h-[40vh] text-white">
-                <h1 className="font-bold text-5xl">Create your Avatar</h1>
-                <p className="text-gray-300 text-lg">
-                    You must be logged in to continue.
-                </p>
-                <button
-                    className="bg-purple-600 hover:bg-purple-700 mt-4 px-6 py-3 rounded-md text-white transition"
-                    onClick={() => navigate("/login")}
-                >
-                    Login
-                </button>
-            </div>
+            <LoginGuard
+                title='Create your Avatar'
+            />
         );
     }
 
@@ -133,8 +129,9 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
                     avatarName={avatarName}
                     setAvatarName={setAvatarName}
                     onCreateAvatar={handleCreateAvatar}
-                    closeModal={closeModal}
+                    onCancel={closeModal}
                     loading={loading}
+                    error={error}
                 />
             )}
         </div>

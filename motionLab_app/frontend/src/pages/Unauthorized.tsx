@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 
 const Unauthorized: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center p-5">
-      <div className="max-w-md w-full bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-gray-700">
+    <div className="flex flex-col justify-center items-center p-5 min-h-screen">
+      <div className="bg-gray-800/80 shadow-2xl backdrop-blur-sm p-8 border border-gray-700 rounded-xl w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <div className="p-4 rounded-full bg-red-500/20">
+          <div className="bg-red-500/20 p-4 rounded-full">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              className="h-16 w-16 text-red-400" 
+              className="w-16 h-16 text-red-400" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -24,9 +24,9 @@ const Unauthorized: React.FC = () => {
           </div>
         </div>
         
-        <h1 className="text-3xl font-bold text-center mb-4 text-white">Access Denied</h1>
+        <h1 className="mb-4 font-bold text-white text-3xl text-center">Access Denied</h1>
         
-        <div className="bg-gray-700/60 p-4 rounded-lg mb-6">
+        <div className="bg-gray-700/60 mb-6 p-4 rounded-lg">
           <p className="text-gray-200 text-center">
             You don't have the necessary permissions to access this area. This section is restricted to admin users only.
           </p>
@@ -35,11 +35,11 @@ const Unauthorized: React.FC = () => {
         <div className="space-y-4">
           <Link 
             to="/" 
-            className="flex items-center justify-center w-full py-3 px-6 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-lg transition duration-200"
+            className="flex justify-center items-center bg-purple-600 hover:bg-purple-700 shadow-lg px-6 py-3 rounded-lg w-full font-medium text-white transition duration-200"
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5 mr-2" 
+              className="mr-2 w-5 h-5" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -55,12 +55,12 @@ const Unauthorized: React.FC = () => {
           </Link>
           
           <Link 
-            to="/login" 
-            className="flex items-center justify-center w-full py-3 px-6 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg border border-gray-600 transition duration-200"
+            to="/auth/login" 
+            className="flex justify-center items-center bg-gray-700 hover:bg-gray-600 px-6 py-3 border border-gray-600 rounded-lg w-full font-medium text-white transition duration-200"
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5 mr-2" 
+              className="mr-2 w-5 h-5" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -76,7 +76,7 @@ const Unauthorized: React.FC = () => {
           </Link>
         </div>
         
-        <div className="mt-8 text-center text-sm text-gray-400">
+        <div className="mt-8 text-gray-400 text-sm text-center">
           <p>If you believe this is a mistake, please contact your system administrator.</p>
         </div>
       </div>

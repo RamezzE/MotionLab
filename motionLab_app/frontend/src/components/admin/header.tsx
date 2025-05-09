@@ -19,7 +19,7 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
 
     const handleLogout = () => {
         logout();
-        navigate("/login");
+        navigate("/auth/login");
     };
 
     // Get initials for the avatar
@@ -46,12 +46,12 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
     }, [dropdownRef]);
 
     return (
-        <header className="bg-gray-900 text-white shadow-md fixed top-0 left-0 right-0 z-10">
-            <div className="flex items-center justify-between p-4">
+        <header className="top-0 right-0 left-0 z-10 fixed bg-gray-900 shadow-md text-white">
+            <div className="flex justify-between items-center p-4">
                 <div className="flex items-center">
                     <button 
                         onClick={toggleSidebar} 
-                        className="mr-4 text-white p-2 rounded hover:bg-gray-700 focus:outline-none"
+                        className="hover:bg-gray-700 mr-4 p-2 rounded focus:outline-none text-white"
                         aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -64,8 +64,8 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
                     </button>
                     
                     <div className="flex items-center">
-                        <span className="text-2xl font-bold text-purple-400">MotionLab</span>
-                        <span className="ml-2 text-sm text-gray-300">Admin Panel</span>
+                        <span className="font-bold text-purple-400 text-2xl">MotionLab</span>
+                        <span className="ml-2 text-gray-300 text-sm">Admin Panel</span>
                     </div>
                 </div>
                 
@@ -73,40 +73,40 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
                     <div className="relative" ref={dropdownRef}>
                         <button 
                             onClick={toggleDropdown}
-                            className="flex items-center p-2 rounded hover:bg-gray-700"
+                            className="flex items-center hover:bg-gray-700 p-2 rounded"
                             aria-haspopup="true"
                             aria-expanded={dropdownOpen}
                         >
-                            <span className="mr-2 hidden md:block">
+                            <span className="hidden md:block mr-2">
                                 {user ? `${user.first_name} ${user.last_name}` : 'Admin'}
                             </span>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center">
-                                <span className="text-white font-semibold">{getInitials()}</span>
+                            <div className="flex justify-center items-center bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full w-8 h-8">
+                                <span className="font-semibold text-white">{getInitials()}</span>
                             </div>
                         </button>
 
                         {/* Dropdown menu */}
                         {dropdownOpen && (
                             <div 
-                                className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-20 border border-gray-700"
+                                className="right-0 z-20 absolute bg-gray-800 shadow-lg mt-2 py-1 border border-gray-700 rounded-md w-48"
                                 role="menu"
                                 aria-orientation="vertical"
                                 aria-labelledby="user-menu"
                             >
-                                <div className="px-4 py-2 border-b border-gray-700">
-                                    <p className="text-sm text-white font-medium">{user?.email}</p>
-                                    <p className="text-xs text-purple-400 font-medium">Admin</p>
+                                <div className="px-4 py-2 border-gray-700 border-b">
+                                    <p className="font-medium text-white text-sm">{user?.email}</p>
+                                    <p className="font-medium text-purple-400 text-xs">Admin</p>
                                 </div>
                                 <Link 
                                     to="/admin/profile" 
-                                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                                    className="block hover:bg-gray-700 px-4 py-2 text-gray-300 hover:text-white text-sm"
                                     onClick={() => setDropdownOpen(false)}
                                 >
                                     Your Profile
                                 </Link>
                                 <button 
                                     onClick={handleLogout}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                                    className="block hover:bg-gray-700 px-4 py-2 w-full text-gray-300 hover:text-white text-sm text-left"
                                 >
                                     Sign out
                                 </button>

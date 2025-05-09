@@ -5,6 +5,7 @@ import useAvatarStore from "@/store/useAvatarStore"; // Import the store
 import AvatarViewer from "@/components/Avatar/AvatarViewer"; // Import the AvatarViewer component
 import { Avatar } from "@/types/types";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
+import { serverURL } from "@/api/config"; // Import the server URL
 
 const AvatarViewerPage: React.FC = () => {
     const { user } = useUserStore(); // Get the user from the user store
@@ -14,7 +15,7 @@ const AvatarViewerPage: React.FC = () => {
     const [avatar, setAvatar] = useState<Avatar | null>(null); // State to store the fetched avatar
     const [error, setError] = useState<string | null>(null); // State to store error messages
 
-    const modelSrc = 'http://127.0.1:5000/avatars/' + avatar?.filename; // Construct the model source URL
+    const modelSrc = `${serverURL}/avatars/` + avatar?.filename; // Construct the model source URL
 
     useEffect(() => {
         if (!user || !user.id || !avatarId) {

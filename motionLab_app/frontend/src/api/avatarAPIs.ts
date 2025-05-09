@@ -1,10 +1,9 @@
 import axios from "axios";
 import { ApiResponse } from "@/types/apiTypes"; // Adjust the import path as needed
-
-const BASE_URL: string = "http://127.0.0.1:5000/avatar"; // Flask backend URL
+import { serverURL } from "./config";
 
 const axiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: serverURL + '/avatar',
     headers: {
         "Content-Type": "application/json", // Ensuring the request is sent as JSON
     },
@@ -55,6 +54,21 @@ export const getAvatarByIdAndUserId = async (
         return response.data;
     } catch (error: any) {
         console.error("Error fetching avatar:", error.message);
+        return { success: false, data: error.message };
+    }
+}
+
+export const deleteAvatarByIdAndUserId = async (
+    avatarId: string,
+    userId: string,
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.delete(`/`, {
+            params: { avatarId, userId }, // Sending avatarId and userId as query parameters
+        });
+        return response.data;
+    } catch (error: any) {
+        console.error("Error deleting avatar:", error.message);
         return { success: false, data: error.message };
     }
 }

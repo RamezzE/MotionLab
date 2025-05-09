@@ -44,7 +44,7 @@ const SignUpPage = () => {
 
       const response = await signup(formData);
       if (!response.success) {
-        
+
 
         if (response.errors) {
           setErrors(response.errors);
@@ -97,7 +97,7 @@ const SignUpPage = () => {
                   placeholder="First Name"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  extraStyles={`bg-gray-800`} label={""} />
+                  label={""} />
 
                 {errors.firstName && (
                   <p className="text-red-500 text-sm">{errors.firstName}</p>
@@ -113,7 +113,7 @@ const SignUpPage = () => {
                   placeholder="Last Name"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  extraStyles={`bg-gray-800`} label={""} />
+                  label={""} />
 
                 {errors.lastName && (
                   <p className="text-red-500 text-sm">{errors.lastName}</p>
@@ -127,7 +127,7 @@ const SignUpPage = () => {
               placeholder="Email Address"
               value={formData.email}
               onChange={handleInputChange}
-              extraStyles={`bg-gray-800`} label={""} />
+              label={""} />
 
             {errors.email && (
               <p className="text-red-500 text-sm">{errors.email}</p>
@@ -139,7 +139,7 @@ const SignUpPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleInputChange}
-              extraStyles={`bg-gray-800`} label={""} />
+              label={""} />
 
             {errors.password && (
               <p className="text-red-500 text-sm">{errors.password}</p>
@@ -151,7 +151,7 @@ const SignUpPage = () => {
               placeholder="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              extraStyles={`bg-gray-800`} label={""} />
+              label={""} />
 
             {errors.confirmPassword && (
               <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
@@ -171,11 +171,11 @@ const SignUpPage = () => {
         </form>
 
         {/* Redirect to Login */}
-        <p className="mt-6 text-gray-400">
+        <p className="mt-6 text-gray-300">
           Already have an account?{" "}
           <Link
-            to="/login"
-            className="text-purple-600 hover:underline transition duration-300"
+            to="/auth/login"
+            className="text-blue-500 hover:underline transition duration-300"
           >
             Log In
           </Link>

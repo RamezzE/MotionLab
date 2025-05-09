@@ -31,10 +31,29 @@ class AvatarService:
             return None
         
     @staticmethod
+    def delete_avatar_file(filename):
+        try:
+            # Define the directory where avatars are saved
+            directory = "avatars"
+            file_path = os.path.join(directory, filename)
+            
+            # Check if the file exists and delete it
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                return True
+            else:
+                print(f"File {filename} does not exist.")
+                return False
+        except Exception as e:
+            print(f"Error deleting avatar file: {e}")
+            return False
+        
+        
+    @staticmethod
     def check_duplicate_avatar_name(avatar_name, user_id):
         try:
             # Check if an avatar with the same name already exists for the user
-            existing_avatar = Avatar.query.filter_by(name=avatar_name, user_id=user_id).first()
+            existing_avatar = Avatar.get_by_name_and_user_id(avatar_name, user_id)
             return existing_avatar is not None
         except Exception as e:
             print(f"Error checking duplicate avatar name: {e}")
@@ -65,7 +84,7 @@ class AvatarService:
     @staticmethod
     def get_avatars_by_user_id(user_id):
         try:
-            avatars = Avatar.query.filter_by(user_id=user_id).all()
+            avatars = Avatar.get_by_user_id(user_id)
             return [avatar.to_dict() for avatar in avatars] if avatars else None
         except Exception as e:
             print(f"Error in get_avatars_by_user_id: {e}")
@@ -74,8 +93,25 @@ class AvatarService:
     @staticmethod
     def get_avatar_by_id_and_user_id(avatar_id, user_id):
         try:
-            avatar = Avatar.query.filter_by(id=avatar_id, user_id=user_id).first()
+            avatar = Avatar.get_by_id_and_user_id(avatar_id, user_id)
             return avatar.to_dict() if avatar else None
         except Exception as e:
             print(f"Error in get_avatar_by_id_and_user_id: {e}")
             return None
+        
+    @staticmethod
+    def delete_avatar_by_id_and_user_id(avatar_id, user_id):
+        try:
+            avatar = Avatar.get_by_id_and_user_id(avatar_id, user_id)
+            avatar = avatar.to_dict() if avatar else None
+            if not avatar:
+                return False
+            
+            deleted = Avatar.delete(avatar_id, user_id)
+            if deleted:
+                AvatarService.delete_avatar_file(avatar["filename"])
+                return True
+            return False
+        except Exception as e:
+            print(f"Error in delete_avatar: {e}")
+            return False
