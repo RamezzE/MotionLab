@@ -4,6 +4,7 @@ import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import AvatarViewer from "@/components/Avatar/AvatarViewer";
 import { useNavigate } from "react-router-dom";
 import useAvatarStore from "@/store/useAvatarStore";
+import { serverURL } from "@/api/config";
 
 const AvatarsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -55,7 +56,7 @@ const AvatarsPage: React.FC = () => {
                         key={character.id}
                         characterName={character.name}
                         createdDate={character.creation_date}
-                        modelSrc={"http://127.0.1:5000/avatars/" + character.filename}
+                        modelSrc={`${serverURL}/avatars/` + character.filename}
                         // modelSrc={"https://models.readyplayer.me/681d1b48eb427a0b72c4b2ce.glb"}
                         displayMode="list"
                         onPress={() => navigate(`/avatar/view/${character.id}`)}

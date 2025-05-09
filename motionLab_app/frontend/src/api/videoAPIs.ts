@@ -1,10 +1,9 @@
 import axios, { AxiosProgressEvent } from "axios";
 import { ApiResponse } from "@/types/apiTypes"; // Adjust the import path as needed
-
-const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
+import { serverURL } from "./config";
 
 const axiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: serverURL,
 });
 
 // Define the type for the upload result. Adjust as needed.

@@ -1,10 +1,9 @@
 import axios from "axios";
 import { ApiResponse } from "@/types/apiTypes"; // Adjust the import path as needed
-
-const BASE_URL: string = "http://127.0.0.1:5000"; // Flask backend URL
+import { serverURL } from "./config";
 
 const axiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: serverURL + '/project',
     headers: {
         "Content-Type": "application/json",
     },
@@ -16,7 +15,7 @@ export const getProjectsByUser = async (
     userId: string
 ): Promise<ApiResponse<any>> => {
     try {
-        const response = await axiosInstance.get(`/project/get-projects`, {
+        const response = await axiosInstance.get(`/get-projects`, {
             params: { userId },
         });
         return response.data;
@@ -31,7 +30,7 @@ export const getProjectById = async (
     userId: string
 ): Promise<ApiResponse<any>> => {
     try {
-        const response = await axiosInstance.get(`/project/get-project`, {
+        const response = await axiosInstance.get(`/get-project`, {
             params: { projectId, userId },
         });
         return response.data;
@@ -47,7 +46,7 @@ export const deleteProjectById = async (
 ): Promise<ApiResponse<any>> => {
     try {
         const response = await axiosInstance.delete<ApiResponse<any>>(
-            `/project/delete-project`, {
+            `/delete-project`, {
             params: { projectId, userId },
         }
         );
@@ -64,7 +63,7 @@ export const getProjectBVHFilenames = async (
 ): Promise<ApiResponse<any>> => {
     try {
         const response = await axiosInstance.get<ApiResponse<any>>(
-            `/project/get-bvh-filenames`, {
+            `/get-bvh-filenames`, {
             params: { projectId, userId },
         }
         );

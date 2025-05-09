@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const BASE_URL: string = "http://127.0.0.1:5000";
+import { serverURL } from '@/api/config';
 
 // Function to get the token from local storage
 const getAuthToken = (): string | null => {
@@ -19,7 +18,7 @@ const getAuthToken = (): string | null => {
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: serverURL,
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json'
