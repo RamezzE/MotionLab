@@ -24,7 +24,7 @@ class PoseController:
         
         except Exception as e:
             logging.error(f"Error in process_video: {e}")
-            return jsonify({"success": False, "error": str(e)}), 500
+            return None
         
         finally:
             if temp_video_path and os.path.exists(temp_video_path):
@@ -39,16 +39,19 @@ class PoseController:
         try:
             output_video_paths = self.segmentation_service.segment_video(video_path)
             if not output_video_paths:
-                return jsonify({"success": False, "error": "No segmented videos found"}), 500
+                print("No segmented videos found")
+                return None, "Error in segmentation"
 
             # Process segmented videos
+            print("Processing segmented videos...")
             bvh_filenames = self.process_segmented_videos(output_video_paths, video_path)
 
-            return bvh_filenames
+            return bvh_filenames, None
 
         except Exception as e:
+            print(f"Error in multiple_human_segmentation: {e}")
             logging.error(f"Error in multiple_human_segmentation: {e}")
-            return None
+            return None, "Error in segmentation"
 
     def process_segmented_videos(self, output_video_paths, original_video_path):
         """
@@ -107,25 +110,38 @@ class PoseController:
             if not temp_video_path:
                 return jsonify({"success": False, "message": error_message}), 400
 
+            print("Video uploaded successfully. Processing...")
+            
             # Creating Project
             project = ProjectService.create_project({"projectName": project_name, "userId": user_id})
             if not project:
                 return jsonify({"success": False, "message": "Error creating project"}), 500
+            
+            print("Project created successfully. Segmenting video...")
 
             # Segmenting and Processing Video
-            bvh_filenames = self.segment_people_into_separate_videos(temp_video_path)
+            bvh_filenames, message = self.segment_people_into_separate_videos(temp_video_path)
+            
+            print("Video segmented successfully. Converting to BVH...")
 
             # Error Handling
             if not bvh_filenames:
-                ProjectService.delete_project(project["id"])
-                return jsonify({"success": False, "message": "Error processing video"}), 500
+                print("No valid BVH files found. Deleting project...")
+                ProjectService.delete_project(project["id"], user_id)
+                return jsonify({"success": False, "message": message}), 500
+            
+            print("BVH files created successfully. Saving to database...")
+            for i, bvh_filename in enumerate(bvh_filenames):
+                print(f"BVH file {i + 1}/{len(bvh_filenames)}: {bvh_filename}")
             
             # Creating BVH Files
             if BVHService.create_bvhs(bvh_filenames, project["id"]):
+                print("BVH files saved successfully.")
                 ProjectService.update_project_status(project_name, user_id, False)
                 return jsonify({"success": True, "data": {"bvh_filenames": bvh_filenames, "projectId": project["id"]}}), 200
             
-            ProjectService.delete_project(project["id"])
+            print("Error saving BVH files. Deleting project...")
+            ProjectService.delete_project(project["id"], user_id)
             return jsonify({"success": False, "message": "Error processing video"}), 500
         
         except Exception as e:

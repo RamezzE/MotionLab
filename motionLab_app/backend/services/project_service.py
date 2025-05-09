@@ -65,7 +65,10 @@ class ProjectService:
         try:
             project = Project.get_project_by_id(project_id)
             if project:
-                project_dict = project.to_dict()
+                project_dict = project.to_dict() if project else None
+                if not project_dict:
+                    return None
+                
                 if str(project_dict["user_id"]) == str(user_id):
                     return project_dict
             
@@ -78,17 +81,19 @@ class ProjectService:
     def delete_project(project_id, user_id):
         try:
             project = Project.get_project_by_id(project_id)
+            project_dict = project.to_dict() if project else None
             if not project:
                 return False, "Project not found"
             
-            if str(project.user_id) != str(user_id):
+            if str(project_dict['user_id']) != str(user_id):
                 return False, "Unauthorized access"
             
-            # Check if the project is still processing
-            if project.is_processing:
-                return False, "Project is still processing"
+            # # Check if the project is still processing
+            # if project.is_processing:
+            #     return False, "Project is still processing"
             
-            if (Project.delete_project_by_id(project_id, user_id) and BVHService.delete_bvhs_by_project_id(project_id)):
+            if (Project.delete_project_by_id(project_id, user_id)):
+                BVHService.delete_bvhs_by_project_id(project_id)
                 return True, "Project deleted successfully"
             
             return False, "Error while deleting project"
@@ -100,7 +105,9 @@ class ProjectService:
     def get_bvh_filenames(project_id, user_id):
         try:
             project = Project.get_project_by_id(project_id)
-            project_dict = project.to_dict()
+            project_dict = project.to_dict() if project else None
+            if not project:
+                return None, "Project not found"
 
             if str(project_dict["user_id"]) != str(user_id):
                 return None, "Unauthorized access"
