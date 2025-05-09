@@ -15,7 +15,17 @@ import useUserStore from "@/store/useUserStore";
 import { serverURL } from "@/api/config";
 import { Eye, EyeOff } from "lucide-react";
 
+import useProjectStore from "@/store/useProjectStore";
+import useAvatarStore from "@/store/useAvatarStore";
+
+import DownloadRetargetedModal from "@/components/Avatar/DownloadRetargetedModal";
+
+
 const BVHScene: React.FC = () => {
+  const [downloadModalFilename, setDownloadModalFilename] = useState<string | null>(null);
+
+  const [retargeting, setRetargeting] = useState<boolean>(false);
+
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -23,6 +33,12 @@ const BVHScene: React.FC = () => {
   const [bvhUrlList, setBvhUrlList] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [bvhVisibility, setBvhVisibility] = useState<boolean[]>([]);
+
+  const [selectedBVH, setSelectedBVH] = useState<string | null>(null);
+  const [selectedAvatarId, setSelectedAvatarId] = useState<string | null>(null);
+  const { createRetargetedAvatar } = useProjectStore();
+  const { avatars, fetchAvatars } = useAvatarStore(); // Make sure this is imported
+
 
   const location = useLocation();
   const { projectId } = useParams();
@@ -35,6 +51,12 @@ const BVHScene: React.FC = () => {
       return newState;
     });
   };
+
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchAvatars(user.id.toString());
+  }, [user]);
+
 
 
   useEffect(() => {
@@ -56,10 +78,12 @@ const BVHScene: React.FC = () => {
               (fileName: string) => `${serverURL}/bvh/${fileName}`
             );
             setBvhUrlList(updatedUrls);
+            setBvhVisibility(new Array(updatedUrls.length).fill(true)); // ✅ add this line
           } else {
             console.error("Error fetching BVH filenames:", response.data);
           }
         });
+
       }
     }
     catch (error) {
@@ -133,92 +157,170 @@ const BVHScene: React.FC = () => {
   }
 
   return (
-    <div className="flex lg:flex-row flex-col gap-x-4 gap-y-8 lg:gap-x-4 p-4 w-full h-min">
-      <div className="border-4 border-black rounded-md w-full lg:w-2/3 h-[70vh] sm:h-[60vh]">
-        <Canvas camera={{ position: [0, 100, 200], fov: 60 }}>
-          {/* <ambientLight intensity={0.8} /> */}
-          {/* <directionalLight position={[10, 10, 10]} intensity={1} /> */}
-          {bvhUrlList.map((url, index) =>
-            bvhVisibility[index] ? (
-              <BVHViewer
+    <>
+      <div className="flex lg:flex-row flex-col gap-x-4 gap-y-8 lg:gap-x-4 p-4 w-full h-min">
+        <div className="border-4 border-black rounded-md w-full lg:w-2/3 h-[70vh] sm:h-[60vh]">
+          <Canvas camera={{ position: [0, 100, 200], fov: 60 }}>
+            {/* <ambientLight intensity={0.8} /> */}
+            {/* <directionalLight position={[10, 10, 10]} intensity={1} /> */}
+            {bvhUrlList.map((url, index) =>
+              bvhVisibility[index] ? (
+                <BVHViewer
+                  key={index}
+                  bvhUrl={url}
+                  isPlaying={isPlaying}
+                  currentTime={currentTime}
+                  onDurationSet={setDuration}
+                  onTimeUpdate={setCurrentTime}
+                  isScrolling={isScrolling}
+                />
+              ) : null
+            )}
+
+            <OrbitControls minDistance={10} maxDistance={300} />
+          </Canvas>
+        </div>
+
+        <div className="flex flex-col gap-y-4 w-full lg:w-1/3">
+          <h1 className="font-bold text-white text-center">Visibility Controls</h1>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            {bvhUrlList.map((_, index) => (
+              <div
                 key={index}
-                bvhUrl={url}
-                isPlaying={isPlaying}
-                currentTime={currentTime}
-                onDurationSet={setDuration}
-                onTimeUpdate={setCurrentTime}
-                isScrolling={isScrolling}
-              />
-            ) : null
-          )}
-
-          <OrbitControls minDistance={10} maxDistance={300} />
-        </Canvas>
-      </div>
-
-      <div className="flex flex-col gap-y-4 w-full lg:w-1/3">
-        <h1 className="font-bold text-white text-center">Visibility Controls</h1>
-
-        <div className="flex flex-wrap justify-center gap-2">
-          {bvhUrlList.map((_, index) => (
-            <div
-              key={index}
-              className={`flex items-center gap-1  px-2 py-1 border border-purple-600 rounded-md text-white ${bvhVisibility[index] ? "bg-black/50" : "bg-gray-600 text-white/50"}`}
-            >
-              BVH {index + 1}
-              <button onClick={() => toggleVisibility(index)} className="hover:text-purple-600 cursor-pointer">
-                {bvhVisibility[index] ? <Eye size={16} /> : <EyeOff size={16} />}
-              </button>
-            </div>
-          ))}
-        </div>
-        <h1 className="font-bold text-white text-center">Animation Controls</h1>
-
-
-
-        {/* Play/Pause Button & Slider */}
-        <div className="flex flex-col items-center gap-y-4 w-full">
-          <FormButton
-            label={isPlaying ? "Pause" : "Play"}
-            className="z-10 p-2 rounded-md max-w-min text-white"
-            onClick={togglePlayPause}
-            disabled={bvhUrlList.length === 0}
-          />
-
-          {bvhUrlList.length === 0 && (
-            <p className="text-red-500 text-sm">No BVH files available.</p>
-          )}
-
-          <div className="z-10 w-full">
-            <input
-              type="range"
-              min="0"
-              max={duration.toString()}
-              step="0.01"
-              value={currentTime}
-              onChange={handleTimeChange}
-              onMouseDown={() => handleDurationScroll(true)}
-              onMouseUp={() => handleDurationScroll(false)}
-              onTouchStart={() => handleDurationScroll(true)}
-              onTouchEnd={() => handleDurationScroll(false)}
-              className="w-full"
-            />
-            <div className="flex justify-between mt-2 text-white text-sm">
-              <span>{currentTime.toFixed(2)}s</span>
-              <span>{duration.toFixed(2)}s</span>
-            </div>
+                className={`flex items-center gap-1  px-2 py-1 border border-purple-600 rounded-md text-white ${bvhVisibility[index] ? "bg-black/50" : "bg-gray-600 text-white/50"}`}
+              >
+                BVH {index + 1}
+                <button onClick={() => toggleVisibility(index)} className="hover:text-purple-600 cursor-pointer">
+                  {bvhVisibility[index] ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+            ))}
           </div>
+          <h1 className="font-bold text-white text-center">Animation Controls</h1>
 
-          {/* Download BVH Files Button */}
-          <FormButton
-            label="Download Files"
-            className="z-10 rounded-md max-w-min text-white whitespace-nowrap"
-            onClick={downloadBVHFiles}
-            disabled={bvhUrlList.length === 0}
-          />
+
+
+          {/* Play/Pause Button & Slider */}
+          <div className="flex flex-col items-center gap-y-4 w-full">
+            <FormButton
+              label={isPlaying ? "Pause" : "Play"}
+              className="z-10 p-2 rounded-md max-w-min text-white"
+              onClick={togglePlayPause}
+              disabled={bvhUrlList.length === 0}
+            />
+
+            {bvhUrlList.length === 0 && (
+              <p className="text-red-500 text-sm">No BVH files available.</p>
+            )}
+
+            <div className="z-10 w-full">
+              <input
+                type="range"
+                min="0"
+                max={duration.toString()}
+                step="0.01"
+                value={currentTime}
+                onChange={handleTimeChange}
+                onMouseDown={() => handleDurationScroll(true)}
+                onMouseUp={() => handleDurationScroll(false)}
+                onTouchStart={() => handleDurationScroll(true)}
+                onTouchEnd={() => handleDurationScroll(false)}
+                className="w-full"
+              />
+              <div className="flex justify-between mt-2 text-white text-sm">
+                <span>{currentTime.toFixed(2)}s</span>
+                <span>{duration.toFixed(2)}s</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-white">Choose BVH File:</label>
+                <select
+                  className="bg-gray-800 mt-1 p-2 rounded-md w-full text-white"
+                  onChange={(e) => setSelectedBVH(e.target.value)}
+                  value={selectedBVH ?? ""}
+                >
+                  <option value="">Select BVH</option>
+                  {bvhUrlList.map((url) => {
+                    const filename = url.split("/").pop();
+                    return (
+                      <option key={filename} value={filename}>
+                        {filename}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-white">Choose Avatar:</label>
+                <select
+                  className="bg-gray-800 mt-1 p-2 rounded-md w-full text-white"
+                  onChange={(e) => setSelectedAvatarId(e.target.value)}
+                  value={selectedAvatarId ?? ""}
+                >
+                  <option value="">Select Avatar</option>
+                  {avatars.map((avatar) => (
+                    <option key={avatar.id} value={avatar.id}>
+                      {avatar.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <FormButton
+                label={retargeting ? "Retargeting..." : "Retarget Avatar"}
+                loading={retargeting}
+                onClick={async () => {
+                  if (!projectId || !user?.id || !selectedBVH || !selectedAvatarId) {
+                    alert("Please select a BVH and an Avatar.");
+                    return;
+                  }
+
+                  try {
+                    setRetargeting(true);
+                    const res = await createRetargetedAvatar(projectId, user.id.toString(), selectedBVH, selectedAvatarId);
+                    if (res.success) {
+                      alert("✅ Retargeted avatar created successfully.");
+                      
+                      // @ts-expect-error
+                      setDownloadModalFilename(res.filename); // 🎯 show modal
+                    } else {
+                      alert("❌ Failed to create retargeted avatar.");
+                    }
+                  } catch (err) {
+                    console.error("Error during retargeting:", err);
+                    alert("❌ An unexpected error occurred.");
+                  } finally {
+                    setRetargeting(false);
+                  }
+                }}
+                disabled={!selectedBVH || !selectedAvatarId || retargeting}
+              />
+            </div>
+
+
+            {/* Download BVH Files Button */}
+            <FormButton
+              label="Download BVH File(s)"
+              className="z-10 rounded-md max-w-min text-white whitespace-nowrap"
+              onClick={downloadBVHFiles}
+              disabled={bvhUrlList.length === 0}
+            />
+          </div>
         </div>
       </div>
-    </div>
+      {
+        downloadModalFilename && (
+          <DownloadRetargetedModal
+            filename={downloadModalFilename}
+            onClose={() => setDownloadModalFilename(null)}
+          />
+        )
+      }
+    </>
   );
 };
 

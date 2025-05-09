@@ -78,3 +78,31 @@ export const getProjectBVHFilenames = async (
 
     }
 };
+
+export const createRetargetedAvatar = async (
+    projectId: string,
+    userId: string,
+    bvhFilename: string,
+    selectedAvatarId: string
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.post<ApiResponse<any>>(
+            `/create-retargeted-avatar`, {
+            projectId,
+            userId,
+            bvhFilename,
+            avatarId: selectedAvatarId,
+        }
+        );
+        return response.data;
+    }
+    catch (error: any) {
+        console.error("Error creating retargeted avatar:", error.message);
+        // get the error message from the response if available
+        const errorMessage = error.response?.data?.message || error.message;
+        console.error("Error message:", errorMessage);
+        return { success: false, data: errorMessage };
+    }
+}
+
+

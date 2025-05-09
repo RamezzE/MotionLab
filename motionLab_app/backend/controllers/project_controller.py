@@ -1,4 +1,4 @@
-from services import ProjectService
+from services import ProjectService, RetargetedAvatarService
 from flask import jsonify
 
 class ProjectController:
@@ -65,3 +65,5 @@ class ProjectController:
             return jsonify({"success": True, "data": bvh_filenames}), 200
         
         return jsonify({"success": False, "message": error_message}), 400
+    
+    

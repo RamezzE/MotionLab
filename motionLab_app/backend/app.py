@@ -70,6 +70,20 @@ def serve_avatar_file(filename):
         return send_from_directory('avatars', filename, as_attachment=True)
     except Exception as e:
         return {"error": str(e)}, 500
+    
+@app.route('/retargeted_avatars/<path:filename>', methods=['GET'])
+def serve_retargeted_avatar_file(filename):
+    try:
+        # Ensure the file exists in the avatars directory
+        file_path = Path('retargeted_avatars') / filename
+        if not file_path.is_file():
+            app.logger.error(f"File not found: {file_path}")
+            abort(404, description="File not found")
+
+        # Send the file from the avatars directory
+        return send_from_directory('retargeted_avatars', filename, as_attachment=True)
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route("/")
 def home():

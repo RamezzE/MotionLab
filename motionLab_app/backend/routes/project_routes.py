@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from controllers.project_controller import ProjectController
+from controllers.retargeted_avatar_controller import RetargetedAvatarController
 
 # Create a Blueprint for project routes
 project_bp = Blueprint("project", __name__)
@@ -19,3 +20,7 @@ def delete_project_route():
 @project_bp.route("/get-bvh-filenames", methods=["GET"])
 def get_bvh_filenames_route():
     return ProjectController.get_bvh_filenames(request)
+
+@project_bp.route("/create-retargeted-avatar", methods=["POST"])
+def create_retargeted_avatar_route():
+    return RetargetedAvatarController.create_retargeted_avatar(request)

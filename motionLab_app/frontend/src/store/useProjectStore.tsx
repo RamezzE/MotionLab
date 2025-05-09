@@ -6,6 +6,7 @@ import {
     deleteProjectById,
     getProjectBVHFilenames,
     getProjectById,
+    createRetargetedAvatar,
 } from "@/api/projectAPIs";
 import { Project } from "@/types/types";
 import { ApiResponse } from "@/types/apiTypes";
@@ -17,6 +18,7 @@ interface ProjectStoreState {
     fetchProjectById: (projectId: string, userId: string) => Promise<void>;
     deleteProject: (projectId: string, userId: string) => Promise<boolean>;
     getBVHFilenames: (projectId: string, userId: string) => Promise<ApiResponse<any>>;
+    createRetargetedAvatar: (projectId: string, userId: string, bvh_filename: string, selectedAvatarId: string) => Promise<ApiResponse<any>>;
     clearError: () => void;
     clearProjects: () => void;
 }
@@ -32,7 +34,7 @@ const useProjectStore = create<ProjectStoreState>()(
                 if (response.success && response.data) {
                     // Assuming response.data is an array of Project objects
                     set({ projects: response.data });
-                    
+
                     // Update local storage after fetching the projects
                     localStorage.setItem("projects", JSON.stringify(response.data));
                 } else {
@@ -44,7 +46,7 @@ const useProjectStore = create<ProjectStoreState>()(
                     });
                 }
             },
-            
+
 
             fetchProjectById: async (projectId: string, userId: string): Promise<void> => {
                 const response = await getProjectById(projectId, userId);
@@ -78,6 +80,12 @@ const useProjectStore = create<ProjectStoreState>()(
 
             getBVHFilenames: async (projectId: string, userId: string): Promise<ApiResponse<any>> => {
                 const response = await getProjectBVHFilenames(projectId, userId);
+                return response;
+            },
+
+            createRetargetedAvatar: async (projectId: string, userId: string, bvh_filename: string, selectedAvatarId: string): Promise<ApiResponse<any>> => {
+                const response = await createRetargetedAvatar(projectId, userId, bvh_filename, selectedAvatarId);
+                console.log("Response from createRetargetedAvatar:", response);
                 return response;
             },
 
