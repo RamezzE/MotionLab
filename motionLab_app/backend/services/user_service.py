@@ -161,7 +161,7 @@ If you did not make this request then simply ignore this email.
         # Generate a secure token for email verification
         token = serializer.dumps(email, salt="email-verification-salt")
     
-        verification_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/verify-email?token={token}"
+        verification_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/auth/verify-email?token={token}"
 
         if (not os.getenv("MAIL_USERNAME") or not os.getenv("MAIL_PASSWORD")):
             print("Mail server not configured: No username or password found in environment variables.")

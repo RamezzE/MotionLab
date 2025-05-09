@@ -53,6 +53,31 @@ const router = createBrowserRouter([
                         element: <NotFoundPage />,
                     },
                     {
+                        path: "auth",
+                        children: [
+                            {
+                                path: "verify-email",
+                                element: <VerifyEmailPage />,
+                            },
+                            {
+                                path: "login",
+                                element: <LoginPage />,
+                            },
+                            {
+                                path: "signup",
+                                element: <SignUpPage />,
+                            },
+                            {
+                                path: "forget-password",
+                                element: <ForgetPasswordPage />,
+                            },
+                            {
+                                path: "reset-password",
+                                element: <ResetPasswordPage />,
+                            },
+                        ]
+                    },
+                    {
                         path: "unauthorized",
                         element: <Unauthorized />,
                     },
@@ -76,26 +101,6 @@ const router = createBrowserRouter([
                     {
                         path: "features",
                         element: <FeaturesPage />,
-                    },
-                    {
-                        path: "login",
-                        element: <LoginPage />,
-                    },
-                    {
-                        path: "signup",
-                        element: <SignUpPage />,
-                    },
-                    {
-                        path: "forget-password",
-                        element: <ForgetPasswordPage />,
-                    },
-                    {
-                        path: "reset-password",
-                        element: <ResetPasswordPage />,
-                    },
-                    {
-                        path: "verify-email",
-                        element: <VerifyEmailPage />,
                     },
                     {
                         path: "profile",

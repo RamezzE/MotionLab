@@ -4,7 +4,7 @@ import LoadingSpinner from "./LoadingSpinner"; // Adjust the path as needed
 interface FormButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     label: string;
     loading?: boolean;
-    theme?: "default" | "transparent"; // New theme prop
+    theme?: "default" | "transparent" | "dark"; // Added dark theme option
     fullWidth?: boolean; // New prop to control full width
     textSize?: "sm" | "md" | "base" | "lg"; // New prop for text size, defaults to 'lg'
     extraStyles?: string; // New prop to accept additional custom Tailwind classes
@@ -33,7 +33,9 @@ const FormButton: FC<FormButtonProps> = ({
     const buttonStyles =
         theme === "transparent"
             ? "text-white hover:text-purple-400 transition duration-300"
-            : "bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white transition duration-300";
+            : theme === "dark"
+                ? "bg-black/50 hover:bg-black/60 transition duration-300 px-4 py-2 rounded-md text-white/85 hover:text-white"
+                : "bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white transition duration-300";
 
     // Handle text size
     const textStyles =

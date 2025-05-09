@@ -60,7 +60,7 @@ const AvatarsPage: React.FC = () => {
                 label="Create New Avatar"
                 onClick={() => navigate("/avatar/create")}
                 loading={loading}
-                theme="default"
+                // theme="dark"
                 fullWidth={false}
             />
 

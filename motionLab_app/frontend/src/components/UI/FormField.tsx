@@ -34,7 +34,7 @@ const FormField: React.FC<FormFieldProps> = ({
                     rows={5}
                     value={value}
                     onChange={onChange}
-                    className={`bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none ${extraStyles}`}
+                    className={`bg-gray-800 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-300 focus:outline-none ${extraStyles}`}
                     disabled={disabled}
                 ></textarea>
             ) : (
@@ -45,7 +45,7 @@ const FormField: React.FC<FormFieldProps> = ({
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
-                    className={`bg-gray-700 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-400 focus:outline-none ${extraStyles}`}
+                    className={`bg-gray-800 px-4 py-3 rounded-md focus:ring-2 focus:ring-purple-600 w-full text-white placeholder-gray-300 focus:outline-none ${extraStyles}`}
                     disabled={disabled}
                 />
             )}

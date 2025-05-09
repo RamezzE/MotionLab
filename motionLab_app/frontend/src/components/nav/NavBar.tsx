@@ -25,7 +25,7 @@ const AuthButtons: FC<{ isAuthenticated: boolean; navigate: any, onClick: () => 
                 <FormButton
                     theme="transparent"
                     onClick={() => {
-                        navigate("/login");
+                        navigate("/auth/login");
                         onClick();
                     }}
                     label="Log In"
@@ -35,7 +35,7 @@ const AuthButtons: FC<{ isAuthenticated: boolean; navigate: any, onClick: () => 
                 <FormButton
                     theme="default"
                     onClick={() => {
-                        navigate("/signup");
+                        navigate("/auth/signup");
                         onClick();
                     }}
                     label="Join Now"
@@ -60,8 +60,8 @@ const ProfileDropdown: FC<{ user: any; isAdmin: boolean; logoutFunc: any; setPro
         </button>
 
         {profileDropdownOpen && (
-            <div className="right-0 z-20 absolute bg-gray-800 shadow-lg mt-2 py-1 border border-gray-700 rounded-md w-48">
-                <div className="px-4 py-2 border-gray-700 border-b">
+            <div className="right-0 z-20 absolute bg-gray-800 shadow-lg mt-2 border border-gray-700 rounded-md w-48">
+                <div className="px-4 py-4 border-gray-700 border-b">
                     <p className="font-medium text-white text-sm">{user?.email}</p>
                     <p className="font-medium text-purple-400 text-xs">{isAdmin ? 'Administrator' : 'User'}</p>
                 </div>

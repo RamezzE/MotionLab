@@ -15,7 +15,7 @@ const VerifyEmailPage: React.FC = () => {
 
     useEffect(() => {
         if (!isAuthenticated || !user || user.is_email_verified) {
-            navigate("/login");
+            navigate("/auth/login");
         }
         
         // Admin users don't need to verify their email
@@ -126,7 +126,7 @@ const VerifyEmailPage: React.FC = () => {
                     Verify Your Email
                 </h1>
                 <p className="text-gray-300 text-xl md:text-2xl">
-                    We will send you a verification link to your email.
+                    We will send a verification link to your email.
                 </p>
                 <form
                     className="flex flex-col items-center gap-y-6 mx-auto w-[80vw] sm:w-96"

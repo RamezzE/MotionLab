@@ -6,6 +6,7 @@ import AvatarCreatorWrapper from "@/components/Avatar/AvatarCreator";
 
 import useAvatarStore from "@/store/useAvatarStore";
 import AvatarNameModal from "@/components/Avatar/AvatarNameModal"; // Import the modal component
+import LoginGuard from '@/components/auth/LoginGuard';
 
 interface AvatarCreationProps {
     avatarId?: string;  // Optional prop for editing an existing avatar
@@ -104,18 +105,9 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
 
     if (!user) {
         return (
-            <div className="flex flex-col items-center gap-y-4 px-4 w-full min-h-[40vh] text-white">
-                <h1 className="font-bold text-5xl">Create your Avatar</h1>
-                <p className="text-gray-300 text-lg">
-                    You must be logged in to continue.
-                </p>
-                <button
-                    className="bg-purple-600 hover:bg-purple-700 mt-4 px-6 py-3 rounded-md text-white transition"
-                    onClick={() => navigate("/login")}
-                >
-                    Login
-                </button>
-            </div>
+            <LoginGuard
+                title='Create your Avatar'
+            />
         );
     }
 
