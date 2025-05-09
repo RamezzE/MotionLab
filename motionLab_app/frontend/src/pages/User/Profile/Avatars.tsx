@@ -10,7 +10,7 @@ import FormButton from "@/components/UI/FormButton";
 const AvatarsPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useUserStore();
-    const { avatars, fetchAvatars: fetchAvatarsStore } = useAvatarStore();
+    const { avatars, fetchAvatars: fetchAvatarsStore, deleteAvatarByIdAndUserId } = useAvatarStore();
 
     const [loading, setLoading] = useState(true);
 
@@ -27,6 +27,19 @@ const AvatarsPage: React.FC = () => {
 
         fetchAvatars();
     }, [user]);
+
+    const handleAvatarDelete = async (avatarId: string) => {
+        if (!user || !user.id) return;
+
+        const confirmed = window.confirm("Are you sure you want to delete this avatar?");
+        if (confirmed) {
+            setLoading(true);
+            await deleteAvatarByIdAndUserId(avatarId, user.id.toString());
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
+        }
+    }
 
     if (loading) {
         return (
@@ -61,7 +74,7 @@ const AvatarsPage: React.FC = () => {
                         // modelSrc={"https://models.readyplayer.me/681d1b48eb427a0b72c4b2ce.glb"}
                         displayMode="list"
                         onPress={() => navigate(`/avatar/view/${character.id}`)}
-                        onDelete={() => console.log("Delete character")}
+                        onDelete={() => handleAvatarDelete(character.id)}
                     />
                 ))}
             </div>

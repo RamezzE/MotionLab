@@ -16,28 +16,22 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
     characterName,
     createdDate,
     displayMode = 'default', // Default value is 'default'
-    onPress,
-    onDelete,
+    onPress = () => { },
+    onDelete = () => { },
 }) => {
     // Conditional classes for 'default' and 'list' display modes
     const containerClasses = displayMode === 'list'
-        ? 'flex-row gap-x-4 max-w-[300px] hover:border-4 hover:border-blue-500 transition-all duration-300 relative cursor-pointer border border-purple-600 h-full'  // Horizontal layout for list mode
+        ? 'flex-row gap-x-4 max-w-[300px] hover:border-4 hover:border-blue-500 transition-all duration-300 relative border border-purple-600 h-full'  // Horizontal layout for list mode
         : 'flex-col justify-center w-full h-[50vh] xs:flex-row lg:flex-row'; // Flex-col for xs, flex-row for larger screens
-
-    // Handle click event for pressable container in list mode
-    const handleContainerClick = () => {
-        if (onPress) {
-            onPress(); // Trigger onPress if available
-        }
-    };
 
     return (
         <div
             className={`flex bg-black/50 px-4 rounded-xl items-center hover:pointer ${containerClasses}`}
-            onClick={displayMode === 'list' ? handleContainerClick : undefined} // Only make it clickable in list mode
         >
             {/* Displaying the character name and created date */}
-            <div className={displayMode === 'list' ? 'text-left' : 'mt-4 text-left xs:w-[50%]'}>
+            <div className={displayMode === 'list' ? 'text-left cursor-pointer' : 'mt-4 text-left xs:w-[50%]'}
+                onClick={displayMode === 'list' ? onPress : undefined} // Only make it clickable in list mode
+            >
                 <h2 className={`font-semibold text-white text-2xl ${displayMode === 'list' ? 'mb-2' : ''}`}>
                     {characterName}
                 </h2>
@@ -46,7 +40,10 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
                 </p>
             </div>
 
-            <div className={displayMode === 'list' ? 'w-[150px]' : 'xs:w-[50%] lg:w-[50%] h-full'}>
+            <div
+                className={displayMode === 'list' ? 'w-[150px] cursor-pointer' : 'xs:w-[50%] lg:w-[50%] h-full'}
+                onClick={displayMode === 'list' ? onPress : undefined} // Only make it clickable in list mode
+            >
                 {/* Rendering the character model */}
                 <Avatar
                     modelSrc={modelSrc}
@@ -57,7 +54,7 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
 
             {/* Delete Icon for list view */}
             {displayMode === 'list' && (
-                <div className="top-3 right-2 absolute flex gap-2">
+                <div className="top-3 right-2 z-50 absolute flex gap-2">
                     <button
                         onClick={onDelete}
                         className="text-gray-400 hover:text-red-500 hover:cursor-pointer"

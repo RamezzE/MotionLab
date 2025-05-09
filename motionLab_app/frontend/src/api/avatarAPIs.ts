@@ -57,3 +57,18 @@ export const getAvatarByIdAndUserId = async (
         return { success: false, data: error.message };
     }
 }
+
+export const deleteAvatarByIdAndUserId = async (
+    avatarId: string,
+    userId: string,
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.delete(`/`, {
+            params: { avatarId, userId }, // Sending avatarId and userId as query parameters
+        });
+        return response.data;
+    } catch (error: any) {
+        console.error("Error deleting avatar:", error.message);
+        return { success: false, data: error.message };
+    }
+}
