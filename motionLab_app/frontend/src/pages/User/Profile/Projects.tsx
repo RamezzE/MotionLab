@@ -10,7 +10,7 @@ import LoadingSpinner from "@/components/UI/LoadingSpinner";
 const Projects: React.FC = () => {
     const { user } = useUserStore();
     const { projects, fetchProjects: fetchProjectsStoreFunc } = useProjectStore();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user || !user.id) return;
@@ -18,7 +18,9 @@ const Projects: React.FC = () => {
         const fetchProjects = async () => {
             setLoading(true);
             await fetchProjectsStoreFunc(user.id.toString());
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
         };
 
         fetchProjects();

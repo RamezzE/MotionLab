@@ -1,23 +1,26 @@
 // AvatarNameModal.tsx
 import React from 'react';
+import FormButton from '@/components/UI/FormButton';
 
 interface AvatarNameModalProps {
     avatarName: string;
     setAvatarName: React.Dispatch<React.SetStateAction<string>>;
     onCreateAvatar: () => void;
-    closeModal: () => void;
+    onCancel: () => void;
     loading: boolean;
+    error: string | null; // Optional error message prop
 }
 
 const AvatarNameModal: React.FC<AvatarNameModalProps> = ({
     avatarName,
     setAvatarName,
     onCreateAvatar,
-    closeModal,
+    onCancel,
     loading,
+    error, // Optional error message prop
 }) => {
     return (
-        <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/50">
+        <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/75">
             <div className="bg-gray-800 p-6 rounded-lg w-full sm:w-[400px]">
                 <h2 className="mb-4 text-white text-xl">Enter Avatar Name</h2>
                 <input
@@ -27,20 +30,25 @@ const AvatarNameModal: React.FC<AvatarNameModalProps> = ({
                     placeholder="Enter Avatar Name"
                     className="bg-black/50 px-4 py-2 rounded-md w-full text-white"
                 />
+                {error && <p className="mt-2 px-2 text-red-500">{error}</p>} {/* Display error message if present */}
+
                 <div className="flex justify-end gap-4 mt-4">
-                    <button
-                        onClick={closeModal}
-                        className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md text-white"
-                    >
-                        Cancel
-                    </button>
-                    <button
+                    <FormButton
+                        label="Cancel"
+                        onClick={onCancel}
+                        theme="transparent" // Transparent theme for cancel button
+                        fullWidth={false} // Set to false for fixed width
+                        textSize="base" // Adjust text size as needed
+                    />
+                    <FormButton
+                        label={loading ? 'Uploading...' : 'Create Avatar'}
                         onClick={onCreateAvatar}
-                        className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white"
-                        disabled={loading}
-                    >
-                        {loading ? 'Uploading...' : 'Create Avatar'}
-                    </button>
+                        loading={loading}
+                        theme="default"
+                        fullWidth={false} // Set to false for fixed width
+                        textSize="base" // Adjust text size as needed
+                    />
+
                 </div>
             </div>
         </div>

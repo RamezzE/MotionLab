@@ -27,6 +27,7 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [avatarName, setAvatarName] = useState<string>(''); // New state for avatar name input
     const [nameInputVisible, setNameInputVisible] = useState<boolean>(false); // Flag to show input field
+    const [error, setError] = useState<string | null>(null); // State to store error messages
 
     // Modify config based on avatarId
     const updatedConfig = {
@@ -58,14 +59,14 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
 
     const handleCreateAvatar = async () => {
         if (!avatarName) {
-            console.error('Avatar name is required');
+            setError('Avatar name is required');
             return;
         }
 
         setLoading(true);
 
         if (!user) {
-            console.error('User is not logged in. Cannot upload avatar.');
+            setError('User is not logged in. Cannot upload avatar.');
             setLoading(false);
             return;
         }
@@ -83,6 +84,7 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
                 console.log('Avatar uploaded successfully:', response.data);
                 navigate("/profile/avatars");
             } else {
+                setError(response.message || 'Unknown error occurred during avatar upload');
                 console.error('Error uploading avatar:', response.message || 'Unknown error');
             }
 
@@ -96,6 +98,8 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
     const closeModal = () => {
         setNameInputVisible(false); // Close the modal
         setAvatarUrl(''); // Clear the avatar URL when closing the modal
+        setAvatarName(''); // Clear the avatar name input
+        setError(null); // Clear any error messages
     }
 
     if (!user) {
@@ -133,8 +137,9 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
                     avatarName={avatarName}
                     setAvatarName={setAvatarName}
                     onCreateAvatar={handleCreateAvatar}
-                    closeModal={closeModal}
+                    onCancel={closeModal}
                     loading={loading}
+                    error={error}
                 />
             )}
         </div>

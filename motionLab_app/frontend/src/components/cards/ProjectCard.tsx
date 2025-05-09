@@ -48,7 +48,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
     };
 
     return (
-        <div className="relative bg-gray-800 shadow-lg p-6 border border-purple-600 rounded-lg w-md max-w-[80vw] text-white">
+        <div className="relative flex items-center bg-black/50 shadow-lg p-6 px-4 border border-purple-600 hover:border-4 hover:border-blue-500 rounded-xl w-md max-w-[80vw] text-white transition-all duration-300 hover:pointer">
             {/* Refresh Status Button */}
             {is_processing && !loading && (
                 <button
@@ -88,7 +88,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
                     <p className="mt-2 text-gray-400 text-sm">Created on: {creationDate}</p>
                     <span className="flex items-center space-x-2 mt-2">
                         <p className="text-yellow-300 text-xs">Status: Processing.. </p>
-                        <LoadingSpinner size={16} extraStyles="text-yellow-300"/>
+                        <LoadingSpinner size={16} extraStyles="text-yellow-300" />
                     </span>
                 </div>
             ) : (

@@ -1,6 +1,6 @@
 import { Avatar } from '@readyplayerme/visage';
 import { Vector3 } from 'three';
-import { FiTrash } from 'react-icons/fi'; // Import icons from react-icons
+import { Trash2 } from "lucide-react";
 
 interface AvatarViewerProps {
     modelSrc: string;
@@ -21,7 +21,7 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
 }) => {
     // Conditional classes for 'default' and 'list' display modes
     const containerClasses = displayMode === 'list'
-        ? 'flex-row gap-x-4 max-w-[300px] hover:border-4 hover:border-blue-500 transition-all duration-300 relative cursor-pointer'  // Horizontal layout for list mode
+        ? 'flex-row gap-x-4 max-w-[300px] hover:border-4 hover:border-blue-500 transition-all duration-300 relative cursor-pointer border border-purple-600 h-full'  // Horizontal layout for list mode
         : 'flex-col justify-center w-full h-[50vh] xs:flex-row lg:flex-row'; // Flex-col for xs, flex-row for larger screens
 
     // Handle click event for pressable container in list mode
@@ -57,13 +57,13 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
 
             {/* Delete Icon for list view */}
             {displayMode === 'list' && (
-                <div className="top-2 right-2 absolute flex gap-2">
+                <div className="top-3 right-2 absolute flex gap-2">
                     <button
                         onClick={onDelete}
-                        className="text-white hover:text-red-500 hover:cursor-pointer"
+                        className="text-gray-400 hover:text-red-500 hover:cursor-pointer"
                         aria-label="Delete Avatar"
                     >
-                        <FiTrash size={24} />
+                        <Trash2 size={20} />
                     </button>
                 </div>
             )}
