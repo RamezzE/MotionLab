@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createAvatar, getAvatarsByUser } from "@/api/avatarAPIs";
+import { createAvatar, getAvatarsByUser, getAvatarByIdAndUserId } from "@/api/avatarAPIs";
 import { Avatar } from "@/types/types";
 import { ApiResponse } from "@/types/apiTypes";
 
@@ -8,6 +8,7 @@ interface AvatarStoreState {
     avatars: Avatar[];
     error: string | null;
     fetchAvatars: (userId: string) => Promise<void>;
+    getAvatarByIdAndUserId: (avatarId: string, userId: string) => Promise<ApiResponse<any>>;
     createAvatar: (avatarName: string, userId: string, downloadUrl: string) => Promise<ApiResponse<any>>;
     clearAvatars: () => void;
 }
@@ -32,6 +33,26 @@ const useAvatarStore = create<AvatarStoreState>()(
                                 ? response.data
                                 : "Error fetching avatars",
                     });
+                }
+            },
+
+            getAvatarByIdAndUserId: async (
+                avatarId: string,
+                userId: string
+            ): Promise<ApiResponse<any>> => {
+                const response = await getAvatarByIdAndUserId(avatarId, userId);
+                console.log("Fetched avatar by ID:", response);
+
+                if (response.success && response.data) {
+                    return response;
+                } else {
+                    set({
+                        error:
+                            typeof response.data === "string"
+                                ? response.data
+                                : "Error fetching avatar",
+                    });
+                    return { success: false, data: null };
                 }
             },
 
@@ -78,14 +99,6 @@ const useAvatarStore = create<AvatarStoreState>()(
                     localStorage.removeItem(name);
                 },
             }, // Custom localStorage wrapper to conform to PersistStorage type
-            // Custom serialization for avatars state if needed
-            partialize: (state) => ({
-                avatars: state.avatars,
-                error: null,
-                fetchAvatars: state.fetchAvatars,
-                createAvatar: state.createAvatar,
-                clearAvatars: state.clearAvatars,
-            }),
             // Optional: Handle errors or migration of storage data
             onRehydrateStorage: (state) => {
                 console.log("Rehydrated state:", state); // This logs the state when it's being rehydrated from localStorage

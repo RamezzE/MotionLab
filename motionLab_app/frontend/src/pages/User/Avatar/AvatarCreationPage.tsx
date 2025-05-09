@@ -5,6 +5,7 @@ import useUserStore from "@/store/useUserStore";
 import AvatarCreatorWrapper from "@/components/Avatar/AvatarCreator";
 
 import useAvatarStore from "@/store/useAvatarStore";
+import AvatarNameModal from "@/components/Avatar/AvatarNameModal"; // Import the modal component
 
 interface AvatarCreationProps {
     avatarId?: string;  // Optional prop for editing an existing avatar
@@ -23,7 +24,9 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
     const navigate = useNavigate();
     const { avatarId } = useParams(); // Get the avatarId from the URL parameters
     const [loading, setLoading] = useState(false);
-    const [avatarUrl, setAvatarUrl] = useState('');
+    const [avatarUrl, setAvatarUrl] = useState<string>('');
+    const [avatarName, setAvatarName] = useState<string>(''); // New state for avatar name input
+    const [nameInputVisible, setNameInputVisible] = useState<boolean>(false); // Flag to show input field
 
     // Modify config based on avatarId
     const updatedConfig = {
@@ -49,29 +52,50 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
             return;
         }
 
+        // Show input field to enter avatar name before uploading
+        setNameInputVisible(true);
+    }
+
+    const handleCreateAvatar = async () => {
+        if (!avatarName) {
+            console.error('Avatar name is required');
+            return;
+        }
 
         setLoading(true);
+
+        if (!user) {
+            console.error('User is not logged in. Cannot upload avatar.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await createAvatar(
-                "Avatar 2", // Replace with actual avatar name or use a state variable
+                avatarName, // Use the entered avatar name
                 String(user.id), // Ensure user ID is available and converted to string
-                event.data.url,
+                avatarUrl
             );
 
             console.log('Avatar creation response:', response);
 
             if (response.success) {
                 console.log('Avatar uploaded successfully:', response.data);
-                navigate("/user/characters"); // Redirect to the characters page after successful upload
+                navigate("/profile/avatars");
             } else {
                 console.error('Error uploading avatar:', response.message || 'Unknown error');
             }
-            
+
         } catch (error) {
             console.error('Error uploading avatar:', error);
         } finally {
             setLoading(false);
         }
+    }
+
+    const closeModal = () => {
+        setNameInputVisible(false); // Close the modal
+        setAvatarUrl(''); // Clear the avatar URL when closing the modal
     }
 
     if (!user) {
@@ -102,6 +126,17 @@ const AvatarCreation: React.FC<AvatarCreationProps> = () => {
                 config={updatedConfig}
                 onAvatarExported={handleAvatarExported}
             />
+
+            {/* Modal for avatar name input */}
+            {nameInputVisible && (
+                <AvatarNameModal
+                    avatarName={avatarName}
+                    setAvatarName={setAvatarName}
+                    onCreateAvatar={handleCreateAvatar}
+                    closeModal={closeModal}
+                    loading={loading}
+                />
+            )}
         </div>
     );
 };

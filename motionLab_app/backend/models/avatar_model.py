@@ -32,3 +32,10 @@ class Avatar(db.Model):
         except Exception as e:
             print("Error converting Avatar to dict in to_dict / avatar_model.py:", e)
             return None
+        
+    def get_avatar_by_id_and_user_id(self, avatar_id, user_id):
+        try:
+            return Avatar.query.filter_by(id=avatar_id, user_id=user_id).first()
+        except Exception as e:
+            print("Error getting Avatar by id and user id in get_avatar_by_id_and_user_id / avatar_model.py:", e)
+            return None

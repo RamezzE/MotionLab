@@ -43,3 +43,18 @@ export const getAvatarsByUser = async (userId: string): Promise<ApiResponse<any>
         return { success: false, data: error.message };
     }
 };
+
+export const getAvatarByIdAndUserId = async (
+    avatarId: string,
+    userId: string,
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.get(`/`, {
+            params: { avatarId, userId }, // Sending avatarId and userId as query parameters
+        });
+        return response.data;
+    } catch (error: any) {
+        console.error("Error fetching avatar:", error.message);
+        return { success: false, data: error.message };
+    }
+}

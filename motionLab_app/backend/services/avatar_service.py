@@ -70,3 +70,12 @@ class AvatarService:
         except Exception as e:
             print(f"Error in get_avatars_by_user_id: {e}")
             return None
+        
+    @staticmethod
+    def get_avatar_by_id_and_user_id(avatar_id, user_id):
+        try:
+            avatar = Avatar.query.filter_by(id=avatar_id, user_id=user_id).first()
+            return avatar.to_dict() if avatar else None
+        except Exception as e:
+            print(f"Error in get_avatar_by_id_and_user_id: {e}")
+            return None

@@ -11,3 +11,7 @@ def create_avatar_for_user():
 @avatar_bp.route("/avatars", methods=["GET"])
 def get_avatars_by_user_id():
     return AvatarController.get_avatars_by_user_id(request)
+
+@avatar_bp.route("/", methods=["GET"])
+def get_avatar_by_id_and_user_id():
+    return AvatarController.get_avatar_by_id_and_user_id(request)

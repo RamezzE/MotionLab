@@ -52,3 +52,21 @@ class AvatarController:
             return jsonify({"success": True, "data": avatars}), 200
         else:
             return jsonify({"success": False, "message": "No avatars found for this user"}), 404
+        
+    @staticmethod
+    def get_avatar_by_id_and_user_id(request):
+        # Read the avatar_id and user_id from the query parameters
+        avatar_id = request.args.get("avatarId")
+        user_id = request.args.get("userId")
+        
+        # Validate the parameters
+        if not avatar_id or not user_id:
+            return jsonify({"success": False, "message": "Missing avatarId or userId parameter"}), 200
+        
+        # Call the AvatarService to get the avatar by ID and user ID
+        avatar = AvatarService.get_avatar_by_id_and_user_id(avatar_id, user_id)
+        
+        if avatar:
+            return jsonify({"success": True, "data": avatar}), 200
+        else:
+            return jsonify({"success": False, "message": "Avatar not found"}), 404

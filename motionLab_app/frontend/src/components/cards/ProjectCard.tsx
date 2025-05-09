@@ -53,7 +53,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
             {is_processing && !loading && (
                 <button
                     onClick={handleRefresh}
-                    className="top-4 right-12 absolute flex items-center space-x-1 text-gray-400 hover:text-white transition duration-300 cursor-pointer"
+                    className="top-4 right-12 absolute flex items-center gap-x-1 bg-red-5600 text-gray-400 hover:text-white transition duration-300 cursor-pointer"
                     title="Refresh current status"
                 >
                     <RefreshCcw size={20} />

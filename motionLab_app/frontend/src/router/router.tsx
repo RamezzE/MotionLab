@@ -30,9 +30,10 @@ import AdminProfile from "@/pages/Admin/profile";
 import AdminLayout from "@/layouts/AdminLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-import AvatarCreation from "@/pages/User/Avatar/AvatarCreation";
+import AvatarCreation from "@/pages/User/Avatar/AvatarCreationPage";
 import AvatarsPage from "@/pages/User/Profile/Avatars";
 import ProjectsPage from "@/pages/User/Profile/Projects";
+import AvatarViewerPage from "@/pages/User/Avatar/AvatarViewerPage";
 
 const router = createBrowserRouter([
     {
@@ -124,6 +125,10 @@ const router = createBrowserRouter([
                                 path: "edit/:avatarId",
                                 element: <AvatarCreation />,
                             },
+                            {
+                                path: "view/:avatarId",
+                                element: <AvatarViewerPage />,
+                            }
                         ]
                     }
                 ],

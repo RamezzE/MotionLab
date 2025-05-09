@@ -58,7 +58,7 @@ const AvatarsPage: React.FC = () => {
                         modelSrc={"http://127.0.1:5000/avatars/" + character.filename}
                         // modelSrc={"https://models.readyplayer.me/681d1b48eb427a0b72c4b2ce.glb"}
                         displayMode="list"
-                        onEdit={() => navigate(`/avatar/edit/${character.id}`)}
+                        onPress={() => navigate(`/avatar/view/${character.id}`)}
                         onDelete={() => console.log("Delete character")}
                     />
                 ))}
