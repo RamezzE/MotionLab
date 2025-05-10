@@ -270,11 +270,11 @@ const BVHScene: React.FC = () => {
                   value={selectedBVH ?? ""}
                 >
                   <option value="">Select BVH</option>
-                  {bvhUrlList.map((url) => {
+                  {bvhUrlList.map((url, index) => {
                     const filename = url.split("/").pop();
                     return (
                       <option key={filename} value={filename}>
-                        {filename}
+                        BVH {index + 1}
                       </option>
                     );
                   })}
