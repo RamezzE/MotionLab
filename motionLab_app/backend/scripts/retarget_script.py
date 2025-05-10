@@ -15,7 +15,11 @@ def retarget_bvh_to_avatar(bvh_path: str, avatar_path: str, export_path: str, ad
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete(use_global=False)
 
-    bpy.ops.import_anim.bvh(filepath=bvh_path)
+    bpy.ops.import_anim.bvh(
+        filepath=bvh_path,
+        update_scene_fps=True,
+        update_scene_duration=True
+    )
     bpy.ops.import_scene.gltf(filepath=avatar_path)
 
     glb_obj = bpy.data.objects.get("Armature")
@@ -59,7 +63,8 @@ def retarget_bvh_to_avatar(bvh_path: str, avatar_path: str, export_path: str, ad
         filepath=export_path,
         export_format='GLB',
         use_selection=True,
-        export_apply=True
+        export_apply=True,
+        export_animations=True
     )
 
     print(f"Exported to {export_path}")
