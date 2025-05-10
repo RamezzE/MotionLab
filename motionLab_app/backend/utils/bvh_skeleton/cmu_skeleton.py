@@ -233,10 +233,10 @@ class CMUSkeleton(object):
             
             if node.is_root:
                 self.counter += 1
-                MAX_X = 50
-                # MAX_X = 100
-                # MAX_X = 30
-                MAX_Y = 50
+                # MAX_X = 50
+                # MAX_Y = 50
+                MAX_X = 50 * self.x_sensitivity
+                MAX_Y = 50 * self.y_sensitivity
                 MIN_Y = 0
                 
                 OLD_MAX = 1
@@ -343,9 +343,15 @@ class CMUSkeleton(object):
         return channel
 
 
-    def poses2bvh(self, poses_3d, header=None, output_file=None, fps=30, root_keypoints=None):
+    def poses2bvh(self, poses_3d, header=None, output_file=None, fps=30, root_keypoints=None, x_sensitivity=0, y_sensitivity=0):
         if root_keypoints:
             self.root_positions = root_keypoints
+            
+        if x_sensitivity >= 0:
+            self.x_sensitivity = x_sensitivity
+            
+        if y_sensitivity >= 0:
+            self.y_sensitivity = y_sensitivity
         
         if not header:
             header = self.get_bvh_header(poses_3d)

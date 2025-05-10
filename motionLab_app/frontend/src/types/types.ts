@@ -24,7 +24,8 @@ export interface Avatar {
 }
 
 export interface ProjectSettings {
-  peopleCount: string;
-  outputFormat: string;
   projectName: string;
+  xSensitivity: number;
+  ySensitivity: number;
+  stationary: boolean;
 }

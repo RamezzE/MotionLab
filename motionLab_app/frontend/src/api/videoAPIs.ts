@@ -18,6 +18,8 @@ export interface UploadResponse {
  * @param file - The video file to upload.
  * @param projectName - The name of the project.
  * @param userId - The ID of the user.
+ * @param xSensitivity - X-axis sensitivity value (0-100).
+ * @param ySensitivity - Y-axis sensitivity value (0-100).
  * @param onUploadProgress - Optional callback to track upload progress.
  * @returns A promise that resolves to the API response.
  */
@@ -25,12 +27,16 @@ export const uploadVideo = async (
     file: File,
     projectName: string,
     userId: string,
+    xSensitivity: number,
+    ySensitivity: number,
     onUploadProgress?: (progress: number) => void
 ): Promise<ApiResponse<UploadResponse>> => {
     const formData = new FormData();
     formData.append("video", file); // Append the video file with the key 'video'
     formData.append("projectName", projectName); // Append the project name
     formData.append("userId", userId); // Append the user ID
+    formData.append("xSensitivity", (xSensitivity / 100).toString()); // Convert to decimal (0-1)
+    formData.append("ySensitivity", (ySensitivity / 100).toString()); // Convert to decimal (0-1)
 
     try {
         const response = await axiosInstance.post<ApiResponse<UploadResponse>>(

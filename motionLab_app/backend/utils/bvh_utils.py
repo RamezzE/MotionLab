@@ -4,7 +4,7 @@ from datetime import datetime
 
 class BVHUtils:
     @staticmethod
-    def convert_3d_to_bvh(pose_3d, root_keypoints, fps):
+    def convert_3d_to_bvh(pose_3d, root_keypoints, fps, x_sensitivity, y_sensitivity):
         """
         Converts 3D pose data into BVH format.
 
@@ -22,7 +22,7 @@ class BVHUtils:
             bvh_file = bvh_output_dir / bvh_file_name
 
             cmu_skeleton.CMUSkeleton().poses2bvh(
-                pose_3d, output_file=bvh_file, fps=fps, root_keypoints=root_keypoints
+                pose_3d, output_file=bvh_file, fps=fps, root_keypoints=root_keypoints, x_sensitivity=x_sensitivity, y_sensitivity=y_sensitivity
             )
 
             print(f"BVH file saved: {bvh_file_name}")

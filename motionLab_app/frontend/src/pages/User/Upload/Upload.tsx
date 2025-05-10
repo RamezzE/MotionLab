@@ -21,9 +21,10 @@ const UploadPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [settings, setSettings] = useState<ProjectSettings>({
-    peopleCount: "single",
-    outputFormat: "bvh",
     projectName: "",
+    xSensitivity: 0,
+    ySensitivity: 0,
+    stationary: true
   });
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const { user } = useUserStore();
@@ -76,6 +77,8 @@ const UploadPage: React.FC = () => {
         file,
         settings.projectName,
         user.id.toString(),
+        settings.xSensitivity,
+        settings.ySensitivity,
         (progressValue: number) => {
           setProgress(progressValue);
         }
@@ -99,8 +102,6 @@ const UploadPage: React.FC = () => {
       setProgress(0);
     }
   };
-
-
 
   // If the user is not logged in, show a message and button to login.
   if (!user) {
@@ -154,7 +155,6 @@ const UploadPage: React.FC = () => {
           error={settingsError}
           loading={loading}
         />
-
 
       </div>
       {errorMessage && (

@@ -9,14 +9,14 @@ class PoseController:
         self.pose_processing_service = PoseProcessingService()
         self.segmentation_service = SegmentationService()
 
-    def convert_video_to_bvh(self, temp_video_path):
+    def convert_video_to_bvh(self, temp_video_path, x_sensitivity, y_sensitivity):
         """
         Processes a single video and converts it to BVH format.
             :param temp_video_path: Path to the video file
             :return: BVH filename if successful, None otherwise
         """
         try:
-            bvh_filename = self.pose_processing_service.convert_video_to_bvh(temp_video_path)
+            bvh_filename = self.pose_processing_service.convert_video_to_bvh(temp_video_path, x_sensitivity, y_sensitivity)
             if bvh_filename:
                 return bvh_filename
             
@@ -30,7 +30,7 @@ class PoseController:
             if temp_video_path and os.path.exists(temp_video_path):
                 os.remove(temp_video_path)  # Ensure file cleanup
 
-    def segment_people_into_separate_videos(self, video_path):
+    def segment_people_into_separate_videos(self, video_path, x_sensitivity, y_sensitivity):
         """
         Handles segmentation and passes segmented videos for further processing.
         :param video_path: Path to the video file
@@ -44,7 +44,7 @@ class PoseController:
 
             # Process segmented videos
             print("Processing segmented videos...")
-            bvh_filenames = self.process_segmented_videos(output_video_paths, video_path)
+            bvh_filenames = self.process_segmented_videos(output_video_paths, video_path, x_sensitivity, y_sensitivity)
 
             return bvh_filenames, None
 
@@ -53,7 +53,7 @@ class PoseController:
             logging.error(f"Error in multiple_human_segmentation: {e}")
             return None, "Error in segmentation"
 
-    def process_segmented_videos(self, output_video_paths, original_video_path):
+    def process_segmented_videos(self, output_video_paths, original_video_path, x_sensitivity, y_sensitivity):
         """
         Processes each segmented video and converts it to BVH if it meets the frame count criteria.
         :param output_video_paths: List of paths to segmented videos
@@ -69,7 +69,7 @@ class PoseController:
                 continue
 
             print("Converting Video to BVH:", segmented_video_path)
-            bvh_filename = self.convert_video_to_bvh(segmented_video_path)
+            bvh_filename = self.convert_video_to_bvh(segmented_video_path, x_sensitivity, y_sensitivity)
 
             if bvh_filename:  # Ensure only valid BVH files are added
                 bvh_filenames.append(bvh_filename)
@@ -86,9 +86,20 @@ class PoseController:
             video = request.files.get("video")
             project_name = request.form.get("projectName")
             user_id = request.form.get("userId")   
+            x_sensitivity = request.form.get("xSensitivity")
+            y_sensitivity = request.form.get("ySensitivity")
 
             if not video or not project_name or not user_id:
                 return jsonify({"success": False, "message": "Missing required fields"}), 400
+            
+            if not x_sensitivity or not y_sensitivity:
+                return jsonify({"success": False, "message": "Missing required fields"}), 400
+            
+            if not x_sensitivity.isdigit() or not y_sensitivity.isdigit():
+                return jsonify({"success": False, "message": "Invalid sensitivity values"}), 400
+            
+            x_sensitivity = float(x_sensitivity)
+            y_sensitivity = float(y_sensitivity)
             
             # Check if user exists
             if not UserService.does_user_exist_by_id(user_id):
@@ -120,7 +131,7 @@ class PoseController:
             print("Project created successfully. Segmenting video...")
 
             # Segmenting and Processing Video
-            bvh_filenames, message = self.segment_people_into_separate_videos(temp_video_path)
+            bvh_filenames, message = self.segment_people_into_separate_videos(temp_video_path, x_sensitivity, y_sensitivity)
             
             print("Video segmented successfully. Converting to BVH...")
 

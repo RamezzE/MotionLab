@@ -28,7 +28,7 @@ class PoseProcessingService:
             
         self.estimator_3d = PoseUtils.initialize_3D_pose_estimator(config_file, checkpoint_file)
 
-    def convert_video_to_bvh(self, temp_video_path):        
+    def convert_video_to_bvh(self, temp_video_path, x_sensitivity, y_sensitivity):        
         try:
             cap = VideoUtils.open_video(temp_video_path)
             fps = VideoUtils.get_video_fps(cap)
@@ -42,7 +42,7 @@ class PoseProcessingService:
 
             corrected_3d_points = PoseUtils.align_and_scale_3d_pose(points_3d)
                         
-            bvh_filename = BVHUtils.convert_3d_to_bvh(corrected_3d_points, root_keypoints, fps)
+            bvh_filename = BVHUtils.convert_3d_to_bvh(corrected_3d_points, root_keypoints, fps, x_sensitivity, y_sensitivity)
             
             cap.release()
             
