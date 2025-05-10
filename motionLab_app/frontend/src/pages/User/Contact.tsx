@@ -37,9 +37,9 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-y-8 px-8 w-screen text-white">
+    <div className="flex flex-col items-center gap-y-12 px-8 py-12 max-w-7xl mx-auto w-full text-white">
       <div className="flex flex-col gap-y-4 max-w-3xl text-center">
-        <h1 className="font-bold text-5xl md:text-6xl">Contact Us</h1>
+        <h1 className="font-bold text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300">Contact Us</h1>
         <p className="text-gray-300 text-lg">
           We'd love to hear from you! Please fill out the form below to get in touch.
         </p>
@@ -47,7 +47,7 @@ const ContactPage = () => {
 
       <form 
         onSubmit={handleSubmit}
-        className="flex flex-col gap-y-6 bg-gray-800/30 backdrop-blur-sm p-8 rounded-lg w-full max-w-2xl"
+        className="flex flex-col gap-y-6 backdrop-blur-md bg-white/5 border border-white/10 p-8 rounded-xl shadow-lg w-full max-w-2xl"
       >
         <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
           <FormField
@@ -57,7 +57,7 @@ const ContactPage = () => {
             value={formData.name}
             onChange={handleChange}
             label="Name"
-            extraStyles="bg-gray-900"
+            extraStyles="bg-black/20 backdrop-blur-sm border-white/5 focus:border-purple-500/50"
           />
           <FormField
             type="email"
@@ -66,7 +66,7 @@ const ContactPage = () => {
             value={formData.email}
             onChange={handleChange}
             label="Email"
-            extraStyles="bg-gray-900"
+            extraStyles="bg-black/20 backdrop-blur-sm border-white/5 focus:border-purple-500/50"
           />
         </div>
 
@@ -77,7 +77,7 @@ const ContactPage = () => {
           value={formData.subject}
           onChange={handleChange}
           label="Subject"
-          extraStyles="bg-gray-900"
+          extraStyles="bg-black/20 backdrop-blur-sm border-white/5 focus:border-purple-500/50"
         />
 
         <div className="flex flex-col gap-y-2">
@@ -92,7 +92,7 @@ const ContactPage = () => {
             onChange={handleChange}
             required
             rows={6}
-            className="bg-gray-900 px-4 py-2 border border-gray-700 focus:border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full text-white placeholder-gray-500"
+            className="bg-black/20 backdrop-blur-sm px-4 py-2 border border-white/5 focus:border-purple-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/30 w-full text-white placeholder-gray-400 resize-none"
           />
         </div>
 
@@ -100,17 +100,21 @@ const ContactPage = () => {
           type="submit"
           label="Send Message"
           loading={loading}
-          extraStyles="w-full"
+          extraStyles="w-full bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-600/90 hover:to-blue-600/90 backdrop-blur-sm"
         />
 
         {error && (
-          <p className="text-red-500 text-sm text-center">{error}</p>
+          <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg p-3">
+            <p className="text-red-400 text-sm text-center">{error}</p>
+          </div>
         )}
 
         {success && (
-          <p className="text-green-500 text-sm text-center">
-            Thank you for your message! We'll get back to you soon.
-          </p>
+          <div className="bg-green-500/10 backdrop-blur-sm border border-green-500/20 rounded-lg p-3">
+            <p className="text-green-400 text-sm text-center">
+              Thank you for your message! We'll get back to you soon.
+            </p>
+          </div>
         )}
       </form>
     </div>
