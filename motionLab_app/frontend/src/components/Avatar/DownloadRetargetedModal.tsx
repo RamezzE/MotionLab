@@ -59,29 +59,29 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
                 <OrbitControls minDistance={1} maxDistance={10} />
               </Canvas>
             </div>
-            
+            <p className="mt-2 text-gray-400 text-sm text-center">
+              Note: If you used high X or Y sensitivity, you may need to zoom out to view your avatar completely.
+            </p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-center">
-              <a
-                href={downloadUrl}
-                download
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white transition"
-              >
-                Download Retargeted Avatar
-              </a>
-            </div>
+          <div className="flex justify-center">
+            <a
+              href={downloadUrl}
+              download
+              className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white transition"
+            >
+              Download Retargeted Avatar
+            </a>
+          </div>
 
-            <div className="flex justify-center">
-              <FormButton
-                label="Close"
-                onClick={onClose}
-                theme="transparent"
-                fullWidth={false}
-                textSize="base"
-              />
-            </div>
+          <div className="flex justify-center">
+            <FormButton
+              label="Close"
+              onClick={onClose}
+              theme="transparent"
+              fullWidth={false}
+              textSize="base"
+            />
           </div>
         </div>
       </div>

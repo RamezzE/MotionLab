@@ -95,11 +95,17 @@ class PoseController:
             if not x_sensitivity or not y_sensitivity:
                 return jsonify({"success": False, "message": "Missing required fields"}), 400
             
-            if not x_sensitivity.isdigit() or not y_sensitivity.isdigit():
+            try:
+                x_sensitivity = float(x_sensitivity)
+                y_sensitivity = float(y_sensitivity)
+                
+                # Validate that values are within expected range (0-1)
+                if not (0 <= x_sensitivity <= 1) or not (0 <= y_sensitivity <= 1):
+                    return jsonify({"success": False, "message": "Sensitivity values must be between 0 and 1"}), 400
+                    
+            except ValueError:
+                print(f"Invalid sensitivity values: {x_sensitivity}, {y_sensitivity}")
                 return jsonify({"success": False, "message": "Invalid sensitivity values"}), 400
-            
-            x_sensitivity = float(x_sensitivity)
-            y_sensitivity = float(y_sensitivity)
             
             # Check if user exists
             if not UserService.does_user_exist_by_id(user_id):
