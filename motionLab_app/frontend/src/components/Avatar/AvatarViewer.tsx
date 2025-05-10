@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 interface AvatarViewerProps {
     modelSrc: string;
     characterName: string;
-    createdDate: string; // formatted as a string (e.g., '2025-05-08')
+    createdDate?: string; // formatted as a string (e.g., '2025-05-08')
     displayMode?: 'default' | 'list'; // New prop to determine the layout
     onPress?: () => void; // Edit handler
     onDelete?: () => void; // Delete handler
@@ -35,9 +35,11 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
                 <h2 className={`font-semibold text-white text-2xl ${displayMode === 'list' ? 'mb-2' : ''}`}>
                     {characterName}
                 </h2>
-                <p className="text-gray-400 text-sm">
-                    Created on: {new Date(createdDate).toLocaleDateString()}
-                </p>
+                {createdDate && (
+                    <p className="text-gray-400 text-sm">
+                        Created on: {new Date(createdDate).toLocaleDateString()}
+                    </p>
+                )}
             </div>
 
             <div

@@ -19,11 +19,11 @@ import useProjectStore from "@/store/useProjectStore";
 import useAvatarStore from "@/store/useAvatarStore";
 
 import DownloadRetargetedModal from "@/components/Avatar/DownloadRetargetedModal";
-
+import RetargetPreviewModal from "@/components/Avatar/RetargetPreviewModal";
 
 const BVHScene: React.FC = () => {
   const [downloadModalFilename, setDownloadModalFilename] = useState<string | null>(null);
-
+  const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
   const [retargeting, setRetargeting] = useState<boolean>(false);
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -37,8 +37,7 @@ const BVHScene: React.FC = () => {
   const [selectedBVH, setSelectedBVH] = useState<string | null>(null);
   const [selectedAvatarId, setSelectedAvatarId] = useState<string | null>(null);
   const { createRetargetedAvatar } = useProjectStore();
-  const { avatars, fetchAvatars } = useAvatarStore(); // Make sure this is imported
-
+  const { avatars, fetchAvatars } = useAvatarStore();
 
   const location = useLocation();
   const { projectId } = useParams();
@@ -56,8 +55,6 @@ const BVHScene: React.FC = () => {
     if (!user?.id) return;
     fetchAvatars(user.id.toString());
   }, [user]);
-
-
 
   useEffect(() => {
     try {
@@ -147,13 +144,45 @@ const BVHScene: React.FC = () => {
     }
   };
 
+  const handleRetargetClick = () => {
+    if (!projectId || !user?.id || !selectedBVH || !selectedAvatarId) {
+      alert("Please select a BVH and an Avatar.");
+      return;
+    }
+    setShowPreviewModal(true);
+  };
+
+  const handleConfirmRetarget = async () => {
+    if (!projectId || !user?.id || !selectedBVH || !selectedAvatarId) return;
+
+    try {
+      setRetargeting(true);
+      const res = await createRetargetedAvatar(projectId, user.id.toString(), selectedBVH, selectedAvatarId);
+      if (res.success) {
+        setShowPreviewModal(false);
+        // @ts-expect-error
+        setDownloadModalFilename(res.filename);
+      } else {
+        alert("❌ Failed to create retargeted avatar.");
+      }
+    } catch (err) {
+      console.error("Error during retargeting:", err);
+      alert("❌ An unexpected error occurred.");
+    } finally {
+      setRetargeting(false);
+    }
+  };
+
+  const handleCancelRetarget = () => {
+    setShowPreviewModal(false);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center w-full min-h-[40vh]">
         <LoadingSpinner size={125} />
       </div>
     );
-
   }
 
   return (
@@ -198,8 +227,6 @@ const BVHScene: React.FC = () => {
             ))}
           </div>
           <h1 className="font-bold text-white text-center">Animation Controls</h1>
-
-
 
           {/* Play/Pause Button & Slider */}
           <div className="flex flex-col items-center gap-y-4 w-full">
@@ -273,34 +300,10 @@ const BVHScene: React.FC = () => {
               <FormButton
                 label={retargeting ? "Retargeting..." : "Retarget Avatar"}
                 loading={retargeting}
-                onClick={async () => {
-                  if (!projectId || !user?.id || !selectedBVH || !selectedAvatarId) {
-                    alert("Please select a BVH and an Avatar.");
-                    return;
-                  }
-
-                  try {
-                    setRetargeting(true);
-                    const res = await createRetargetedAvatar(projectId, user.id.toString(), selectedBVH, selectedAvatarId);
-                    if (res.success) {
-                      alert("✅ Retargeted avatar created successfully.");
-                      
-                      // @ts-expect-error
-                      setDownloadModalFilename(res.filename); // 🎯 show modal
-                    } else {
-                      alert("❌ Failed to create retargeted avatar.");
-                    }
-                  } catch (err) {
-                    console.error("Error during retargeting:", err);
-                    alert("❌ An unexpected error occurred.");
-                  } finally {
-                    setRetargeting(false);
-                  }
-                }}
+                onClick={handleRetargetClick}
                 disabled={!selectedBVH || !selectedAvatarId || retargeting}
               />
             </div>
-
 
             {/* Download BVH Files Button */}
             <FormButton
@@ -312,14 +315,24 @@ const BVHScene: React.FC = () => {
           </div>
         </div>
       </div>
-      {
-        downloadModalFilename && (
-          <DownloadRetargetedModal
-            filename={downloadModalFilename}
-            onClose={() => setDownloadModalFilename(null)}
-          />
-        )
-      }
+
+
+      {showPreviewModal && selectedAvatarId && (
+        <RetargetPreviewModal
+          modelSrc={`${serverURL}/avatars/${avatars.find(a => a.id.toString() === selectedAvatarId.toString())?.filename}`}
+          characterName={avatars.find(a => a.id.toString() === selectedAvatarId.toString())?.name || ""}
+          onConfirm={handleConfirmRetarget}
+          onCancel={handleCancelRetarget}
+          loading={retargeting}
+        />
+      )}
+
+      {downloadModalFilename && (
+        <DownloadRetargetedModal
+          filename={downloadModalFilename}
+          onClose={() => setDownloadModalFilename(null)}
+        />
+      )}
     </>
   );
 };
