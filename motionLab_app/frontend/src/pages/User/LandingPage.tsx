@@ -74,30 +74,33 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="relative flex flex-col flex-grow justify-evenly items-center px-4 py-10 md:py-0 w-screen min-h-[90vh] overflow-hidden text-white">
+    <div className="relative flex flex-col flex-grow justify-evenly items-center px-4 py-10 md:py-0 w-full min-h-[90vh] overflow-hidden text-white">
       {/* Hero Section */}
       <div className="z-10 px-4 max-w-5xl text-center">
-        <h1 className="inline-flex relative items-center mb-6 font-bold text-6xl md:text-7xl leading-tight">
-          <span className="block left-0 absolute sm:relative bg-purple-600 mr-4 w-24 md:w-32 h-1 translate-x-[-50%] sm:translate-x-0"></span>
-          Bring Human Motion to Life
-          <span className="block right-0 absolute sm:relative bg-purple-600 ml-4 w-24 md:w-32 h-1 translate-x-[50%] sm:translate-x-0"></span>
+        <h1 className="inline-flex relative items-center mb-8 font-bold text-6xl md:text-7xl leading-tight">
+          <span className="block left-0 absolute sm:relative bg-gradient-to-r from-purple-600/80 to-blue-500/80 mr-4 w-24 md:w-32 h-1 translate-x-[-50%] sm:translate-x-0"></span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300">Bring Human Motion to Life</span>
+          <span className="block right-0 absolute sm:relative bg-gradient-to-r from-blue-500/80 to-purple-600/80 ml-4 w-24 md:w-32 h-1 translate-x-[50%] sm:translate-x-0"></span>
         </h1>
-        <p className="mb-8 text-gray-300 text-xl md:text-2xl">
+        <p className="mb-10 text-gray-300 text-xl md:text-2xl">
           Transform your videos into professional 3D animations with ReadyPlayerMe avatars
         </p>
         
         {/* Feature Highlights */}
         <div className="gap-6 grid grid-cols-1 md:grid-cols-3 mb-12">
-          <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg">
-            <h3 className="mb-2 font-semibold text-purple-400">Video to BVH</h3>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="bg-gradient-to-r from-purple-500/30 to-blue-500/30 w-12 h-12 flex items-center justify-center rounded-full text-2xl mb-3 mx-auto">🎥</div>
+            <h3 className="mb-2 font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300">Video to BVH</h3>
             <p className="text-gray-300 text-sm">Convert 2D videos into industry-standard BVH motion files</p>
           </div>
-          <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg">
-            <h3 className="mb-2 font-semibold text-purple-400">ReadyPlayerMe</h3>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="bg-gradient-to-r from-purple-500/30 to-blue-500/30 w-12 h-12 flex items-center justify-center rounded-full text-2xl mb-3 mx-auto">👤</div>
+            <h3 className="mb-2 font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300">ReadyPlayerMe</h3>
             <p className="text-gray-300 text-sm">Create and customize your unique 3D avatar</p>
           </div>
-          <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg">
-            <h3 className="mb-2 font-semibold text-purple-400">Blender Ready</h3>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="bg-gradient-to-r from-purple-500/30 to-blue-500/30 w-12 h-12 flex items-center justify-center rounded-full text-2xl mb-3 mx-auto">💾</div>
+            <h3 className="mb-2 font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300">Blender Ready</h3>
             <p className="text-gray-300 text-sm">Export in BVH or GLB format for professional 3D workflows</p>
           </div>
         </div>
@@ -105,34 +108,46 @@ const LandingPage: React.FC = () => {
         <div className="flex sm:flex-row flex-col justify-center sm:space-x-6 space-y-4 sm:space-y-0">
           <Link
             to="/auth/signup"
-            className="bg-purple-800 hover:bg-purple-600 shadow-md shadow-slate-900 hover:shadow-none px-8 py-4 rounded-md text-white text-lg transition duration-300"
+            className="group relative inline-flex items-center justify-center px-8 py-4 overflow-hidden rounded-lg text-lg"
           >
-            Get Started Free
+            <span className="absolute inset-0 bg-gradient-to-r from-purple-600/80 to-blue-600/80 group-hover:from-purple-600 group-hover:to-blue-600 transition-all duration-300"></span>
+            <span className="relative flex items-center text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Get Started Free
+            </span>
           </Link>
           <Link
             to="/features"
-            className="hover:bg-purple-600 shadow-md hover:shadow-none px-8 py-4 border-2 hover:border-purple-600 rounded-md text-white text-lg transition duration-300"
+            className="group relative inline-flex items-center justify-center px-8 py-4 overflow-hidden rounded-lg border-2 border-purple-500/50 bg-transparent text-purple-100 transition duration-300 ease-out hover:border-purple-400"
           >
-            Learn More
+            <span className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-blue-600/0 group-hover:from-purple-600/20 group-hover:to-blue-600/20 transition-all duration-300"></span>
+            <span className="relative flex items-center text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Learn More
+            </span>
           </Link>
         </div>
 
         {/* Quick Stats */}
         <div className="gap-4 grid grid-cols-2 md:grid-cols-4 mt-12 text-center">
-          <div className="bg-gray-800/30 backdrop-blur-sm p-4 rounded-lg">
-            <div className="font-bold text-purple-400 text-2xl">150MB</div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 rounded-xl hover:shadow-lg transition-all duration-300">
+            <div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300 text-2xl">150MB</div>
             <div className="text-gray-300 text-sm">Max Video Size</div>
           </div>
-          <div className="bg-gray-800/30 backdrop-blur-sm p-4 rounded-lg">
-            <div className="font-bold text-purple-400 text-2xl">1 Min</div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 rounded-xl hover:shadow-lg transition-all duration-300">
+            <div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300 text-2xl">1 Min</div>
             <div className="text-gray-300 text-sm">Max Duration</div>
           </div>
-          <div className="bg-gray-800/30 backdrop-blur-sm p-4 rounded-lg">
-            <div className="font-bold text-purple-400 text-2xl">BVH</div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 rounded-xl hover:shadow-lg transition-all duration-300">
+            <div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300 text-2xl">BVH</div>
             <div className="text-gray-300 text-sm">Motion Format</div>
           </div>
-          <div className="bg-gray-800/30 backdrop-blur-sm p-4 rounded-lg">
-            <div className="font-bold text-purple-400 text-2xl">GLB</div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 rounded-xl hover:shadow-lg transition-all duration-300">
+            <div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-300 text-2xl">GLB</div>
             <div className="text-gray-300 text-sm">Avatar Format</div>
           </div>
         </div>
