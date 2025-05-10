@@ -70,7 +70,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
                 ) : (
                     <button
                         onClick={handleDelete}
-                        className="top-4 right-4 absolute text-gray-400 hover:text-red-500 transition duration-300"
+                        className="top-4 right-4 absolute text-gray-400 hover:text-red-500 transition duration-300 cursor-pointer"
                         title="Delete project"
                     >
                         <Trash2 size={20} />

@@ -9,15 +9,15 @@ interface UploadVideoSectionProps {
   loading: boolean;
   file: File | null;
   progress: number;
+  error?: string | null;
 }
 
-const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, handleFileChange, loading, file, progress }) => {
+const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, handleFileChange, loading, file, progress, error }) => {
 
   return (
     <div className="flex flex-col justify-center items-center px-8 w-full text-white">
 
       {!loading && (
-
         <div className="bg-gray-800 shadow-lg p-6 border border-purple-600 rounded-lg w-full max-w-md">
           <label
             htmlFor="file-upload"
@@ -41,10 +41,6 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
                     d="M3 16.5v1.25A2.25 2.25 0 005.25 20h13.5A2.25 2.25 0 0021 17.75V16.5M7.5 12l4.5 4.5m0 0l4.5-4.5m-4.5 4.5V3"
                   ></path>
                 </svg>
-                {/* <p className="text-gray-300 text-sm">
-                  Drag & drop your MP4 file here, or{" "}
-                  <span className="text-purple-400">browse</span>
-                </p> */}
                 <p className="mt-2 text-gray-500 text-xs">Supported format: MP4</p>
               </>
             )}
@@ -56,6 +52,22 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
               onChange={handleFileChange}
             />
           </label>
+
+          {/* Video Requirements and Recommendations */}
+          <div className="mt-4 text-gray-400 text-sm">
+            <h3 className="mb-2 font-semibold text-gray-300">Video Requirements:</h3>
+            <ul className="space-y-1 list-disc list-inside">
+              <li>Maximum file size: 150MB</li>
+              <li>Maximum duration: 1 minute</li>
+            </ul>
+            
+            <h3 className="mt-4 mb-2 font-semibold text-gray-300">Recommendations:</h3>
+            <ul className="space-y-1 list-disc list-inside">
+              <li>Ensure the full body is visible in the frame</li>
+              <li>Person should take up a significant portion of the video frame</li>
+              <li>If the person appears too small in the frame, they may not be detected properly</li>
+            </ul>
+          </div>
         </div>
       )}
 
@@ -101,8 +113,18 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
             label={loading ? "Uploading..." : "Upload and Visualize"}
             loading={loading}
             onClick={handleUpload}
-            // theme="dark"
           />
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-500/20 shadow-lg shadow-red-500/20 mt-4 p-3 border-2 border-red-500 rounded-lg">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="font-medium text-red-400">{error}</p>
+          </div>
         </div>
       )}
 

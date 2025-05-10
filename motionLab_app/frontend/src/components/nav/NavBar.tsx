@@ -169,8 +169,12 @@ const NavBar: React.FC = () => {
             {isOpen && (
                 <div className="md:hidden top-20 left-0 z-50 absolute flex flex-col items-center space-y-4 bg-gray-800 bg-opacity-95 py-6 w-full">
                     <NavButtons onClick={() => setIsOpen(false)} navigate={navigate} />
-                    <FormButton theme="transparent" onClick={() => { navigate("/profile/projects"); setIsOpen(false); }} label="Your Projects" fullWidth={false} textSize="base" />
-                    <FormButton theme="transparent" onClick={() => { navigate("/profile/avatars"); setIsOpen(false); }} label="Your Avatars" fullWidth={false} textSize="base" />
+                    {isAuthenticated && (
+                        <>
+                            <FormButton theme="transparent" onClick={() => { navigate("/profile/projects"); setIsOpen(false); }} label="Your Projects" fullWidth={false} textSize="base" />
+                            <FormButton theme="transparent" onClick={() => { navigate("/profile/avatars"); setIsOpen(false); }} label="Your Avatars" fullWidth={false} textSize="base" />
+                        </>
+                    )}
                     <AuthButtons isAuthenticated={isAuthenticated} navigate={navigate}
                         onClick={() => {
                             setProfileDropdownOpen(false);

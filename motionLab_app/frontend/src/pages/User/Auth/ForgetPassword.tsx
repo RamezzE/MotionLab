@@ -62,25 +62,28 @@ const ForgotPasswordPage: React.FC = () => {
 
     return (
         <div className="flex justify-center items-center px-4 w-screen text-white">
-            <div className="flex flex-col gap-y-6 px-4 text-center">
-                <h1 className="font-bold text-5xl md:text-6xl leading-tight">
-                    Forgot Password
-                </h1>
-                <p className="text-gray-300 text-xl md:text-2xl">
-                    Enter your email to receive password reset instructions.
-                </p>
+            <div className="flex flex-col gap-y-8 px-4 text-center">
+                <div className="flex flex-col gap-y-4">
+                    <h1 className="font-bold text-5xl md:text-6xl leading-tight">
+                        Forgot Password
+                    </h1>
+                    <p className="text-gray-300 text-xl md:text-2xl">
+                        Enter your email to receive password reset instructions.
+                    </p>
+                </div>
+
                 <form
                     className="flex flex-col items-center gap-y-6 mx-auto w-[80vw] sm:w-96"
                     onSubmit={handleSubmit}
                 >
-                    <div className="flex flex-col gap-y-4 w-full">
+                    <div className="flex flex-col gap-y-4 bg-gray-800/30 backdrop-blur-sm p-6 rounded-lg w-full">
                         <FormField
                             type="email"
                             id="email"
                             placeholder="Email Address"
                             value={email}
                             onChange={handleInputChange}
-                            extraStyles="bg-gray-800"
+                            extraStyles="bg-gray-900"
                             label=""
                         />
                     </div>
@@ -89,13 +92,29 @@ const ForgotPasswordPage: React.FC = () => {
                         type="submit"
                         label="Reset Password"
                         loading={loading}
+                        extraStyles="w-full"
                     />
 
                     {errorMessage && (
-                        <p className="text-red-500 text-sm">{errorMessage}</p>
+                        <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg w-full">
+                            <div className="flex items-center gap-2">
+                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="font-medium text-red-400">{errorMessage}</p>
+                            </div>
+                        </div>
                     )}
+
                     {successMessage && (
-                        <p className="text-green-500 text-sm">{successMessage}</p>
+                        <div className="bg-green-500/20 shadow-green-500/20 shadow-lg p-3 border-2 border-green-500 rounded-lg w-full">
+                            <div className="flex items-center gap-2">
+                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <p className="font-medium text-green-400">{successMessage}</p>
+                            </div>
+                        </div>
                     )}
                 </form>
 
@@ -104,7 +123,7 @@ const ForgotPasswordPage: React.FC = () => {
                         Remembered your password?{" "}
                         <Link
                             to="/auth/login"
-                            className="text-blue-500 hover:underline transition duration-300"
+                            className="text-purple-400 hover:text-purple-300 transition duration-300"
                         >
                             Login
                         </Link>

@@ -1,108 +1,102 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import FormButton from "@/components/UI/FormButton";
+
+const FeatureCard: React.FC<{
+  title: string;
+  description: string;
+  icon: string;
+}> = ({ title, description, icon }) => {
+  return (
+    <div className="flex flex-col gap-y-4 bg-gray-800/50 backdrop-blur-sm p-6 rounded-lg hover:scale-105 transition-transform duration-300 transform">
+      <div className="text-purple-400 text-2xl">{icon}</div>
+      <h3 className="font-semibold text-purple-400 text-lg">{title}</h3>
+      <p className="text-gray-300 text-sm leading-relaxed">{description}</p>
+    </div>
+  );
+};
 
 const FeaturesPage = () => {
   return (
-    <div className="flex flex-col items-center px-8 w-screen text-white">
-      {/* Header Section */}
-      <div className="mb-12 text-center">
-        <h1 className="mb-4 font-bold text-5xl">Features & Guide</h1>
+    <div className="flex flex-col items-center gap-y-16 px-8 w-screen text-white">
+      {/* Hero Section */}
+      <div className="flex flex-col gap-y-6 max-w-3xl text-center">
+        <h1 className="font-bold text-5xl md:text-6xl">Features</h1>
         <p className="text-gray-300 text-lg">
-          Learn how to use our platform and explore its powerful features to bring your animations to life.
+          Discover how our platform transforms your videos into professional 3D animations
         </p>
       </div>
 
+      {/* Main Features */}
+      <div className="flex flex-col gap-y-12 w-full max-w-6xl">
+        <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
+          <FeatureCard
+            title="Video to BVH Conversion"
+            description="Convert your 2D videos into industry-standard BVH motion files with high precision. Our advanced AI algorithms ensure accurate motion capture and smooth animations."
+            icon="🎥"
+          />
+          <FeatureCard
+            title="ReadyPlayerMe Integration"
+            description="Create and customize your unique 3D avatar using ReadyPlayerMe's powerful platform. Export your avatar in GLB format for seamless integration."
+            icon="👤"
+          />
+          <FeatureCard
+            title="Motion Analysis"
+            description="Our system analyzes human motion in your videos, detecting key points and movements to create accurate 3D animations."
+            icon="📊"
+          />
+          <FeatureCard
+            title="Export Options"
+            description="Export your animations in multiple formats including BVH and GLB, compatible with major 3D software and game engines."
+            icon="💾"
+          />
+        </div>
+      </div>
+
       {/* Workflow Section */}
-      <div className="mb-16 w-full max-w-6xl text-center">
-        <h2 className="mb-8 font-semibold text-3xl">How It Works</h2>
-        <div className="gap-8 grid grid-cols-1 md:grid-cols-4">
-          {/* Step 1 */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex justify-center items-center bg-purple-600 rounded-full w-20 h-20 font-bold text-3xl">
-              1
-            </div>
-            <h3 className="font-bold text-xl">Upload Your Video</h3>
-            <p className="text-gray-400">
-              Upload a bright and clear video for accurate landmark detection. Avoid low-light or blurry footage.
+      <div className="flex flex-col gap-y-8 w-full max-w-4xl">
+        <h2 className="font-semibold text-3xl text-center">How It Works</h2>
+        <div className="flex flex-col gap-y-6 bg-gray-800/30 backdrop-blur-sm p-8 rounded-lg">
+          <div className="flex flex-col gap-y-4">
+            <h3 className="font-semibold text-purple-400 text-xl">1. Upload Your Video</h3>
+            <p className="text-gray-300 text-lg leading-relaxed">
+              Start by uploading your MP4 video file. We support videos up to 150MB in size and 1 minute in length.
             </p>
           </div>
-          {/* Step 2 */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex justify-center items-center bg-purple-600 rounded-full w-20 h-20 font-bold text-3xl">
-              2
-            </div>
-            <h3 className="font-bold text-xl">Check Skeleton</h3>
-            <p className="text-gray-400">
-              Verify the skeleton and landmarks. If something looks off, reupload the video for better accuracy.
+          <div className="flex flex-col gap-y-4">
+            <h3 className="font-semibold text-purple-400 text-xl">2. Create Your Avatar</h3>
+            <p className="text-gray-300 text-lg leading-relaxed">
+              Use ReadyPlayerMe to create and customize your 3D avatar. Choose from a wide range of customization options.
             </p>
           </div>
-          {/* Step 3 */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex justify-center items-center bg-purple-600 rounded-full w-20 h-20 font-bold text-3xl">
-              3
-            </div>
-            <h3 className="font-bold text-xl">Processing</h3>
-            <p className="text-gray-400">
-              Watch the real-time processing of your video as it generates a skeleton and animation data.
-            </p>
-          </div>
-          {/* Step 4 */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex justify-center items-center bg-purple-600 rounded-full w-20 h-20 font-bold text-3xl">
-              4
-            </div>
-            <h3 className="font-bold text-xl">Animate & Export</h3>
-            <p className="text-gray-400">
-              Add your models, smooth out frames, and export animation-ready files for Blender or other software.
+          <div className="flex flex-col gap-y-4">
+            <h3 className="font-semibold text-purple-400 text-xl">3. Process & Export</h3>
+            <p className="text-gray-300 text-lg leading-relaxed">
+              Our system processes your video and generates a BVH motion file. You can then export your animation in your preferred format.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="w-full max-w-6xl text-center">
-        <h2 className="mb-8 font-semibold text-3xl">Key Features</h2>
-        <div className="gap-8 grid grid-cols-1 md:grid-cols-3">
-          {/* Feature 1 */}
-          <div className="bg-gray-800 shadow-md p-6 rounded-lg">
-            <h3 className="mb-4 font-bold text-xl">Accurate Landmark Detection</h3>
-            <p className="text-gray-400">
-              State-of-the-art algorithms ensure precise detection of human landmarks and motion.
-            </p>
-          </div>
-          {/* Feature 2 */}
-          <div className="bg-gray-800 shadow-md p-6 rounded-lg">
-            <h3 className="mb-4 font-bold text-xl">Real-Time Processing</h3>
-            <p className="text-gray-400">
-              Real-time video processing and visualization keep you in control of your animation creation.
-            </p>
-          </div>
-          {/* Feature 3 */}
-          <div className="bg-gray-800 shadow-md p-6 rounded-lg">
-            <h3 className="mb-4 font-bold text-xl">Custom Animation Tools</h3>
-            <p className="text-gray-400">
-              Upload your own 3D models, smooth frames, and export animations in industry-standard formats.
-            </p>
-          </div>
-          {/* Feature 4 */}
-          <div className="bg-gray-800 shadow-md p-6 rounded-lg">
-            <h3 className="mb-4 font-bold text-xl">User-Friendly Interface</h3>
-            <p className="text-gray-400">
-              Simple and intuitive UI designed to help you focus on creativity, not complexity.
-            </p>
-          </div>
-          {/* Feature 5 */}
-          <div className="bg-gray-800 shadow-md p-6 rounded-lg">
-            <h3 className="mb-4 font-bold text-xl">Blender Compatibility</h3>
-            <p className="text-gray-400">
-              Export animation-ready files for Blender and other popular 3D modeling software.
-            </p>
-          </div>
-          {/* Feature 6 */}
-          <div className="bg-gray-800 shadow-md p-6 rounded-lg">
-            <h3 className="mb-4 font-bold text-xl">Robust Video Analysis</h3>
-            <p className="text-gray-400">
-              Analyze video for motion accuracy and make improvements before generating the final animation.
-            </p>
-          </div>
+      {/* CTA Section */}
+      <div className="flex flex-col gap-y-6 text-center">
+        <h2 className="font-semibold text-3xl">Ready to Get Started?</h2>
+        <p className="text-gray-300 text-lg">
+          Join us today and start creating professional 3D animations from your videos.
+        </p>
+        <div className="flex sm:flex-row flex-col justify-center items-center gap-4">
+          <Link
+            to="/auth/signup"
+            className="bg-purple-800 hover:bg-purple-600 shadow-md shadow-slate-900 hover:shadow-none px-8 py-4 rounded-md text-white text-lg transition duration-300"
+          >
+            Sign Up Now
+          </Link>
+          <Link
+            to="/upload"
+            className="hover:bg-purple-600 shadow-md hover:shadow-none px-8 py-4 border-2 hover:border-purple-600 rounded-md text-white text-lg transition duration-300"
+          >
+            Try Now
+          </Link>
         </div>
       </div>
     </div>

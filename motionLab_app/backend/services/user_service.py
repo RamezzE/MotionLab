@@ -117,7 +117,7 @@ class UserService:
         # Generate a secure token for password reset
         token = serializer.dumps(email, salt="password-reset-salt")
         
-        reset_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/reset-password?token={token}"
+        reset_url = os.getenv("FRONTEND_URL", "http://localhost:3000") + f"/auth/reset-password?token={token}"
         
         # Compose the email message
         msg = Message("MotionLab Password Reset Request", recipients=[email])

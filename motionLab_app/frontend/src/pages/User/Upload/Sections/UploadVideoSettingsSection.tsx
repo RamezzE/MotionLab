@@ -33,10 +33,10 @@ const UploadVideoSettingsSection: React.FC<UploadVideoSettingsSectionProps> = ({
     }, [settings.xSensitivity, settings.ySensitivity]);
 
     return (
-        <div className="flex flex-col justify-center items-center w-full">
-            <div className="flex flex-col justify-center items-center gap-y-4 bg-gray-800 shadow-md p-6 rounded-md">
-                <h2 className="font-bold text-white text-xl">Settings</h2>
-                <div className="flex flex-col gap-y-4 w-full">
+        <div className="flex flex-col justify-center items-center px-8 w-full text-white">
+            <div className="bg-gray-800 shadow-lg p-6 border border-purple-600 rounded-lg w-full max-w-md">
+                <h2 className="mb-6 font-bold text-white text-xl text-center">Settings</h2>
+                <div className="flex flex-col gap-y-6 w-full">
 
                     {/* Project Name Input */}
                     <div>
@@ -52,6 +52,16 @@ const UploadVideoSettingsSection: React.FC<UploadVideoSettingsSectionProps> = ({
                             onChange={(e) => setSettings({ ...settings, projectName: e.target.value })}
                             disabled={loading}
                         />
+                        {error && (
+                            <div className="bg-red-500/20 shadow-lg shadow-red-500/20 mt-2 p-3 border-2 border-red-500 rounded-lg">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p className="font-medium text-red-400">{error}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Stationary Checkbox */}
@@ -69,9 +79,14 @@ const UploadVideoSettingsSection: React.FC<UploadVideoSettingsSectionProps> = ({
                                 Stationary
                             </label>
                         </div>
-                        <p className="ml-6 text-gray-400 text-xs">
-                            When enabled, the animation will stay centered in place instead of following the detected person's movement. This is useful for keeping the animation in a fixed position regardless of how the person moves in the video.
-                        </p>
+                        <div className="space-y-1 ml-6 text-gray-400 text-xs">
+                            <p className="font-medium">When enabled:</p>
+                            <ul className="space-y-1 list-disc list-inside">
+                                <li>The animation stays centered in place</li>
+                                <li>Ignores the person's movement in the video</li>
+                                <li>Useful for keeping animations in a fixed position</li>
+                            </ul>
+                        </div>
                     </div>
 
                     {/* X Sensitivity Slider */}
@@ -91,9 +106,19 @@ const UploadVideoSettingsSection: React.FC<UploadVideoSettingsSectionProps> = ({
                             disabled={loading}
                             className="bg-gray-900 rounded-lg w-full h-2 accent-purple-600 appearance-none cursor-pointer"
                         />
-                        <p className="text-gray-400 text-xs">
-                            Controls how much the animation follows horizontal movement. Higher values make the animation more responsive to left and right motion.
-                        </p>
+                        <div className="space-y-1 text-gray-400 text-xs">
+                            <p className="font-medium">Controls horizontal movement:</p>
+                            <ul className="space-y-1 list-disc list-inside">
+                                <li>Higher values = more responsive to left/right motion</li>
+                                <li>Lower values = less responsive to horizontal movement</li>
+                            </ul>
+                            <p className="mt-2 font-medium">For multiple people:</p>
+                            <ul className="space-y-1 list-disc list-inside">
+                                <li>Adjust to prevent animations from overlapping</li>
+                                <li>Keep people at a distance in the input video</li>
+                                <li>Avoid significant overlap between people</li>
+                            </ul>
+                        </div>
                     </div>
 
                     {/* Y Sensitivity Slider */}
@@ -113,13 +138,14 @@ const UploadVideoSettingsSection: React.FC<UploadVideoSettingsSectionProps> = ({
                             disabled={loading}
                             className="bg-gray-900 rounded-lg w-full h-2 accent-purple-600 appearance-none cursor-pointer"
                         />
-                        <p className="text-gray-400 text-xs">
-                            Controls how much the animation follows vertical movement. Higher values make the animation more responsive to up and down motion.
-                        </p>
+                        <div className="space-y-1 text-gray-400 text-xs">
+                            <p className="font-medium">Controls vertical movement:</p>
+                            <ul className="space-y-1 list-disc list-inside">
+                                <li>Higher values = more responsive to up/down motion</li>
+                                <li>Lower values = less responsive to vertical movement</li>
+                            </ul>
+                        </div>
                     </div>
-
-                    {/* Error Message */}
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
                 </div>
             </div>
         </div>
