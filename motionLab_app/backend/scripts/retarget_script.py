@@ -22,9 +22,9 @@ def retarget_bvh_to_avatar(bvh_path: str, avatar_path: str, export_path: str, ad
     bvh_obj = bpy.data.objects.get(bvh_name)
 
     if not glb_obj or not bvh_obj:
-        raise RuntimeError("❌ Armature not found. Check BVH and avatar files.")
+        raise RuntimeError("Armature not found. Check BVH and avatar files.")
 
-    bvh_obj.scale = (0.00019, 0.00819, 0.00819)
+    bvh_obj.scale = (0.00819, 0.00819, 0.00819)
     bvh_obj.location = glb_obj.location
     bvh_obj.rotation_mode = 'XYZ'
     bvh_obj.rotation_euler = (math.radians(270), math.radians(0), math.radians(0))
@@ -41,9 +41,15 @@ def retarget_bvh_to_avatar(bvh_path: str, avatar_path: str, export_path: str, ad
     result = bpy.ops.mcp.retarget_selected_to_active('EXEC_DEFAULT')
     print("Retargeting result:", result)
 
+    # Rotate the GLB object after retargeting
     bpy.ops.object.select_all(action='DESELECT')
     glb_obj.select_set(True)
     bpy.context.view_layer.objects.active = glb_obj
+    glb_obj.rotation_mode = 'XYZ'
+    glb_obj.rotation_euler = (math.radians(60), math.radians(0), math.radians(0))
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+
+    # Select all children for export
     for child in glb_obj.children:
         child.select_set(True)
 

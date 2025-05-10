@@ -45,14 +45,16 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
           <div className="bg-black/50 p-4 rounded-lg">
             <div className="h-[300px]">
               <Canvas camera={{ position: [0, 1.5, 3], fov: 50 }}>
-                <Environment preset="city" />
-                <SpotLight
-                  position={[0, 5, 0]}
-                  angle={0.3}
-                  penumbra={1}
-                  intensity={1}
+                <Environment preset="sunset" />
+                {/* <SpotLight
+                  position={[2, 3, 2]}
+                  angle={0.4}
+                  penumbra={0.8}
+                  intensity={1.5}
                   castShadow
-                />
+                  color="#ffffff"
+                /> */}
+                
                 <Model url={downloadUrl} />
                 <OrbitControls minDistance={1} maxDistance={10} />
               </Canvas>
