@@ -49,3 +49,20 @@ class RetargetedAvatarController:
         except Exception as e:
             print("Error during avatar retargeting:", e)
             return jsonify({"success": False, "message": f"Internal error: {str(e)}"}), 500
+
+    @staticmethod
+    def delete_retargeted_avatar(request):
+        try:
+            data = request.get_json()
+            avatar_id = data.get("avatarId")
+            if not avatar_id:
+                return jsonify({"success": False, "message": "Missing avatarId parameter"}), 200
+            
+            success, message = RetargetedAvatarService.delete_retargeted_avatar(avatar_id)
+            if success:
+                return jsonify({"success": True, "message": message}), 200
+            else:
+                return jsonify({"success": False, "message": message}), 404 if message == "Avatar not found" else 500
+        except Exception as e:
+            print("Error during avatar deletion:", e)
+            return jsonify({"success": False, "message": f"Internal error: {str(e)}"}), 500

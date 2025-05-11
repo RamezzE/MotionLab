@@ -26,6 +26,39 @@ class RetargetedAvatar(db.Model):
         except Exception as e:
             print("Error getting RetargetedAvatar by id in get_by_id / retargeted_avatar_model.py:", e)
             return None
+
+    @classmethod
+    def get_by_project_id(cls, project_id):
+        try:
+            return cls.query.filter_by(project_id=project_id).order_by(cls.creation_date.desc()).all()
+        except Exception as e:
+            print("Error getting RetargetedAvatars by project_id in get_by_project_id / retargeted_avatar_model.py:", e)
+            return []
+
+    @classmethod
+    def delete_by_id(cls, avatar_id):
+        try:
+            avatar = cls.query.filter_by(id=avatar_id).first()
+            if avatar:
+                db.session.delete(avatar)
+                db.session.commit()
+                return True
+            return False
+        except Exception as e:
+            print("Error deleting RetargetedAvatar in delete_by_id / retargeted_avatar_model.py:", e)
+            db.session.rollback()
+            return False
+
+    @classmethod
+    def clear_all(cls):
+        try:
+            cls.query.delete()
+            db.session.commit()
+            return True
+        except Exception as e:
+            print("Error clearing RetargetedAvatar table in clear_all / retargeted_avatar_model.py:", e)
+            db.session.rollback()
+            return False
     
     def to_dict(self):
         try:

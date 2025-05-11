@@ -1,5 +1,6 @@
 import os
 import cv2
+from datetime import datetime
 
 class VideoUtils:
     
@@ -75,7 +76,8 @@ class VideoUtils:
         :param frame_size: Tuple (width, height) of the video frame
         :return: VideoWriter object, Output video path
         """
-        output_video_path = os.path.join(output_folder, f'person_{person_id}.mp4')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_video_path = os.path.join(output_folder, f'person_{person_id}_{timestamp}.mp4')
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         writer = cv2.VideoWriter(output_video_path, fourcc, fps, frame_size)
         return writer, output_video_path

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, send_from_directory, abort
+from flask import Flask, send_from_directory, abort, jsonify
 
 from pathlib import Path
 from flask_cors import CORS
@@ -84,6 +84,15 @@ def serve_retargeted_avatar_file(filename):
         return send_from_directory('retargeted_avatars', filename, as_attachment=True)
     except Exception as e:
         return {"error": str(e)}, 500
+
+@app.route('/retargeted-avatars/<project_id>', methods=['GET'])
+def get_retargeted_avatars(project_id):
+    try:
+        from models.retargeted_avatar_model import RetargetedAvatar
+        retargeted_avatars = RetargetedAvatar.get_by_project_id(project_id)
+        return jsonify([avatar.to_dict() for avatar in retargeted_avatars])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/")
 def home():

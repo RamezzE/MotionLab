@@ -105,4 +105,34 @@ export const createRetargetedAvatar = async (
     }
 }
 
+export const getRetargetedAvatars = async (
+    projectId: string
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axios.get<ApiResponse<any>>(
+            `${serverURL}/retargeted-avatars/${projectId}`
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("Error fetching retargeted avatars:", error.message);
+        return { success: false, data: error.message };
+    }
+};
+
+export const deleteRetargetedAvatar = async (
+    avatarId: number
+): Promise<ApiResponse<any>> => {
+    try {
+        const response = await axiosInstance.delete<ApiResponse<any>>(
+            `/retargeted-avatars`, {
+            data: { avatarId }
+        }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("Error deleting retargeted avatar:", error.message);
+        return { success: false, data: error.message };
+    }
+};
+
 
