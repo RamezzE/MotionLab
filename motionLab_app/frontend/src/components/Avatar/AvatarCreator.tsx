@@ -11,7 +11,7 @@ const subdomain = 'motion-i2jrhr';
 // This component handles the AvatarCreator independently
 const AvatarCreatorWrapper: React.FC<AvatarCreatorWrapperProps> = ({ config, onAvatarExported }) => {
     return (
-        <div className="flex justify-center items-center w-full h-[80vh]">
+        <div className="flex justify-center items-center w-full h-screen">
             <AvatarCreator
                 subdomain={subdomain}
                 config={config}

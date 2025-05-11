@@ -13,7 +13,7 @@ const LoginGuard: React.FC<LoginGuardProps> = ({ title }) => {
         <div className="flex flex-col items-center gap-y-8 px-4 w-full min-h-[40vh] text-white">
             <div className="flex flex-col gap-y-4 text-center">
                 <h1 className="font-bold text-5xl md:text-6xl leading-tight">
-                    {title || "Create your Avatar"}
+                    {title || ""}
                 </h1>
                 <p className="text-gray-300 text-xl md:text-2xl">
                     You must be logged in to continue.

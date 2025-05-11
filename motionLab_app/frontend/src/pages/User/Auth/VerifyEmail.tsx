@@ -4,6 +4,8 @@ import useUserStore from "@/store/useUserStore";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import FormField from "@/components/UI/FormField";
 import FormButton from "@/components/UI/FormButton";
+import ErrorMessage from "@/components/UI/ErrorMessage";
+import SuccessMessage from "@/components/UI/SuccessMessage";
 
 const VerifyEmailPage: React.FC = () => {
     const { verifyEmail, sendVerificationEmail, user, isAuthenticated } = useUserStore();
@@ -152,10 +154,10 @@ const VerifyEmailPage: React.FC = () => {
                     />
 
                     {requestError && (
-                        <p className="text-red-500 text-sm">{requestError}</p>
+                        <ErrorMessage message={requestError} />
                     )}
                     {requestMessage && (
-                        <p className="text-green-500 text-sm">{requestMessage}</p>
+                        <SuccessMessage message={requestMessage} />
                     )}
                 </form>
             </div>

@@ -6,6 +6,7 @@ import useUserStore from "@/store/useUserStore";
 
 import { SignupErrors } from "@/types/formTypes";
 import FormButton from "@/components/UI/FormButton";
+import ErrorMessage from "@/components/UI/ErrorMessage";
 
 const SignUpPage = () => {
   const { isAuthenticated, signup } = useUserStore();
@@ -102,14 +103,7 @@ const SignUpPage = () => {
                   extraStyles="bg-gray-900"
                 />
                 {errors.firstName && (
-                  <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <p className="font-medium text-red-400">{errors.firstName}</p>
-                    </div>
-                  </div>
+                  <ErrorMessage message={errors.firstName} className="mt-4" />
                 )}
               </div>
 
@@ -124,14 +118,7 @@ const SignUpPage = () => {
                   extraStyles="bg-gray-900"
                 />
                 {errors.lastName && (
-                  <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <p className="font-medium text-red-400">{errors.lastName}</p>
-                    </div>
-                  </div>
+                  <ErrorMessage message={errors.lastName} className="mt-4" />
                 )}
               </div>
             </div>
@@ -146,14 +133,7 @@ const SignUpPage = () => {
               extraStyles="bg-gray-900"
             />
             {errors.email && (
-              <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="font-medium text-red-400">{errors.email}</p>
-                </div>
-              </div>
+              <ErrorMessage message={errors.email} className="mt-4" />
             )}
 
             <FormField
@@ -166,14 +146,7 @@ const SignUpPage = () => {
               extraStyles="bg-gray-900"
             />
             {errors.password && (
-              <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="font-medium text-red-400">{errors.password}</p>
-                </div>
-              </div>
+              <ErrorMessage message={errors.password} className="mt-4" />
             )}
 
             <FormField
@@ -186,14 +159,7 @@ const SignUpPage = () => {
               extraStyles="bg-gray-900"
             />
             {errors.confirmPassword && (
-              <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="font-medium text-red-400">{errors.confirmPassword}</p>
-                </div>
-              </div>
+              <ErrorMessage message={errors.confirmPassword} className="mt-4" />
             )}
           </div>
 
@@ -205,14 +171,7 @@ const SignUpPage = () => {
           />
 
           {errorMessage && (
-            <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg w-full">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="font-medium text-red-400">{errorMessage}</p>
-              </div>
-            </div>
+            <ErrorMessage message={errorMessage} className="mt-4" />
           )}
         </form>
 

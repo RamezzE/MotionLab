@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 
 import FormField from "@components/UI/FormField";
 import FormButton from "@/components/UI/FormButton";
+import ErrorMessage from "@/components/UI/ErrorMessage";
+import SuccessMessage from "@/components/UI/SuccessMessage";
 
 import useUserStore from "@/store/useUserStore";
 
@@ -72,6 +74,7 @@ const ForgotPasswordPage: React.FC = () => {
                     </p>
                 </div>
 
+
                 <form
                     className="flex flex-col items-center gap-y-6 mx-auto w-[80vw] sm:w-96"
                     onSubmit={handleSubmit}
@@ -94,27 +97,11 @@ const ForgotPasswordPage: React.FC = () => {
                         loading={loading}
                         extraStyles="w-full"
                     />
+                    {errorMessage && <ErrorMessage message={errorMessage} />}
 
-                    {errorMessage && (
-                        <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg w-full">
-                            <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p className="font-medium text-red-400">{errorMessage}</p>
-                            </div>
-                        </div>
-                    )}
 
                     {successMessage && (
-                        <div className="bg-green-500/20 shadow-green-500/20 shadow-lg p-3 border-2 border-green-500 rounded-lg w-full">
-                            <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <p className="font-medium text-green-400">{successMessage}</p>
-                            </div>
-                        </div>
+                        <SuccessMessage message={successMessage} />
                     )}
                 </form>
 

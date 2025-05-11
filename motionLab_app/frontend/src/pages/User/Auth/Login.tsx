@@ -1,6 +1,6 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import ErrorMessage from "@/components/UI/ErrorMessage";
 import FormField from "@components/UI/FormField";
 import FormButton from "@/components/UI/FormButton";
 
@@ -98,14 +98,7 @@ const LoginPage = () => {
               extraStyles="bg-gray-900"
             />
             {errors.email && (
-              <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="font-medium text-red-400">{errors.email}</p>
-                </div>
-              </div>
+              <ErrorMessage message={errors.email} className="mt-4" />
             )}
             <FormField
               type="password"
@@ -136,14 +129,7 @@ const LoginPage = () => {
           />
 
           {errorMessage && (
-            <div className="bg-red-500/20 shadow-lg shadow-red-500/20 p-3 border-2 border-red-500 rounded-lg w-full">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="font-medium text-red-400">{errorMessage}</p>
-              </div>
-            </div>
+            <ErrorMessage message={errorMessage} className="mt-4" />
           )}
         </form>
 

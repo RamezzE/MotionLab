@@ -8,6 +8,7 @@ import { saveAs } from "file-saver";
 import BVHViewer from "@components/BVH/BVHViewer";
 import FormButton from "@/components/UI/FormButton";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
+import ErrorMessage from "@/components/UI/ErrorMessage";
 import RetargetedAvatarsList from "@/components/Avatar/RetargetedAvatarsList";
 
 import { getProjectBVHFilenames, getProjectById } from "@/api/projectAPIs";
@@ -23,6 +24,7 @@ import DownloadRetargetedModal from "@/components/Avatar/DownloadRetargetedModal
 import RetargetPreviewModal from "@/components/Avatar/RetargetPreviewModal";
 
 const BVHScene: React.FC = () => {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [downloadModalFilename, setDownloadModalFilename] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
   const [retargeting, setRetargeting] = useState<boolean>(false);
@@ -60,7 +62,7 @@ const BVHScene: React.FC = () => {
 
   useEffect(() => {
     if (!projectId || !user?.id) return;
-    
+
     const fetchProjectDetails = async () => {
       try {
         const response = await getProjectById(projectId, user.id.toString());
@@ -164,11 +166,16 @@ const BVHScene: React.FC = () => {
   };
 
   const handleRetargetClick = () => {
+
+    console.log("selectedBVH", selectedBVH);
+    console.log("selectedAvatarId", selectedAvatarId);
     if (!projectId || !user?.id || !selectedBVH || !selectedAvatarId) {
-      alert("Please select a BVH and an Avatar.");
+      setErrorMessage("Please select a BVH and an Avatar.");
       return;
     }
+    setErrorMessage(null);
     setShowPreviewModal(true);
+
   };
 
   const handleConfirmRetarget = async () => {
@@ -319,13 +326,14 @@ const BVHScene: React.FC = () => {
                           </option>
                         ))}
                       </select>
+                      {errorMessage && <ErrorMessage message={errorMessage} className="mt-4" />}
                     </div>
 
                     <FormButton
                       label={retargeting ? "Retargeting..." : "Retarget Avatar"}
                       loading={retargeting}
                       onClick={handleRetargetClick}
-                      disabled={!selectedBVH || !selectedAvatarId || retargeting}
+                      disabled={retargeting}
                     />
                   </div>
 
@@ -338,7 +346,7 @@ const BVHScene: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>          
+            </div>
           </div>
         </div>
       </div>
