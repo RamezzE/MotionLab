@@ -13,6 +13,7 @@ interface BVHViewerProps {
     onDurationSet: (duration: number) => void;
     onTimeUpdate: (time: number) => void;
     isScrolling: boolean;
+    visible?: boolean;
 }
 
 // Define the expected structure returned by the BVHLoader
@@ -28,6 +29,7 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
     onDurationSet,
     onTimeUpdate,
     isScrolling,
+    visible = true,
 }) => {
     const groupRef = useRef<THREE.Group>(null);
     const skeletonHelperRef = useRef<THREE.SkeletonHelper | null>(null);
@@ -43,7 +45,7 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
             (result: BVHResult) => {
                 // Create Skeleton Helper
                 const skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0]);
-                
+
                 // @ts-expect-error
                 skeletonHelper.skeleton = result.skeleton;
 
@@ -120,13 +122,13 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
 
     return (
         // @ts-expect-error
-        <group ref={groupRef}>
-            {/* Grid Helper */}
+        <group ref={groupRef} visible={visible}>
             {/* @ts-expect-error */}
             <gridHelper args={[200, 10]} />
             {/* @ts-expect-error */}
         </group>
     );
+
 };
 
 export default BVHViewer;

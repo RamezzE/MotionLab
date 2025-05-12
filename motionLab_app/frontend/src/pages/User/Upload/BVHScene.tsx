@@ -224,18 +224,18 @@ const BVHScene: React.FC = () => {
                 <Canvas camera={{ position: [0, 75, 150], fov: 60 }}>
                   <OrbitControls />
                   {bvhUrlList.map((url, index) => (
-                    bvhVisibility[index] && (
-                      <BVHViewer
-                        key={url}
-                        bvhUrl={url}
-                        isPlaying={isPlaying}
-                        currentTime={currentTime}
-                        onDurationSet={setDuration}
-                        onTimeUpdate={setCurrentTime}
-                        isScrolling={isScrolling}
-                      />
-                    )
+                    <BVHViewer
+                      key={url}
+                      bvhUrl={url}
+                      isPlaying={isPlaying}
+                      currentTime={currentTime}
+                      onDurationSet={setDuration}
+                      onTimeUpdate={setCurrentTime}
+                      isScrolling={isScrolling}
+                      visible={bvhVisibility[index]} // ← always mounted, toggle visibility
+                    />
                   ))}
+
                 </Canvas>
               </div>
             </div>
