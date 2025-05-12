@@ -119,9 +119,12 @@ const BVHViewer: React.FC<BVHViewerProps> = ({
     });
 
     return (
+        // @ts-expect-error
         <group ref={groupRef}>
             {/* Grid Helper */}
+            {/* @ts-expect-error */}
             <gridHelper args={[200, 10]} />
+            {/* @ts-expect-error */}
         </group>
     );
 };

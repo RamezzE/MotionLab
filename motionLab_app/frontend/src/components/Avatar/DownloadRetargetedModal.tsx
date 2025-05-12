@@ -52,26 +52,22 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
           </button>
         </div>
 
-
-
-
         <div className="flex flex-col gap-4">
           <div className="bg-black/50 p-4 border border-purple-500/10 rounded-lg">
             <div className="h-[300px]">
-              <Canvas camera={{ position: [0, 1.5, 3], fov: 50 }}>
+              <Canvas camera={{ position: [0, 1, 3], fov: 60 }}>
                 <Environment preset="sunset" />
-                {/* <SpotLight
-                  position={[2, 3, 2]}
-                  angle={0.4}
-                  penumbra={0.8}
-                  intensity={1.5}
-                  castShadow
-                  color="#ffffff"
-                /> */}
 
+                {/* Add grid helper */}
+                {/* @ts-expect-error */}
+                <gridHelper args={[10, 10]} />
+
+                {/* Model preview */}
                 <Model url={downloadUrl} />
-                <OrbitControls minDistance={1} maxDistance={10} />
+
+                <OrbitControls minDistance={1} maxDistance={10} target={[0, 0.75, 0]} />
               </Canvas>
+
             </div>
             <p className="mt-2 text-gray-400 text-sm text-center">
               Note: If you used high X or Y sensitivity, you may need to zoom out to view your avatar completely.
