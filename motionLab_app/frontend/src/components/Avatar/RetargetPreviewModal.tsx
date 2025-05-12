@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import FormButton from '@/components/UI/FormButton';
+import { X } from "lucide-react";
 
 interface RetargetPreviewModalProps {
     modelSrc: string;
@@ -38,19 +39,33 @@ const RetargetPreviewModal: React.FC<RetargetPreviewModalProps> = ({
     loading,
 }) => {
     return (
-        <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/75">
-            <div className="bg-gray-800 p-6 rounded-lg w-full sm:w-[600px] max-h-[90vh] overflow-y-auto">
-                <h2 className="mb-4 text-white text-xl">Preview Selected Avatar</h2>
-                
+        <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/90">
+            <div className="bg-gray-800 p-6 border border-purple-500/20 rounded-lg w-full sm:w-[600px] max-w-[90vw] max-h-[90vh] overflow-y-auto">
+
+                <div className="flex flex-row justify-between items-center mb-4">
+                    <div className="w-6" /> {/* Spacer for balance */}
+                    <h2 className="font-bold text-white text-xl">Preview Selected Avatar</h2>
+                    {!loading && (
+                        <button
+                            onClick={onCancel}
+                            className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                            aria-label="Close modal"
+                        >
+                            <X size={24} />
+                        </button>
+                    )}
+                    {loading && (<div className="w-6" />)}
+                </div>
                 <div className="flex flex-col gap-4">
-                    <div className="bg-gray-900 p-4 rounded-lg">
-                        <h3 className="mb-2 text-white">{characterName}</h3>
+                    <div className="bg-black/50 p-4 border border-purple-500/10 rounded-lg">
+                        <h3 className="mb-2 font-semibold text-white">{characterName}</h3>
+
                         <div className="w-full h-[300px]">
                             <Canvas camera={{ position: [0, 0.5, 3], fov: 45 }}>
                                 <Environment preset="sunset" />
                                 <Model url={modelSrc} />
-                                <OrbitControls 
-                                    minDistance={1.5} 
+                                <OrbitControls
+                                    minDistance={1.5}
                                     maxDistance={5}
                                     enableZoom={true}
                                     enablePan={true}
@@ -62,14 +77,16 @@ const RetargetPreviewModal: React.FC<RetargetPreviewModalProps> = ({
                     </div>
 
                     <div className="flex justify-end gap-4 mt-4">
-                        <FormButton
-                            label="Cancel"
-                            onClick={onCancel}
-                            theme="transparent"
-                            fullWidth={false}
-                            textSize="base"
-                            disabled={loading}
-                        />
+                        {!loading && (
+                            <FormButton
+                                label="Cancel"
+                                onClick={onCancel}
+                                theme="transparent"
+                                fullWidth={false}
+                                textSize="base"
+                                disabled={loading}
+                            />
+                        )}
                         <FormButton
                             label={loading ? "Retargeting..." : "Confirm Retargeting"}
                             onClick={onConfirm}

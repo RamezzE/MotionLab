@@ -38,20 +38,25 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
   };
 
   return (
-    <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/75">
-      <div className="relative bg-gray-800 p-6 rounded-lg w-full sm:w-[600px] max-h-[95vh]">
-        <button
-          onClick={onClose}
-          className="top-4 right-4 absolute text-gray-400 hover:text-white transition-colors"
-          aria-label="Close modal"
-        >
-          <X size={24} />
-        </button>
+    <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/90">
+      <div className="relative bg-gray-800 px-6 py-4 border border-purple-500/20 rounded-lg w-full sm:w-[600px] max-w-[90vw] max-h-[95vh]">
+        <div className="flex flex-row justify-center items-center mb-4 w-full">
 
-        <h2 className="mb-4 text-white text-xl text-center">🎉 Retargeting Complete</h2>
-        
+          <h2 className="font-bold text-white text-xl text-center">🎉 Retargeting Complete</h2>
+          <button
+            onClick={onClose}
+            className="right-4 absolute text-gray-400 hover:text-white transition-colors cursor-pointer"
+            aria-label="Close modal"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+
+
+
         <div className="flex flex-col gap-4">
-          <div className="bg-black/50 p-4 rounded-lg">
+          <div className="bg-black/50 p-4 border border-purple-500/10 rounded-lg">
             <div className="h-[300px]">
               <Canvas camera={{ position: [0, 1.5, 3], fov: 50 }}>
                 <Environment preset="sunset" />
@@ -63,7 +68,7 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
                   castShadow
                   color="#ffffff"
                 /> */}
-                
+
                 <Model url={downloadUrl} />
                 <OrbitControls minDistance={1} maxDistance={10} />
               </Canvas>
@@ -73,8 +78,8 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="bg-yellow-500/10 p-4 border border-yellow-500/20 rounded-lg">
+          <div className="flex flex-col gap-4">
+            <div className="bg-black/50 p-4 border border-purple-500/20 rounded-lg">
               <p className="text-yellow-400 text-sm text-center">
                 ⚠️ This retargeted avatar will be automatically deleted in 15 minutes. Please download it now if you want to keep it.
               </p>
@@ -83,7 +88,7 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
             <a
               href={downloadUrl}
               download
-              className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white text-center transition"
+              className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white text-center transition-colors duration-200"
             >
               Download Retargeted Avatar
             </a>

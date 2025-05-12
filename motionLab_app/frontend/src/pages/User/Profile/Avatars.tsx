@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import useAvatarStore from "@/store/useAvatarStore";
 import { serverURL } from "@/api/config";
 import FormButton from "@/components/UI/FormButton";
+import EmptyState from "@/components/UI/EmptyState";
 
 const AvatarsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -80,9 +81,10 @@ const AvatarsPage: React.FC = () => {
             </div>
 
             {avatars.length === 0 && (
-                <div className="bg-black/50 shadow-lg p-6 border border-purple-600 rounded-lg w-full max-w-md text-white">
-                    <h2 className="font-bold text-xl">No Avatars found</h2>
-                </div>
+                <EmptyState
+                    title="No avatars found"
+                    description="You can create an avatar by clicking the button above"
+                />
             )}
         </div>
     );

@@ -5,6 +5,7 @@ import AvatarViewer from './AvatarViewer';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { useParams } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
+import EmptyState from '@/components/UI/EmptyState';
 
 interface RetargetedAvatar {
     id: number;
@@ -82,21 +83,20 @@ const RetargetedAvatarsList: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col items-center gap-y-8 w-full max-w-[90vw]">
-            <div className="relative text-center">
-                <h2 className="mb-2 font-bold text-white text-2xl sm:text-3xl">Recently Retargeted Avatars</h2>
-                <p className="text-gray-300 text-base sm:text-lg">Your recently retargeted avatars will appear here.</p>
+        <div className="flex flex-col items-start gap-y-4 w-full">
+            <div className="flex flex-row justify-start items-center gap-x-4 w-full">
+                <h2 className="font-bold text-white text-3xl text-start">Recently Retargeted Avatars</h2>
                 <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    className="top-1/2 -right-12 absolute disabled:opacity-50 p-2 text-gray-400 hover:text-white transition-colors -translate-y-1/2"
+                    className="disabled:opacity-50 p-2 text-gray-400 hover:text-white transition-colors"
                     aria-label="Refresh list"
                 >
                     <RefreshCw size={24} className={refreshing ? 'animate-spin' : ''} />
                 </button>
             </div>
 
-            <div className="flex flex-row flex-wrap justify-center items-center gap-4 w-full max-h-[600px] overflow-y-auto">
+            <div className="flex flex-row flex-wrap justify-center sm:justify-start items-center gap-4 px-4 w-full max-h-[600px] overflow-y-auto">
                 {retargetedAvatars.map((avatar) => (
                     <AvatarViewer
                         key={avatar.id}
@@ -111,10 +111,10 @@ const RetargetedAvatarsList: React.FC = () => {
             </div>
 
             {retargetedAvatars.length === 0 && (
-                <div className="bg-black/50 shadow-lg p-6 border border-purple-600 rounded-lg w-full max-w-md text-white">
-                    <h2 className="font-bold text-xl">No Avatars found for this project</h2>
-                    <p className="mt-2 text-gray-400">Retargeted avatars will appear here after you create them.</p>
-                </div>
+                <EmptyState
+                    title="No Avatars found for this project"
+                    description="Retargeted avatars will appear here after you create them"
+                />
             )}
         </div>
     );

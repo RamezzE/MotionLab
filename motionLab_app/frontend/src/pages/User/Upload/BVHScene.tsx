@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
 import BVHViewer from "@components/BVH/BVHViewer";
 import FormButton from "@/components/UI/FormButton";
+import FormSelect from "@/components/UI/FormSelect";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import ErrorMessage from "@/components/UI/ErrorMessage";
 import RetargetedAvatarsList from "@/components/Avatar/RetargetedAvatarsList";
+import EmptyState from "@/components/UI/EmptyState";
 
 import { getProjectBVHFilenames, getProjectById } from "@/api/projectAPIs";
 import useUserStore from "@/store/useUserStore";
 
 import { serverURL } from "@/api/config";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Plus } from "lucide-react";
 
 import useProjectStore from "@/store/useProjectStore";
 import useAvatarStore from "@/store/useAvatarStore";
@@ -24,6 +26,7 @@ import DownloadRetargetedModal from "@/components/Avatar/DownloadRetargetedModal
 import RetargetPreviewModal from "@/components/Avatar/RetargetPreviewModal";
 
 const BVHScene: React.FC = () => {
+  const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [downloadModalFilename, setDownloadModalFilename] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
@@ -96,12 +99,11 @@ const BVHScene: React.FC = () => {
               (fileName: string) => `${serverURL}/bvh/${fileName}`
             );
             setBvhUrlList(updatedUrls);
-            setBvhVisibility(new Array(updatedUrls.length).fill(true)); // ✅ add this line
+            setBvhVisibility(new Array(updatedUrls.length).fill(true));
           } else {
             console.error("Error fetching BVH filenames:", response.data);
           }
         });
-
       }
     }
     catch (error) {
@@ -110,7 +112,6 @@ const BVHScene: React.FC = () => {
     finally {
       setLoading(false);
     }
-
   }, [location.state, projectId, user]);
 
   const togglePlayPause = () => {
@@ -128,7 +129,6 @@ const BVHScene: React.FC = () => {
 
   const downloadBVHFiles = async () => {
     if (bvhUrlList.length === 1) {
-      // If only one file, download it directly.
       const url = bvhUrlList[0];
       try {
         const response = await fetch(url);
@@ -142,7 +142,6 @@ const BVHScene: React.FC = () => {
         console.error("Error downloading file:", error);
       }
     } else {
-      // Otherwise, zip multiple files.
       const zip = new JSZip();
       await Promise.all(
         bvhUrlList.map(async (url) => {
@@ -166,16 +165,12 @@ const BVHScene: React.FC = () => {
   };
 
   const handleRetargetClick = () => {
-
-    console.log("selectedBVH", selectedBVH);
-    console.log("selectedAvatarId", selectedAvatarId);
     if (!projectId || !user?.id || !selectedBVH || !selectedAvatarId) {
-      setErrorMessage("Please select a BVH and an Avatar.");
+      setErrorMessage("Select BVH & Avatar");
       return;
     }
     setErrorMessage(null);
     setShowPreviewModal(true);
-
   };
 
   const handleConfirmRetarget = async () => {
@@ -201,6 +196,10 @@ const BVHScene: React.FC = () => {
 
   const handleCancelRetarget = () => {
     setShowPreviewModal(false);
+  };
+
+  const handleCreateAvatar = () => {
+    navigate('/avatar/create');
   };
 
   if (loading) {
@@ -259,7 +258,6 @@ const BVHScene: React.FC = () => {
                 </div>
                 <h1 className="font-bold text-white text-center">Animation Controls</h1>
 
-                {/* Play/Pause Button & Slider */}
                 <div className="flex flex-col items-center gap-y-4 w-full">
                   <FormButton
                     label={isPlaying ? "Pause" : "Play"}
@@ -292,57 +290,72 @@ const BVHScene: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <label className="text-white">Choose BVH File:</label>
-                      <select
-                        className="bg-gray-800 mt-1 p-2 rounded-md w-full text-white"
-                        onChange={(e) => setSelectedBVH(e.target.value)}
-                        value={selectedBVH ?? ""}
-                      >
-                        <option value="">Select BVH</option>
-                        {bvhUrlList.map((url, index) => {
-                          const filename = url.split("/").pop();
-                          return (
-                            <option key={filename} value={filename}>
-                              BVH {index + 1}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
+                  <div className="flex flex-col gap-4 px-4 w-full">
+                    {avatars.length > 0 ? (
+                      <div className="flex flex-col justify-center items-center gap-4 w-full">
+                        <FormSelect
+                          label="BVH Animation"
+                          value={selectedBVH ?? ""}
+                          onChange={(value) => setSelectedBVH(value)}
+                          options={bvhUrlList.map((url, index) => ({
+                            value: url.split("/").pop() ?? "",
+                            label: `BVH ${index + 1}`
+                          }))}
+                          placeholder="Select BVH"
+                        />
 
-                    <div>
-                      <label className="text-white">Choose Avatar:</label>
-                      <select
-                        className="bg-gray-800 mt-1 p-2 rounded-md w-full text-white"
-                        onChange={(e) => setSelectedAvatarId(e.target.value)}
-                        value={selectedAvatarId ?? ""}
-                      >
-                        <option value="">Select Avatar</option>
-                        {avatars.map((avatar) => (
-                          <option key={avatar.id} value={avatar.id}>
-                            {avatar.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errorMessage && <ErrorMessage message={errorMessage} className="mt-4" />}
-                    </div>
+                        <FormSelect
+                          label="Avatar"
+                          value={selectedAvatarId ?? ""}
+                          onChange={(value) => setSelectedAvatarId(value)}
+                          options={avatars.map((avatar) => ({
+                            value: avatar.id.toString(),
+                            label: avatar.name
+                          }))}
+                          placeholder="Select Avatar"
+                        />
 
-                    <FormButton
-                      label={retargeting ? "Retargeting..." : "Retarget Avatar"}
-                      loading={retargeting}
-                      onClick={handleRetargetClick}
-                      disabled={retargeting}
-                    />
+                        {errorMessage && <ErrorMessage message={errorMessage} />}
+                        <FormButton
+                          label={retargeting ? "Retargeting..." : "Retarget Avatar"}
+                          loading={retargeting}
+                          onClick={handleRetargetClick}
+                          disabled={retargeting}
+                          fullWidth={false}
+                          extraStyles="border border-purple-600"
+                          theme="dark"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <EmptyState
+                          title="No Avatars Available"
+                          description="You need to create an avatar before you can retarget your BVH files."
+                          className="max-w-full"
+                        />
+                        <FormButton
+                          label={
+                            <div className="flex justify-center items-center gap-2">
+                              <Plus size={20} />
+                              <span>Create Avatar</span>
+                            </div>
+                          }
+                          theme="dark"
+                          fullWidth={false}
+                          extraStyles="border border-purple-600"
+                          onClick={handleCreateAvatar}
+                        />
+                      </div>
+                    )}
                   </div>
 
-                  {/* Download BVH Files Button */}
                   <FormButton
                     label="Download BVH File(s)"
                     className="z-10 rounded-md max-w-min text-white whitespace-nowrap"
                     onClick={downloadBVHFiles}
                     disabled={bvhUrlList.length === 0}
+                    theme="dark"
+                    extraStyles="border border-purple-600"
                   />
                 </div>
               </div>
@@ -350,7 +363,7 @@ const BVHScene: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col justify-center items-center mt-12 w-full">
+      <div className="flex flex-col justify-center items-center mt-12 px-4 w-full">
         <RetargetedAvatarsList />
       </div>
       {showPreviewModal && selectedAvatarId && (

@@ -1,8 +1,8 @@
-import { FC, ButtonHTMLAttributes, MouseEvent } from "react";
+import { FC, ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
 import LoadingSpinner from "./LoadingSpinner"; // Adjust the path as needed
 
 interface FormButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    label: string;
+    label: string | ReactNode;
     loading?: boolean;
     theme?: "default" | "transparent" | "dark"; // Added dark theme option
     fullWidth?: boolean; // New prop to control full width
@@ -34,7 +34,7 @@ const FormButton: FC<FormButtonProps> = ({
         theme === "transparent"
             ? "text-white hover:text-purple-400 transition duration-300"
             : theme === "dark"
-                ? "bg-black/50 hover:bg-black/60 transition duration-300 px-4 py-2 rounded-md text-white/85 hover:text-white"
+                ? "bg-black/50 hover:bg-black/60 transition duration-300 px-4 py-2 rounded-md text-white/85 hover:text-white hover:bg-purple-600"
                 : "bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white transition duration-300";
 
     // Handle text size
@@ -53,7 +53,7 @@ const FormButton: FC<FormButtonProps> = ({
         >
             {loading ? (
                 <div className="flex justify-center items-center w-full">
-                    <LoadingSpinner size={32} extraStyles="" />
+                    <LoadingSpinner size={24} extraStyles="" />
                 </div>
             ) : (
                 label

@@ -8,6 +8,7 @@ import useProjectStore from "@/store/useProjectStore";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import FormButton from "@/components/UI/FormButton";
 import { useNavigate } from "react-router-dom";
+import EmptyState from "@/components/UI/EmptyState";
 
 const Projects: React.FC = () => {
     const { user } = useUserStore();
@@ -66,9 +67,10 @@ const Projects: React.FC = () => {
             </div>
 
             {projects.length === 0 && (
-                <div className="bg-black/50 shadow-lg p-6 border border-purple-600 rounded-lg w-full max-w-md text-white">
-                    <h2 className="font-bold text-xl">No projects found</h2>
-                </div>
+                <EmptyState
+                    title="No projects found"
+                    description="You can create a project by clicking the button above"
+                />
             )}
         </div>
     );
