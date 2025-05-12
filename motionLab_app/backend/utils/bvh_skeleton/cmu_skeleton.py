@@ -235,17 +235,21 @@ class CMUSkeleton(object):
                 self.counter += 1
                 # MAX_X = 50
                 # MAX_Y = 50
-                MAX_X = 50 * self.x_sensitivity
                 MAX_Y = 50 * self.y_sensitivity
                 MIN_Y = 0
+
+                MAX_X = 50 * self.x_sensitivity
+                MIN_X = -50 * self.x_sensitivity
                 
                 OLD_MAX = 1
                 OLD_MIN = 0
                                 
-                x = ((self.root_positions[self.counter][0] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_X - -MAX_X) + -MAX_X
+                x = ((self.root_positions[self.counter][0] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_X - MIN_X) + MIN_X
                 y = ((self.root_positions[self.counter][1] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (MAX_Y - MIN_Y) + MIN_Y
+                
                 # z = ((self.root_positions[self.counter][2] - OLD_MIN) / (OLD_MAX - OLD_MIN)) * (50 - 0) + 0
                 pos = [x, y, 0]
+
                 channel.extend(pos)
 
             index = self.keypoint2index

@@ -63,9 +63,9 @@ const UploadVideoSection: React.FC<UploadVideoSectionProps> = ({ handleUpload, h
             
             <h3 className="mt-4 mb-2 font-semibold text-gray-300">Recommendations:</h3>
             <ul className="space-y-1 list-disc list-inside">
-              <li>Ensure the full body is visible in the frame</li>
+              <li className="text-yellow-300">Ensure the full body is visible in the video for best results</li>
               <li>Person should take up a significant portion of the video frame</li>
-              <li>If the person appears too small in the frame, they may not be detected properly</li>
+              <li>If the person appears too small, they may not be detected properly</li>
             </ul>
           </div>
         </div>

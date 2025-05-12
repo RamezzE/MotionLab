@@ -73,11 +73,15 @@ const UploadVideoSettingsSection: React.FC<UploadVideoSettingsSectionProps> = ({
                             </label>
                         </div>
                         <div className="space-y-1 ml-6 text-gray-400 text-xs">
+                            <p className="text-yellow-300">
+                                Recommended if you plan to use the avatar in an external viewer or game engine to keep its position controlled
+                            </p>
                             <p className="font-medium">When enabled:</p>
                             <ul className="space-y-1 list-disc list-inside">
                                 <li>The animation stays centered in place</li>
                                 <li>Ignores the person's movement in the video</li>
                                 <li>Useful for keeping animations in a fixed position</li>
+
                             </ul>
                         </div>
                     </div>
