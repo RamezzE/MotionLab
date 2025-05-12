@@ -36,6 +36,7 @@ const AvatarNameModal: React.FC<AvatarNameModalProps> = ({
                             <X size={24} />
                         </button>
                     )}
+                    {loading && (<div className="w-6" />)}
                 </div>
                 
                 <div className="flex flex-col gap-4">

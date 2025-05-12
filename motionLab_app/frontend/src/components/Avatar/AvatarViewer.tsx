@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { useGLTF, useAnimations } from "@react-three/drei";
-import { Trash2 } from "lucide-react";
-import { Vector3 } from 'three';
+import { Trash2, Play, Pause } from "lucide-react";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
+import AvatarModel from "@/components/Avatar/AvatarModel";
+import Precompile from "@/components/Avatar/Precompile";
 
 interface AvatarViewerProps {
     modelSrc: string;
@@ -13,24 +13,7 @@ interface AvatarViewerProps {
     displayMode?: 'default' | 'list'; // New prop to determine the layout
     onPress?: (() => void) | null; // Edit handler
     onDelete?: (() => void) | null; // Delete handler
-}
-
-function Model({ url }: { url: string }) {
-    const { scene, animations } = useGLTF(url);
-    const { actions } = useAnimations(animations, scene);
-
-    React.useEffect(() => {
-        // Play the first animation if available
-        if (animations.length > 0) {
-            const action = actions[animations[0].name];
-            if (action) {
-                action.play();
-            }
-        }
-    }, [animations, actions]);
-
-    // @ts-expect-error - primitive is a valid JSX element in @react-three/fiber
-    return <primitive object={scene} position={[0, -0.9, 0]} />;
+    showPlayPause?: boolean; // Optional prop to show play/pause button
 }
 
 const AvatarViewer: React.FC<AvatarViewerProps> = ({
@@ -40,9 +23,11 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
     displayMode = 'default', // Default value is 'default'
     onPress = null,
     onDelete = null,
+    showPlayPause = false, // Default value is false
 }) => {
     const [hasError, setHasError] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(true);
 
     useEffect(() => {
         // Reset error state when modelSrc changes
@@ -90,17 +75,22 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
                     <Environment preset="sunset" />
                     <React.Suspense fallback={null}>
                         <ErrorBoundary onError={() => setHasError(true)}>
-                            <Model url={modelSrc} />
+                            <AvatarModel url={modelSrc} isPlaying={isPlaying} position={[0, -0.9, 0]} />
+                            <Precompile />
                         </ErrorBoundary>
                     </React.Suspense>
-                    <OrbitControls 
-                        minDistance={1.5} 
-                        maxDistance={5}
-                        enableZoom={displayMode === 'default'}
-                        enablePan={displayMode === 'default'}
-                        enableRotate={displayMode === 'default'}
-                        target={[0, 0, 0]}
-                    />
+
+                    {displayMode === 'default' && (
+                        <OrbitControls
+                            minDistance={1.5}
+                            maxDistance={5}
+                            enableZoom={displayMode === 'default'}
+                            enablePan={displayMode === 'default'}
+                            enableRotate={displayMode === 'default'}
+                            target={[0, 0, 0]}
+                        />
+                    )}
+
                 </Canvas>
                 {hasError && (
                     <div className="absolute inset-0 flex justify-start items-center rounded-xl">
@@ -113,7 +103,23 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
 
             {/* Delete Icon for list view */}
             {displayMode === 'list' && onDelete && (
-                <div className="top-3 right-2 z-50 absolute flex gap-2">
+                <div className="top-3 right-2 z-50 absolute flex items-center gap-2">
+                    <button
+                        onClick={() => setIsPlaying(prev => !prev)}
+                        className="text-gray-400 hover:text-white transition-colors"
+                        aria-label={isPlaying ? "Pause animation" : "Play animation"}
+                    >
+
+                        {showPlayPause && isPlaying && (
+                            <Pause size={20} />
+                        )}
+
+                        {showPlayPause && !isPlaying && (
+                            <Play size={20} />
+
+                        )}
+                    </button>
+
                     {isDeleting ? (
                         <div className="text-gray-400">
                             <LoadingSpinner size={20} />
@@ -128,6 +134,7 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({
                         </button>
                     )}
                 </div>
+
             )}
         </div>
     );

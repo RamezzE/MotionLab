@@ -1,41 +1,18 @@
-import React, { useState } from "react";
 import { serverURL } from "@/api/config";
-import FormButton from "@/components/UI/FormButton";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, SpotLight } from "@react-three/drei";
-import { useGLTF, useAnimations } from "@react-three/drei";
-import { Vector3 } from 'three';
+import { OrbitControls, Environment } from "@react-three/drei";
 import { X } from "lucide-react";
+import AvatarModel from "@/components/Avatar/AvatarModel";
 
 interface Props {
   filename: string;
   onClose: () => void;
 }
 
-function Model({ url }: { url: string }) {
-  const { scene, animations } = useGLTF(url);
-  const { actions } = useAnimations(animations, scene);
 
-  React.useEffect(() => {
-    // Play the first animation if available
-    if (animations.length > 0) {
-      const action = actions[animations[0].name];
-      if (action) {
-        action.play();
-      }
-    }
-  }, [animations, actions]);
-  // @ts-expect-error
-  return <primitive object={scene} />;
-}
 
 const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
   const downloadUrl = `${serverURL}/retargeted_avatars/${filename}`;
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
 
   return (
     <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/90">
@@ -63,7 +40,7 @@ const DownloadRetargetedModal: React.FC<Props> = ({ filename, onClose }) => {
                 <gridHelper args={[10, 10]} />
 
                 {/* Model preview */}
-                <Model url={downloadUrl} />
+                <AvatarModel url={downloadUrl} />
 
                 <OrbitControls minDistance={1} maxDistance={10} target={[0, 0.75, 0]} />
               </Canvas>

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { useGLTF, useAnimations } from "@react-three/drei";
 import FormButton from '@/components/UI/FormButton';
 import { X } from "lucide-react";
+import AvatarModel from "@/components/Avatar/AvatarModel";
 
 interface RetargetPreviewModalProps {
     modelSrc: string;
@@ -11,24 +11,6 @@ interface RetargetPreviewModalProps {
     onConfirm: () => void;
     onCancel: () => void;
     loading: boolean;
-}
-
-function Model({ url }: { url: string }) {
-    const { scene, animations } = useGLTF(url);
-    const { actions } = useAnimations(animations, scene);
-
-    React.useEffect(() => {
-        // Play the first animation if available
-        if (animations.length > 0) {
-            const action = actions[animations[0].name];
-            if (action) {
-                action.play();
-            }
-        }
-    }, [animations, actions]);
-
-    // @ts-expect-error - primitive is a valid JSX element in @react-three/fiber
-    return <primitive object={scene} position={[0, -0.9, 0]} />;
 }
 
 const RetargetPreviewModal: React.FC<RetargetPreviewModalProps> = ({
@@ -63,7 +45,7 @@ const RetargetPreviewModal: React.FC<RetargetPreviewModalProps> = ({
                         <div className="w-full h-[300px]">
                             <Canvas camera={{ position: [0, 0.5, 3], fov: 45 }}>
                                 <Environment preset="sunset" />
-                                <Model url={modelSrc} />
+                                <AvatarModel url={modelSrc} position={[0, -0.9, 0]} />
                                 <OrbitControls
                                     minDistance={1.5}
                                     maxDistance={5}

@@ -48,7 +48,7 @@ const ProjectCard: React.FC<ProjectProps> = ({
     };
 
     return (
-        <div className="relative flex items-center bg-black/50 shadow-lg p-6 px-4 border border-purple-600 hover:border-4 hover:border-blue-500 rounded-xl w-md max-w-[80vw] text-white transition-all duration-300 hover:pointer">
+        <div className="relative flex items-center bg-black/50 shadow-lg p-6 px-4 border border-purple-600 hover:border-4 hover:border-blue-500 rounded-xl w-[300px] max-w-[80vw] text-white transition-all duration-300 hover:pointer">
             {/* Refresh Status Button */}
             {is_processing && !loading && (
                 <button

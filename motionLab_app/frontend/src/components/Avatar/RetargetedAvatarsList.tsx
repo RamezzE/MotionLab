@@ -106,6 +106,7 @@ const RetargetedAvatarsList: React.FC = () => {
                         displayMode="list"
                         onPress={() => handleDownload(avatar.filename)}
                         onDelete={() => handleDelete(avatar.id)}
+                        showPlayPause={true}
                     />
                 ))}
             </div>
