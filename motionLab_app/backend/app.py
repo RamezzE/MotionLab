@@ -7,6 +7,7 @@ from flask_cors import CORS
 from extensions import mail
 from database import SQLALCHEMY_CONFIG, init_db, db
 from routes import auth_bp, pose_bp, project_bp, admin_bp, avatar_bp  # Import the Blueprints
+from services.retarget_avatar_service import RetargetedAvatarService
 
 def create_app():
     app = Flask(__name__)
@@ -35,6 +36,9 @@ def create_app():
             MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
             MAIL_DEFAULT_SENDER=os.getenv('MAIL_USERNAME'),
         )
+    
+    # Initialize RetargetedAvatarService with the app instance
+    RetargetedAvatarService.init_app(app)
     
     return app
 

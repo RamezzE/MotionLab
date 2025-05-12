@@ -3,12 +3,19 @@ import os
 from datetime import datetime, timedelta
 import threading
 import time
+from flask import current_app
 
 from models.retargeted_avatar_model import RetargetedAvatar  # Import the model at the top
 
 class RetargetedAvatarService:
     # Dictionary to store cleanup timers
     _cleanup_timers = {}
+    _app = None  # Store the Flask app instance
+
+    @classmethod
+    def init_app(cls, app):
+        """Initialize the service with the Flask app instance."""
+        cls._app = app
 
     @staticmethod
     def retarget_bvh_to_avatar(bvh_filename: str, avatar_filename: str, project_id: str):
@@ -65,9 +72,14 @@ class RetargetedAvatarService:
                     os.remove(file_path)
                     print(f"Cleaned up retargeted avatar file: {filename}")
 
-                # Delete the database record
-                RetargetedAvatar.delete_by_id(avatar_id)
-                print(f"Cleaned up retargeted avatar database record: {avatar_id}")
+                # Delete the database record using application context
+                if RetargetedAvatarService._app is None:
+                    print("Error: Flask app not initialized in RetargetedAvatarService")
+                    return
+                    
+                with RetargetedAvatarService._app.app_context():
+                    RetargetedAvatar.delete_by_id(avatar_id)
+                    print(f"Cleaned up retargeted avatar database record: {avatar_id}")
             except Exception as e:
                 print(f"Error cleaning up retargeted avatar {filename}: {e}")
 
