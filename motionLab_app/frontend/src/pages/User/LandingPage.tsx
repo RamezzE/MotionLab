@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { useGLTF, useAnimations, Preload } from "@react-three/drei";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import * as THREE from "three";
 
 const ParticleBackground: React.FC = () => {
@@ -117,7 +117,7 @@ const StatBox: React.FC<{
 };
 
 const LandingPage: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [animateIn, setAnimateIn] = useState(false);
   
   useEffect(() => {
