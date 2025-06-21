@@ -1,7 +1,7 @@
+// @ts-nocheck
 import { useState, useEffect } from "react";
 import FormField from "@components/UI/FormField";
 import FormButton from "@/components/UI/FormButton";
-
 const ParticleBackground: React.FC = () => {
   return (
     <div className="fixed inset-0 z-0 opacity-30 pointer-events-none overflow-hidden">

@@ -16,7 +16,7 @@ interface AvatarStoreState {
 
 const useAvatarStore = create<AvatarStoreState>()(
     persist(
-        (set, get) => ({
+        (set) => ({
             avatars: [], // Initial avatars state
             error: null, // Initial error state
 

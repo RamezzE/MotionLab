@@ -3,7 +3,6 @@ import { Canvas } from "@react-three/fiber";
 import { useGLTF, useAnimations, Preload } from "@react-three/drei";
 import { Link, useNavigate } from "react-router-dom";
 import * as THREE from "three";
-import FormButton from "@/components/UI/FormButton";
 
 const ParticleBackground: React.FC = () => {
   return (
@@ -47,24 +46,24 @@ const Model: React.FC = () => {
 };
 
 // Floor Component Props
-interface FloorProps {
-  position: [number, number, number];
-}
+// interface FloorProps {
+//   position: [number, number, number];
+// }
 
-const Floor: React.FC<FloorProps> = ({ position }) => {
-  const floorRef = useRef<THREE.Object3D>(null);
-  const { scene } = useGLTF("/models/purple-floor.glb");
+// const Floor: React.FC<FloorProps> = ({ position }) => {
+//   const floorRef = useRef<THREE.Object3D>(null);
+//   const { scene } = useGLTF("/models/purple-floor.glb");
 
-  useEffect(() => {
-    if (floorRef.current) {
-      floorRef.current.position.set(...position);
-    }
-  }, [position]);
+//   useEffect(() => {
+//     if (floorRef.current) {
+//       floorRef.current.position.set(...position);
+//     }
+//   }, [position]);
 
-  const clonedScene = scene.clone();
-  // @ts-ignore
-  return <primitive ref={floorRef} object={clonedScene} scale={1} />;
-};
+//   const clonedScene = scene.clone();
+//   // @ts-ignore
+//   return <primitive ref={floorRef} object={clonedScene} scale={1} />;
+// };
 
 const FeatureHighlight: React.FC<{
   icon: string;
@@ -126,29 +125,29 @@ const LandingPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
   
-  const floorPositions: [number, number, number][] = [
-    // Main platform
-    [-7, -1, 0], [-6, -1, 0], [-5, -1, 0], [-4, -1, 0], [-3, -1, 0], [-2, -1, 0], [-1, -1, 0],
-    [0, -1, 0], [1, -1, 0], [2, -1, 0], [3, -1, 0], [4, -1, 0], [5, -1, 0], [6, -1, 0],
+  // const floorPositions: [number, number, number][] = [
+  //   // Main platform
+  //   [-7, -1, 0], [-6, -1, 0], [-5, -1, 0], [-4, -1, 0], [-3, -1, 0], [-2, -1, 0], [-1, -1, 0],
+  //   [0, -1, 0], [1, -1, 0], [2, -1, 0], [3, -1, 0], [4, -1, 0], [5, -1, 0], [6, -1, 0],
     
-    // Left depth extensions
-    [-7, -1, -1], [-7, -1, -2], [-7, -1, -3],
-    [-6, -1, -1], [-6, -1, -2], [-6, -1, -3],
-    [-5, -1, -1], [-5, -1, -2], [-5, -1, -3],
-    [-4, -1, -1], [-4, -1, -2], [-4, -1, -3],
-    [-3, -1, -1], [-3, -1, -2], [-3, -1, -3],
-    [-2, -1, -1], [-2, -1, -2], [-2, -1, -3],
-    [-1, -1, -1], [-1, -1, -2], [-1, -1, -3],
+  //   // Left depth extensions
+  //   [-7, -1, -1], [-7, -1, -2], [-7, -1, -3],
+  //   [-6, -1, -1], [-6, -1, -2], [-6, -1, -3],
+  //   [-5, -1, -1], [-5, -1, -2], [-5, -1, -3],
+  //   [-4, -1, -1], [-4, -1, -2], [-4, -1, -3],
+  //   [-3, -1, -1], [-3, -1, -2], [-3, -1, -3],
+  //   [-2, -1, -1], [-2, -1, -2], [-2, -1, -3],
+  //   [-1, -1, -1], [-1, -1, -2], [-1, -1, -3],
     
-    // Middle depth extensions
-    [0, -1, -1], [0, -1, -2], [0, -1, -3],
-    [1, -1, -1], [1, -1, -2], [1, -1, -3],
-    [2, -1, -1], [2, -1, -2], [2, -1, -3],
-    [3, -1, -1], [3, -1, -2], [3, -1, -3],
-    [4, -1, -1], [4, -1, -2], [4, -1, -3],
-    [5, -1, -1], [5, -1, -2], [5, -1, -3],
-    [6, -1, -1], [6, -1, -2], [6, -1, -3],
-  ];
+  //   // Middle depth extensions
+  //   [0, -1, -1], [0, -1, -2], [0, -1, -3],
+  //   [1, -1, -1], [1, -1, -2], [1, -1, -3],
+  //   [2, -1, -1], [2, -1, -2], [2, -1, -3],
+  //   [3, -1, -1], [3, -1, -2], [3, -1, -3],
+  //   [4, -1, -1], [4, -1, -2], [4, -1, -3],
+  //   [5, -1, -1], [5, -1, -2], [5, -1, -3],
+  //   [6, -1, -1], [6, -1, -2], [6, -1, -3],
+  // ];
 
   return (
     <div className="relative flex flex-col flex-grow justify-evenly items-center px-4 py-10 md:py-0 w-full min-h-[90vh] overflow-hidden text-white">

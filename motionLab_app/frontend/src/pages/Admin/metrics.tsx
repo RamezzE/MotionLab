@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getSystemMetrics } from "@/api/adminAPIs";
 import { SystemMetrics as SystemMetricsType } from "@/api/adminAPIs";
 
