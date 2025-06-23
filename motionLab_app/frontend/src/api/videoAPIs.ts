@@ -4,6 +4,7 @@ import { serverURL } from "./config";
 
 const axiosInstance = axios.create({
     baseURL: serverURL,
+    timeout: 600000, // Set timeout to 10 minutes (600000 ms)
 });
 
 // Define the type for the upload result. Adjust as needed.
